@@ -22,3 +22,10 @@
   member: !member
     role: !group
       id: developers
+- !deny
+  resource: !variable
+    id: mongo_password
+  privilege: read
+  member: !member
+    role: !group
+      id: developers

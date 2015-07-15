@@ -14,3 +14,8 @@
   privilege: read
   member:
     role: !group developers
+
+- !deny
+  resource: !variable mongo_password
+  privilege: read
+  member: !group developers
