@@ -1,0 +1,9 @@
+- !group &developers developers
+
+- !members
+  role: !user alice
+  members:
+    - *developers
+    - 
+      role: !group ops
+      admin: true

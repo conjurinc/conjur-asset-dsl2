@@ -1,0 +1,24 @@
+---
+- !deny
+  resource: !variable
+    id: foobar
+  privilege: read
+  member: !member
+    role: !group
+      id: developers
+- !deny
+  resource: !variable
+    id: baz
+  privilege:
+  - read
+  - execute
+  member: !member
+    role: !group
+      id: developers
+- !deny
+  resource: !variable
+    id: db_password
+  privilege: read
+  member: !member
+    role: !group
+      id: developers

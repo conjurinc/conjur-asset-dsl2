@@ -1,0 +1,8 @@
+- !permissions
+  resource: !variable foobar
+  privilege: [ read, execute ]
+  members: !member
+  - !member
+    role: !group developers
+    admin: true
+  - !group support

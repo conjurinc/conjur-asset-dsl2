@@ -1,0 +1,13 @@
+---
+- &1 !group
+  id: developers
+- !members
+  role: !user
+    id: alice
+  members:
+  - !member
+    role: *1
+  - !member
+    role: !group
+      id: ops
+    admin: true
