@@ -1,0 +1,5 @@
+# 5, 0
+# No such attribute 'role' on type Permit
+- !permit
+  role:
+  - !group developers

@@ -2,10 +2,8 @@ module Conjur
   module DSL2
     module Types
       class Grant < Base
-        register_yaml_type 'grant'
-
-        roles   :role
-        members :member
+        attribute :role
+        attribute :member
       end
     end
   end

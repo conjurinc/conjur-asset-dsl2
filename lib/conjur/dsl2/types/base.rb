@@ -1,6 +1,9 @@
 module Conjur
   module DSL2
     module Types
+      # An inheritable class attribute which is cloned by subclasses so the attribute
+      # can be a mutable thing such as a Hash.
+      #
       # https://raw.githubusercontent.com/apotonick/uber/master/lib/uber/inheritable_attr.rb
       module InheritableAttribute
         def inheritable_attr(name, options={})
@@ -38,219 +41,222 @@ module Conjur
         end
       end
       
-      class Base
-        extend InheritableAttribute
-        
-        attr_accessor :owner
-        
-        inheritable_attr :yaml_fields
-        
-        self.yaml_fields = {}
-
-        def role?
-          false
+      # Methods which type-check and transform attributes. Type-checking can be done by 
+      # duck-typing, with +is_a?+, or by a procedure.
+      module TypeChecking
+        # This is the primary function of the module.
+        #
+        # +value+ an input value
+        # +type_name+ used only for error messages.
+        # +test_function+ a class or function which will determine if the value is already the correct type.
+        # +converter+ if the +test_function+ fails, the converter is called to coerce the type. 
+        # It should return +nil+ if its unable to do so.
+        def expect_type value, type_name, test_function, converter = nil
+          if test_function.is_a?(Class)
+            cls = test_function
+            test_function = lambda{ value.is_a?(cls) } 
+          end
+          if test_function.call
+            value
+          elsif converter && ( v = converter.call )
+            v
+          else
+            name = value.class.respond_to?(:short_name) ? value.class.short_name : value.class.name
+            raise "Expecting #{type_name}, got #{name}"
+          end
         end
-        
+
+        # Duck-type roles.
         def test_role r
           r.respond_to?(:role?) && r.role?          
         end
         
+        # Duck-type resources.
         def test_resource r
           r.respond_to?(:resource?) && r.resource?
         end
         
-        def expect_resource r
-          if test_resource(r)
-            r
-          else
-            raise "Expecting Resource, got #{r}"
-          end
+        # If it looks like a resource.
+        def expect_resource value
+          expect_type value, "Resource", lambda{ test_resource value }
         end
         
-        def expect_role r
-          if test_role(r)
-            r
-          else
-            raise "Expecting Role, got #{r}"
-          end
+        # If it looks like a role.
+        def expect_role value
+          expect_type value, "Role", lambda{ test_role value }
         end
         
-        def expect_member m
-          if m.is_a?(Member)
-            m
-          elsif test_role(m)
-            Member.new m
-          else
-            raise "Expecting Member, got #{m}"
-          end
+        # +value+ may be a Member; Roles can also be converted to Members.
+        def expect_member value
+          expect_type value, 
+            "Member", 
+            Member,
+            lambda{ Member.new(value) if test_role(value) }
         end
         
-        def expect_permission p
-          if p.is_a?(Permission)
-            if !p.resource && test_resource(self)
-              p.resource = self
-            end
-            p
-          else
-            raise "Expecting Permission, got #{p}"
-          end
+        # +value+ must be a Permission.
+        def expect_permission value
+          expect_type value, 
+            "Permission", 
+            Permission
         end
                   
-        def expect_string v
-          raise "Expecting string, got #{v}" unless v.is_a?(String)
-          v
+        # +value+ must be a String.
+        def expect_string value
+          expect_type value, 
+            "string",
+            String
         end
         
+        # +value+ can be a Hash, or an object which implements +to_h+.
+        def expect_hash value
+          expect_type value, 
+            "hash",
+            lambda{ value.is_a?(Hash)},
+            lambda{ value.to_h.stringify_keys if value.respond_to?(:to_h) }
+        end
+        
+        # +v+ must be +true+ or +false+.
         def expect_boolean v
           v = true if v == "true"
           v = false if v == "false"
-          raise "Expecting boolean, got #{v}" unless [ true, false ].member?(v)
-          v
+          expect_type v, 
+            "boolean",
+            lambda{ [ true, false ].member?(v) }
         end
         
-        def expect_members members
-          result = Array(members).map do |m|
-            expect_member m
-          end
-          members.is_a?(Array) ? result : result[0]
-        end
-
-        def expect_roles roles
-          result = Array(roles).map do |m|
-            expect_role m
-          end
-          roles.is_a?(Array) ? result : result[0]
-        end
-
-        def expect_resources resources
-          result = Array(resources).map do |m|
-            expect_resource m
-          end
-          resources.is_a?(Array) ? result : result[0]
-        end
-        
-        def expect_permissions permissions
-          result = Array(permissions).map do |m|
-            expect_permission m
-          end
-          permissions.is_a?(Array) ? result : result[0]
-        end
-        
-        def expect_strings values
+        # +values+ can be an instance of +type+ (as determined by the type-checking methods), or
+        # it must be an array of them.
+        def expect_array kind, values
           result = Array(values).map do |v|
-            expect_string v
+            send "expect_#{kind}", v
           end
           values.is_a?(Array) ? result : result[0]
         end
+      end
+      
+      # Define type-checked attributes, using the facilities defined in 
+      # +TypeChecking+.
+      module AttributeDefinition
+        # Define a singular field.
+        #
+        # +attr+ the name of the field
+        # +kind+ the type of the field, which corresponds to a +TypeChecking+ method.
+        # +type+ a DSL object type which the parser should use to process the field.
+        # This option is not used for simple kinds like :boolean and :string, because they are
+        # not structured objects.
+        def define_field attr, kind, type = nil
+          register_yaml_field attr.to_s, type if type
+          
+          define_method attr do
+            self.instance_variable_get("@#{attr}")
+          end
+          define_method "#{attr}=" do |v|
+            self.instance_variable_set("@#{attr}", self.class.expect_array(kind, v))
+          end
+        end
+        
+        # Define a plural field. A plural field is basically just an alias to the singular field.
+        # For example, a plural field called +members+ is really just an alias to +member+. Both
+        # +member+ and +members+ will accept single values or Arrays of values.
+        def define_plural_field attr, kind, type = nil
+          define_field attr, kind.to_s, type
+          
+          register_yaml_field attr.to_s.pluralize, type if type
+          define_method attr.to_s.pluralize do
+            send attr
+          end
+          define_method "#{attr.to_s.pluralize}=" do |v|
+            send "#{attr}=", v
+          end
+        end
+        
+        # This is the primary method used by concrete types to define their attributes. 
+        #
+        # +attr+ the singularized attribute name.
+        # 
+        # Options:
+        # +type+ a structured type to be constructed by the parser. If not provided, the type
+        # may be inferred from the attribute name (e.g. an attribute called :member is the type +Member+).
+        # +kind+ the symbolic name of the type. Inferred from the type, if the type is provided. Otherwise
+        # it's mandatory.
+        # +singular+ by default, attributes accept multiple values. This flag restricts the attribute
+        # to a single value only.
+        def attribute attr, options = {}
+          type = options[:type]
+          begin
+            type ||= Conjur::DSL2::Types.const_get(attr.to_s.capitalize) 
+          rescue NameError
+          end
+          kind = options[:kind] 
+          kind ||= type.short_name.downcase.to_sym if type
+          
+          raise "Attribute :kind must be defined, explicitly or inferred from :type" unless kind
+          
+          if options[:singular]
+            define_field attr, kind, type
+          else
+            define_plural_field attr, kind, type
+          end
+        end
+        
+        # Ruby type for attribute name.
+        def yaml_field_type name
+          self.yaml_fields[name]
+        end
+        
+        # Is there a Ruby type for a named field?
+        def yaml_field? name
+          !!self.yaml_fields[name]
+        end
+                  
+        protected
+        
+        # +nodoc+
+        def register_yaml_field field_name, type
+          raise "YAML field #{field_name} already defined on #{self.name} as #{self.yaml_fields[field_name]}" if self.yaml_field?(field_name)
+          self.yaml_fields[field_name] = type
+        end
+      end
+      
+      # Base class for implementing structured DSL object types such as Role, User, etc.
+      #
+      # To define a type:
+      # 
+      # * Inherit from this class
+      # * Define attributes using +attribute+
+      #
+      # Your new type will automatically be registered with the YAML parser with a tag
+      # corresponding to the lower-cased short name of the class. 
+      class Base
+        extend InheritableAttribute
+        extend TypeChecking
+        extend AttributeDefinition
+        
+        # On creation, an owner can always be specified.
+        attr_accessor :owner
+        
+        # Stores the mapping from attribute names to Ruby class names that will be constructed
+        # to populate the attribute.
+        inheritable_attr :yaml_fields
+        
+        # +nodoc+
+        self.yaml_fields = {}
+
+        # Things aren't roles by default
+        def role?
+          false
+        end
         
         class << self
+          # Hook to register the YAML type.
+          def inherited cls
+            cls.register_yaml_type cls.short_name.downcase
+          end
+          
+          # The last token in the ::-separated class name.
           def short_name
             self.name.split(':')[-1]
-          end
-          
-          def yaml_field_type name
-            self.yaml_fields[name]
-          end
-          
-          def yaml_field? name
-            !!self.yaml_fields[name]
-          end
-          
-          def resource attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_resource(v))
-            end
-          end
-
-          def resources attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_resources(v))
-            end
-          end
-          
-          def role attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_role(v))
-            end
-          end
-
-          def roles attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_roles(v))
-            end
-          end
-          
-          def boolean attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_boolean(v))
-            end
-          end
-
-          def string attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_string(v))
-            end
-          end
-          
-          def strings attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_strings(v))
-            end
-          end
-
-          def member attr
-            register_yaml_field attr.to_s, Member
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_member(v))
-            end
-          end
-          
-          def members attr
-            register_yaml_field attr.to_s, Member
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_members(v))
-            end
-          end
-          
-          def permissions attr
-            define_method attr do
-              self.instance_variable_get("@#{attr}")
-            end
-            define_method "#{attr}=" do |v|
-              self.instance_variable_set("@#{attr}", expect_permissions(v))
-            end
-          end
-          
-          def register_yaml_field field_name, type
-            raise "YAML field #{field_name} already defined on #{self.name} as #{self.yaml_fields[field_name]}" if self.yaml_field?(field_name)
-            self.yaml_fields[field_name] = type
           end
           
           def register_yaml_type simple_name

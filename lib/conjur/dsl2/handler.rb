@@ -91,7 +91,12 @@ module Conjur
         
         def type_of tag, record_type
           if tag && tag.match(/!(.*)/)
-            Conjur::DSL2::Types.const_get($1.capitalize)
+            type_name = $1.capitalize
+            begin
+              Conjur::DSL2::Types.const_get(type_name)
+            rescue NameError
+              raise "Unrecognized data type '#{tag}'"
+            end
           else
             record_type
           end
@@ -282,7 +287,8 @@ module Conjur
               h.push_handler
             end.result
           else
-            raise "No type given or inferred for map entry '#{key}'"
+            # We got a mapping on a simple type
+            raise "Attribute '#{key}' can't be a mapping"
           end
         end
         

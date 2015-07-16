@@ -1,0 +1,4 @@
+# 4, 0
+# Expecting string, got Group
+- !user
+  id: !group developers

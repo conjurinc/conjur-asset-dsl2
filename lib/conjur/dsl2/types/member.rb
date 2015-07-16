@@ -6,10 +6,8 @@ module Conjur
           self.role = role if role
         end
         
-        roles   :role
-        boolean :admin
-
-        register_yaml_type 'member'
+        attribute :role
+        attribute :admin, kind: :boolean, singular: true
       end
     end
   end

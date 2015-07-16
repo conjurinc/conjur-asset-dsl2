@@ -11,8 +11,8 @@ module Conjur
           begin
             parser.parse(yaml)
           rescue
-            $stderr.puts $!.message
-            $stderr.puts $!.backtrace.join("  \n")
+            handler.log { $!.message }
+            handler.log { $!.backtrace.join("  \n") }
             raise Invalid.new($!.message, filename, parser.mark)
           end
           handler.result

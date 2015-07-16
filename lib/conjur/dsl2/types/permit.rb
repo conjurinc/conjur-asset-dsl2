@@ -2,11 +2,9 @@ module Conjur
   module DSL2
     module Types
       class Permit < Base
-        register_yaml_type 'permit'
-        
-        resources :resource
-        strings   :privilege
-        members   :member
+        attribute :resource
+        attribute :privilege, kind: :string
+        attribute :member
       end
     end
   end

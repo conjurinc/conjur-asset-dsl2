@@ -1,0 +1,7 @@
+# 7, 0
+# Expecting Member, got Permit
+- !permit
+  member: 
+  - !group developers
+  - !permit
+    member: !group ops

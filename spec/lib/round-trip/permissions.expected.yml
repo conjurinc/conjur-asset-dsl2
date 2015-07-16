@@ -5,7 +5,7 @@
   privilege:
   - read
   - execute
-  members:
+  member:
   - !member
     role: !group
       id: developers
