@@ -9,9 +9,10 @@ The goals of the DSL are:
 * Simplified (relative to the older Ruby DSL)
 * Safe to execute in any environment
 
-The DSL basically supports 3 capabilities. Each one is idempotent (it can be run repeatedly without harmful-side effects):
+The DSL basically supports the following high-level capabilities. Each one is idempotent (it can be run repeatedly without harmful-side effects):
 
 * **Create** new records, such as Role, User, and Webservice
+* **Ownership** assignment.
 * **Members** of roles. This basic concept covers everything from group members to adding abstract roles.
 * **Permissions** on resources. Each permission ("transaction" in RBAC parlance) consists of a role, a privilege, and a resource. 
 
@@ -105,6 +106,21 @@ Use `!permit` or `!deny` to add or remove a privilege without affecting the othe
   privilege: [ read, execute ]
   role: !layer dev/app-server
 ```
+
+# Ownership
+
+Ownership of a record (or group of records) can be assigned using the `!owner` tag:
+
+```yaml
+- !owner
+  record: !variable db_password
+  owner: !group developers
+```
+
+The owner tag will update both:
+
+* **resource owner** the role will be given ownership of the `record` resource.
+* **role owner** if the record has a corresponding role, the `owner` will be given the record role with `admin` option.
 
 # Policy conflicts
 
