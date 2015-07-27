@@ -1,0 +1,9 @@
+- !owner
+  record: !variable foobar
+  role: !group developers
+
+- !owner
+  record: !variable 
+    id: baz
+  role: !group
+    id: developers

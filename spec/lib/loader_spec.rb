@@ -28,6 +28,7 @@ describe Conjur::DSL2::Loader do
   it_should_behave_like 'round-trip dsl', 'sequence'
   it_should_behave_like 'round-trip dsl', 'record'
   it_should_behave_like 'round-trip dsl', 'members'
+  it_should_behave_like 'round-trip dsl', 'owner'
   it_should_behave_like 'round-trip dsl', 'permit'
   it_should_behave_like 'round-trip dsl', 'permissions'
   it_should_behave_like 'round-trip dsl', 'deny'
