@@ -4,6 +4,8 @@
   role: !user alice
   members:
     - *developers
+    - !group
+      id: support
     - 
       role: !group ops
       admin: true

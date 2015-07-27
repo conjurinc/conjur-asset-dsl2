@@ -9,5 +9,8 @@
     role: *1
   - !member
     role: !group
+      id: support
+  - !member
+    role: !group
       id: ops
     admin: true

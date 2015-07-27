@@ -2,10 +2,10 @@
 - !owner
   record: !variable
     id: foobar
-  role: !group
+  owner: !group
     id: developers
 - !owner
   record: !variable
     id: baz
-  role: !group
+  owner: !group
     id: developers

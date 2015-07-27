@@ -40,4 +40,5 @@ describe Conjur::DSL2::Loader do
   it_should_behave_like 'error message', 'incorrect-type-for-field-2'
   it_should_behave_like 'error message', 'incorrect-type-for-array-field'
   it_should_behave_like 'error message', 'no-such-attribute'
+  it_should_behave_like 'error message', 'owner-not-a-role'
 end

@@ -3,7 +3,7 @@ module Conjur
     module Types
       class Owner < Base
         attribute :record, kind: :resource
-        attribute :role, singular: true
+        attribute :owner, singular: true, kind: :role
       end
     end
   end
