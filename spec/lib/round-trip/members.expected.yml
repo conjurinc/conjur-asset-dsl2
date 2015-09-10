@@ -2,14 +2,17 @@
 - &1 !group
   id: developers
 - !members
-  role: !user
-    id: alice
+  role: !group
+    id: everyone
   member:
   - !member
     role: *1
   - !member
     role: !group
       id: support
+  - !member
+    role: !group
+      id: marketing
   - !member
     role: !group
       id: ops
