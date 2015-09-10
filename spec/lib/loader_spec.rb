@@ -33,6 +33,7 @@ describe Conjur::DSL2::Loader do
   it_should_behave_like 'round-trip dsl', 'permissions'
   it_should_behave_like 'round-trip dsl', 'deny'
   it_should_behave_like 'round-trip dsl', 'jenkins-policy'
+  it_should_behave_like 'round-trip dsl', 'layer-members'
   it_should_behave_like 'round-trip dsl', 'all-types-all-fields'
 
   it_should_behave_like 'error message', 'unrecognized-type'

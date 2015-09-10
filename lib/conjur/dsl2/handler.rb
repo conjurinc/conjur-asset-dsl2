@@ -91,7 +91,7 @@ module Conjur
         
         def type_of tag, record_type
           if tag && tag.match(/!(.*)/)
-            type_name = $1.capitalize
+            type_name = $1.underscore.camelize
             begin
               Conjur::DSL2::Types.const_get(type_name)
             rescue NameError

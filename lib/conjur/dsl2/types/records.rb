@@ -55,6 +55,20 @@ module Conjur
         include ActsAsRole
       end
       
+      # Manage the 'use' internal role on a layer.
+      class LayerUse < Base
+        include ActsAsRole
+        
+        attribute :id,   kind: :string, singular: true
+      end
+      
+      # Manage the 'admin' internal role on a layer.
+      class LayerAdmin < Base
+        include ActsAsRole
+        
+        attribute :id,   kind: :string, singular: true
+      end
+      
       class Variable < Base
         include ActsAsResource
         

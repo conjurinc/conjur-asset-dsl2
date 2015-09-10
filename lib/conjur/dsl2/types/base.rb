@@ -251,12 +251,12 @@ module Conjur
         class << self
           # Hook to register the YAML type.
           def inherited cls
-            cls.register_yaml_type cls.short_name.downcase
+            cls.register_yaml_type cls.short_name.underscore.gsub('_', '-')
           end
           
           # The last token in the ::-separated class name.
           def short_name
-            self.name.split(':')[-1]
+            self.name.demodulize
           end
           
           def register_yaml_type simple_name
