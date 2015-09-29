@@ -73,19 +73,19 @@ module Conjur
         # Process a scalar value. It may be a map key, a map value, or a sequence value.
         # The handler should return a result from this method, so that the root Handler can
         # associate it with an anchor, if any.
-        def scalar value, tag
+        def scalar value, tag, quoted
           raise "Unexpected scalar"
         end
         
         protected
         
-        def scalar_value value, tag, record_type
+        def scalar_value value, tag, quoted, record_type
           if type = type_of(tag, record_type)
             type.new.tap do |record|
               record.id = value
             end
           else
-            value
+            SafeYAML::Transform.to_guessed_type(value, quoted, SafeYAML::OPTIONS)
           end
         end
         
@@ -191,8 +191,8 @@ module Conjur
         end
         
         # When the sequence contains a scalar, the value should be appended to the result.
-        def scalar value, tag
-          scalar_value(value, tag, record_type).tap do |value|
+        def scalar value, tag, quoted
+          scalar_value(value, tag, quoted, record_type).tap do |value|
             @list.push value
           end
         end
@@ -236,8 +236,8 @@ module Conjur
         end
 
         # Begins a new map entry.
-        def scalar value, tag
-          value = scalar_value(value, tag, type)
+        def scalar value, tag, quoted
+          value = scalar_value(value, tag, quoted, type)
           MapEntry.new(self, @record, value).tap do |h|
             h.push_handler
           end.result
@@ -299,8 +299,8 @@ module Conjur
           end.result
         end
         
-        def scalar value, tag
-          value scalar_value(value, tag, yaml_field_type(key))
+        def scalar value, tag, quoted
+          value scalar_value(value, tag, quoted, yaml_field_type(key))
         end
         
         protected
@@ -378,9 +378,9 @@ module Conjur
       
       def scalar *args
         # value, anchor, tag, plain, quoted, style
-        value, anchor, tag = args
+        value, anchor, tag, _, quoted = args
         log {"#{indent}got scalar #{tag ? tag + '=' : ''}#{value}#{anchor ? '#' + anchor : ''}"}
-        value = handler.scalar value, tag
+        value = handler.scalar value, tag, quoted
         anchor anchor, value
       end
       

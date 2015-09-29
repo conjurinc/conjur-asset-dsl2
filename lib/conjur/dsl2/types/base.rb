@@ -107,7 +107,14 @@ module Conjur
             "string",
             String
         end
-        
+
+        # +value+ must be a Integer.
+        def expect_integer value
+          expect_type value, 
+            "integer",
+            Integer
+        end
+                
         # +value+ can be a Hash, or an object which implements +to_h+.
         def expect_hash value
           expect_type value, 

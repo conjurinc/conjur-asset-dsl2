@@ -1,8 +1,10 @@
 require 'conjur-asset-dsl2-version'
 require 'yaml'
+require 'safe_yaml'
 require 'active_support'
 require 'active_support/core_ext'
-
+SafeYAML::OPTIONS[:deserialize_symbols] = false
+   
 require 'conjur/dsl2/invalid'
 require 'conjur/dsl2/types/base'
 require 'conjur/dsl2/types/records'
@@ -15,3 +17,5 @@ require 'conjur/dsl2/types/deny'
 require 'conjur/dsl2/types/members'
 require 'conjur/dsl2/types/permissions'
 require 'conjur/dsl2/handler'
+require 'conjur/dsl2/loader'
+require 'conjur/dsl2/executor'

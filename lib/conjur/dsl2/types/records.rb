@@ -10,6 +10,10 @@ module Conjur
           end
         end
         
+        def action
+          :create
+        end
+        
         def resource?
           true
         end
@@ -38,11 +42,15 @@ module Conjur
       class User < Base
         include ActsAsResource
         include ActsAsRole
+        
+        attribute :uidnumber, kind: :integer, singular: true
       end
       
       class Group < Base
         include ActsAsResource
         include ActsAsRole
+        
+        attribute :gidnumber, kind: :integer, singular: true
       end
       
       class Host < Base
