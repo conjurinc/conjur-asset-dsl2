@@ -1,0 +1,6 @@
+--- !policy
+id: myapp/v1
+entitlements:
+- !records
+  - !group
+    id: developers

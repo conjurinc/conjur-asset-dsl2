@@ -1,0 +1,22 @@
+---
+- !permissions
+  - !permit
+    privilege: read
+    role: !member
+      role: !group
+        id: ops
+    resource: !variable
+      id: foobar
+  - !permit
+    privilege:
+    - read
+    - execute
+    role:
+    - !member
+      role: !group
+        id: developers
+    - !member
+      role: !group
+        id: support
+    resource: !variable
+      id: foobar

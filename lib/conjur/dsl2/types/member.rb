@@ -3,7 +3,7 @@ module Conjur
     module Types
       class Member < Base
         def initialize role = nil
-          self.role = role if role
+          self.role = role
         end
         
         attribute :role

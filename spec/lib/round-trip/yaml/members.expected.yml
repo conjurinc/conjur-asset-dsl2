@@ -1,7 +1,7 @@
 ---
 - &1 !group
   id: developers
-- !members
+- !grant
   role: !group
     id: everyone
   member:

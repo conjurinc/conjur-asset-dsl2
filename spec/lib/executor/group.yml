@@ -1,7 +1,0 @@
-- !group developers
-
-- !group
-  id: operations
-  gidnumber: 1001
-  annotations:
-    name: Operations

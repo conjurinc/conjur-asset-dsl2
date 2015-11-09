@@ -1,9 +1,0 @@
-- !members
-  role: !layer-use dev/mysql
-  members:
-    - !group developers
-
-- !members
-  role: !layer-admin dev/mysql
-  members:
-    - !group ops

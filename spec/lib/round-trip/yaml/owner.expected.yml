@@ -9,3 +9,7 @@
     id: baz
   owner: !group
     id: developers
+- !variable
+  id: foobar
+  owner: !group
+    id: developers

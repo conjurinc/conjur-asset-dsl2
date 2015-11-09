@@ -16,21 +16,24 @@
 - !variable &mongo_password_2 mongo/target/team2/db/password
 
 - !permit
+  role: *team1
+  privilege: execute
   resource: *shared_variables
-  privilege: execute
-  member: *team1
-
-- !permissions
-  resource: *mongo_password_1
-  privilege: execute
-  member: *team1
 
 - !permit
-  resource: *shared_variables
+  role: *team1
   privilege: execute
-  member: *team2
+  resource: *mongo_password_1
+  exclusive: true
 
-- !permissions
-  resource: *mongo_password_2
+- !permit
+  role: *team2
   privilege: execute
-  member: *team1
+  resource: *shared_variables
+
+- !permit
+  role: *team1
+  privilege: execute
+  resource: *mongo_password_2
+  exclusive: true
+  

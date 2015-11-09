@@ -1,25 +1,25 @@
 ---
 - !permit
+  privilege: read
   resource: !variable
     id: foobar
-  privilege: read
-  member: !member
+  role: !member
     role: !group
       id: developers
 - !permit
-  resource: !variable
-    id: baz
   privilege:
   - read
   - execute
-  member: !member
+  resource: !variable
+    id: baz
+  role: !member
     role: !group
       id: developers
 - !permit
+  privilege: read
   resource: !variable
     id: db_password
-  privilege: read
-  member: !member
+  role: !member
     role: !group
       id: developers
     admin: true

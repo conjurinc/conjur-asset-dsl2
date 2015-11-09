@@ -1,11 +1,11 @@
 ---
-- !permissions
-  resource: !variable
-    id: foobar
+- !permit
   privilege:
   - read
   - execute
-  member:
+  resource: !variable
+    id: foobar
+  role:
   - !member
     role: !group
       id: developers

@@ -1,6 +1,6 @@
 - !group &developers developers
 
-- !members
+- !grant
   role: !group everyone
   members:
     - *developers
