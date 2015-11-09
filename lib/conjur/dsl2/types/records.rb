@@ -85,18 +85,8 @@ module Conjur
         include ActsAsResource
         include ActsAsRole
         
-        attribute :gidnumber, kind: :integer, singular: true
+        attribute :gidnumber, kind: :integer, singular: true, dsl_accessor: true
         
-        alias gidnumber_accessor gidnumber
-
-        def gidnumber v = nil
-          if v
-            self.gidnumber = v
-          else
-            gidnumber_accessor
-          end
-        end
-
         def custom_attribute_names
           [ :gidnumber ]
         end
@@ -115,28 +105,9 @@ module Conjur
       class Variable < Base
         include ActsAsResource
         
-        attribute :kind,      kind: :string, singular: true
-        attribute :mime_type, kind: :string, singular: true
+        attribute :kind,      kind: :string, singular: true, dsl_accessor: true
+        attribute :mime_type, kind: :string, singular: true, dsl_accessor: true
         
-        alias kind_accessor kind
-        alias mime_type_accessor mime_type
-
-        def kind v = nil
-          if v
-            self.kind = v
-          else
-            kind_accessor
-          end
-        end
-
-        def mime_type v = nil
-          if v
-            self.mime_type = v
-          else
-            mime_type_accessor
-          end
-        end
-
         def custom_attribute_names
           [ :kind, :mime_type ]
         end

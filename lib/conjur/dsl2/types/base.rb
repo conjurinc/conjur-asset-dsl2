@@ -152,11 +152,28 @@ module Conjur
         # +type+ a DSL object type which the parser should use to process the field.
         # This option is not used for simple kinds like :boolean and :string, because they are
         # not structured objects.
-        def define_field attr, kind, type = nil
+        def define_field attr, kind, type = nil, dsl_accessor = false
           register_yaml_field attr.to_s, type if type
           
-          define_method attr do
-            self.instance_variable_get("@#{attr}")
+          if dsl_accessor
+            define_method attr do |*args|
+              v = args.shift
+              if v
+                existing = self.instance_variable_get("@#{attr}")
+                value = if existing
+                  Array(existing) + [ v ]
+                else
+                  v
+                end
+                self.instance_variable_set("@#{attr}", self.class.expect_array(kind, value))
+              else
+                self.instance_variable_get("@#{attr}")
+              end
+            end
+          else
+            define_method attr do
+              self.instance_variable_get("@#{attr}")
+            end
           end
           define_method "#{attr}=" do |v|
             self.instance_variable_set("@#{attr}", self.class.expect_array(kind, v))
@@ -166,12 +183,13 @@ module Conjur
         # Define a plural field. A plural field is basically just an alias to the singular field.
         # For example, a plural field called +members+ is really just an alias to +member+. Both
         # +member+ and +members+ will accept single values or Arrays of values.
-        def define_plural_field attr, kind, type = nil
-          define_field attr, kind.to_s, type
+        def define_plural_field attr, kind, type = nil, dsl_accessor = false
+          define_field attr, kind.to_s, type, dsl_accessor
           
           register_yaml_field attr.to_s.pluralize, type if type
-          define_method attr.to_s.pluralize do
-            send attr
+          
+          define_method attr.to_s.pluralize do |*args|
+            send attr, *args
           end
           define_method "#{attr.to_s.pluralize}=" do |v|
             send "#{attr}=", v
@@ -201,9 +219,9 @@ module Conjur
           raise "Attribute :kind must be defined, explicitly or inferred from :type" unless kind
           
           if options[:singular]
-            define_field attr, kind, type
+            define_field attr, kind, type, options[:dsl_accessor]
           else
-            define_plural_field attr, kind, type
+            define_plural_field attr, kind, type, options[:dsl_accessor]
           end
         end
         
@@ -268,6 +286,52 @@ module Conjur
           
           def register_yaml_type simple_name
             YAML.add_tag "!#{simple_name}", self
+          end
+        end
+      end
+      
+      # Define DSL accessor for Role +member+ field.
+      module RoleMemberDSL
+        def self.included(base)
+          base.module_eval do
+            alias member_accessor member
+            
+            def member r = nil, admin_option = false
+              if r
+                member = Member.new(r)
+                member.admin = true if admin_option == true
+                if self.member
+                  self.member = Array(self.member).push(member)
+                else
+                  self.member = member
+                end
+              else
+                member_accessor
+              end
+            end
+          end
+        end
+      end
+      
+      # Define DSL accessor for Resource +role+ field.
+      module ResourceMemberDSL
+        def self.included(base)
+          base.module_eval do
+            alias role_accessor role
+            
+            def role r = nil, grant_option = nil
+              if r
+                role = Member.new(r)
+                role.admin = true if grant_option == true
+                if self.role
+                  self.role = Array(self.role) + [ role ]
+                else
+                  self.role = role
+                end
+              else
+                role_accessor
+              end
+            end
           end
         end
       end
