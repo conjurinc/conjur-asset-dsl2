@@ -1,8 +1,6 @@
 ---
 - !grants
   - !grant
-    role: !group
-      id: everyone
     member:
     - !member
       role: !group
@@ -16,12 +14,14 @@
     - !member
       role: !group
         id: ops
+    role: !group
+      id: everyone
   - !grant
+    exclusive: true
+    member: !member
+      role: !group
+        id: developers
     role: !managed-role
       record: !layer
         id: webservice
       role_name: use_host
-    member: !member
-      role: !group
-        id: developers
-    exclusive: true

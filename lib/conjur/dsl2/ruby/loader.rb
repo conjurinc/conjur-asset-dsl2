@@ -1,3 +1,11 @@
+class Object
+  # Dear Ruby, I wish instance variables order was stable, because if it was
+  # then YAML would always come out the same.
+  def to_yaml_properties
+    instance_variables.sort
+  end
+end
+
 module Conjur
   module DSL2
     module Ruby
@@ -79,6 +87,10 @@ module Conjur
         end
       end
       
+      module Tagless
+        def tag; nil; end
+      end
+      
       # List of records to create. Each one is a Conjur::DSL2::Types type.
       class Records < YAMLList
         include RecordFactory
@@ -110,12 +122,13 @@ module Conjur
       
       class Entitlements < YAMLList
         include TopLevel
-        
-        def tag; nil; end
-      end
+        include Tagless
+      end      
       
       # List of permissions. Each one is a Conjur::DSL2::Types type.
       class Policy
+        include TopLevel
+        
         def id val = nil
           if val
             @id = val
@@ -124,9 +137,30 @@ module Conjur
           end
         end
         
-        def entitlements &block
-          @entitlements = Entitlements.new
-          do_scope @entitlements, &block
+        def records &block
+          singleton :records, lambda { Records.new }, &block
+        end
+        
+        def permissions &block
+          singleton :permissions, lambda { Permissions.new }, &block
+        end
+        
+        def grants &block
+          singleton :grants, lambda { Grants.new }, &block
+        end
+        
+        protected
+        
+        def singleton id, factory, &block
+          object = instance_variable_get("@#{id}")
+          unless object
+            object = factory.call
+            class << object
+              include Tagless
+            end
+            instance_variable_set("@#{id}", object)
+          end
+          do_scope object, &block
         end
       end
       

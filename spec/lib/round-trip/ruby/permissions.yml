@@ -2,15 +2,17 @@
 - !permissions
   - !permit
     privilege: read
+    resource: !variable
+      id: foobar
     role: !member
       role: !group
         id: ops
-    resource: !variable
-      id: foobar
   - !permit
     privilege:
     - read
     - execute
+    resource: !variable
+      id: foobar
     role:
     - !member
       role: !group
@@ -18,5 +20,3 @@
     - !member
       role: !group
         id: support
-    resource: !variable
-      id: foobar
