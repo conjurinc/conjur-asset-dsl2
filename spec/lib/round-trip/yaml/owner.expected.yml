@@ -1,14 +1,14 @@
 ---
 - !owner
+  owner: !group
+    id: developers
   record: !variable
     id: foobar
+- !owner
   owner: !group
     id: developers
-- !owner
   record: !variable
     id: baz
-  owner: !group
-    id: developers
 - !variable
   id: foobar
   owner: !group

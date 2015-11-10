@@ -1,21 +1,21 @@
 - !deny
+  privilege: read
   resource: !variable foobar
-  privilege: read
-  member: !group developers
+  role: !group developers
 
 - !deny
-  resource: !variable baz
   privilege: [ read, execute ]
-  member: !member
+  resource: !variable baz
+  role: !member
     role: !group developers
 
 - !deny
+  privilege: read
   resource: !variable db_password
-  privilege: read
-  member:
+  role: !member
     role: !group developers
 
 - !deny
-  resource: !variable mongo_password
   privilege: read
-  member: !group developers
+  resource: !variable mongo_password
+  role: !group developers

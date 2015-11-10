@@ -1,12 +1,12 @@
 ---
 - &3 !role
-  kind: jenkins-folder
   id: Team1
+  kind: jenkins-folder
   owner: !group
     id: v4/build
 - &5 !role
-  kind: jenkins-folder
   id: Team2
+  kind: jenkins-folder
   owner: !group
     id: v4/build
 - - &1 !variable
@@ -25,11 +25,11 @@
   role: !member
     role: *3
 - !permit
+  exclusive: true
   privilege: execute
   resource: *4
   role: !member
     role: *3
-  exclusive: true
 - !permit
   privilege: execute
   resource:
@@ -38,8 +38,8 @@
   role: !member
     role: *5
 - !permit
+  exclusive: true
   privilege: execute
   resource: *6
   role: !member
     role: *3
-  exclusive: true

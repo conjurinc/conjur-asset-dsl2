@@ -7,9 +7,9 @@
     id: foobar
   role:
   - !member
+    admin: true
     role: !group
       id: developers
-    admin: true
   - !member
     role: !group
       id: support

@@ -2,8 +2,6 @@
 - &1 !group
   id: developers
 - !grant
-  role: !group
-    id: everyone
   member:
   - !member
     role: *1
@@ -14,6 +12,8 @@
     role: !group
       id: marketing
   - !member
+    admin: true
     role: !group
       id: ops
-    admin: true
+  role: !group
+    id: everyone

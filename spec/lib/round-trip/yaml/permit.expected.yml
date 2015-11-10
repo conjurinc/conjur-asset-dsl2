@@ -20,6 +20,6 @@
   resource: !variable
     id: db_password
   role: !member
+    admin: true
     role: !group
       id: developers
-    admin: true

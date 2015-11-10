@@ -1,16 +1,16 @@
 ---
 - !role
-  kind: jenkins-folder
   id: team-1
+  kind: jenkins-folder
 - !resource
-  kind: variable
   id: my-secret
+  kind: variable
 - !user
-  id: alice
   annotations:
     skills:
     - red-tape-cutting
     - long-jacket-wearing
+  id: alice
 - !user
   id: bob
 - !group
