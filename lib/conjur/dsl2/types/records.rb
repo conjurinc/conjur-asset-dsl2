@@ -59,22 +59,32 @@ module Conjur
       class Role < Base
         include ActsAsRole
         
-        attribute :kind, kind: :string, singular: true
-        attribute :id,   kind: :string, singular: true
+        attribute :kind, kind: :string, singular: true, dsl_accessor: true
+        attribute :id,   kind: :string, singular: true, dsl_accessor: true
+        
+        def initialize kind = nil, id = nil
+          self.kind = kind if kind
+          self.id = id if id
+        end
       end
       
       class Resource < Base
         include ActsAsResource
 
-        attribute :kind, kind: :string, singular: true
-        attribute :id,   kind: :string, singular: true
+        attribute :kind, kind: :string, singular: true, dsl_accessor: true
+        attribute :id,   kind: :string, singular: true, dsl_accessor: true
+        
+        def initialize kind = nil, id = nil
+          self.kind = kind if kind
+          self.id = id if id
+        end
       end
       
       class User < Base
         include ActsAsResource
         include ActsAsRole
         
-        attribute :uidnumber, kind: :integer, singular: true
+        attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
         
         def custom_attribute_names
           [ :uidnumber ]

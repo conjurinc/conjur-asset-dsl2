@@ -8,7 +8,7 @@ grants do
   end
   
   grant do
-    role managed_role(layer("webservice"), "use_host")
+    managed_role layer("webservice"), "use_host"
     member group("developers")
     exclusive true
   end

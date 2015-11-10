@@ -25,12 +25,7 @@ module Conjur
         def method_missing sym, *args, &block
           kind = Conjur::DSL2::Types.const_get sym.to_s.classify rescue nil
           if kind
-            object = nil
-            if args.length >= kind.allocate.method(:initialize).arity.abs
-              object = kind.new(*args)
-            else
-              raise "Can't create #{kind} from arguments #{args}"
-            end
+            object = kind.new(*args)
             raise "#{kind.short_name} is not createable here" unless object.role? || object.resource?
             handle_object object, &block
             object

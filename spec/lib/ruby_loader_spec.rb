@@ -22,5 +22,6 @@ describe Loader do
     it_should_behave_like 'round-trip', 'sequence'
     it_should_behave_like 'round-trip', 'permissions'
     it_should_behave_like 'round-trip', 'grants'
+    it_should_behave_like 'round-trip', 'records'
   end
 end

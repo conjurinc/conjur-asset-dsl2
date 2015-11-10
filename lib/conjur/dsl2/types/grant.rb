@@ -7,6 +7,7 @@ module Conjur
         attribute :exclusive, kind: :boolean, singular: true, dsl_accessor: true
         
         include RoleMemberDSL
+        include ManagedRoleDSL
       end
     end
   end
