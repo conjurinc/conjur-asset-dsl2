@@ -1,6 +1,6 @@
 # Conjur `dsl2` plugin
 
-This is a Conjur plugin for a next-generation policy DSL.
+This is a Conjur plugin for a next-generation DSL, used for both policies (self contained RBAC models) and entitlements (roles and permissions which span policies and global records).
 
 The goals of the DSL are:
 
@@ -11,32 +11,59 @@ The goals of the DSL are:
 
 The DSL basically supports the following high-level capabilities. Each one is idempotent (it can be run repeatedly without harmful-side effects):
 
-* **Create** new records, such as Role, User, and Webservice
-* **Ownership** assignment.
-* **Members** of roles. This basic concept covers everything from group members to adding abstract roles.
-* **Permissions** on resources. Each permission ("transaction" in RBAC parlance) consists of a role, a privilege, and a resource. 
+* **Create / Update** records, such as Role, User, and Webservice
+* **Grant** roles. This basic concept covers everything from group members to adding abstract roles. Grant list can be "exclusive", which revokes the role from anyone not in the list.
+* **Permit** priviliges on resources. Each permission ("transaction" in RBAC parlance) consists of a role, a privilege, and a resource. Permission list can also be "exclusive".
+
+Also possible:
+
+* Update ownership of a record
+* Revoke roles
+* Deny privileges 
 
 # Functionality overview
 
-## `!policy`
+## `policy`
 
-TODO: A `!policy` definition creates a versioned policy role and resource. The policy role is the owner of all new records. This is not yet implemented, but it may look something like this:
+A `policy` definition creates a versioned policy role and resource. The policy role is the owner of all new records contained with in it.
 
-```yaml
-# Create a policy which will own the new records
-- !policy
-  id: myapp
-  version: 1.0
+In Ruby, when a DSL is loaded as a policy, the policy record is already created an in scope. Policy fields such as `id`, `records`, `permissions` etc can be populated directly.
+
+```ruby
+id "myapp/v1"
+records do
+	group "secrets-managers"
+	
+	layer "webserver"
+end
 ```
 
-(There may be only one `!policy` per policy file, and it should be the first entry).
-
-## Creation
-
-Here's how to create two users using a YAML policy:
+In YAML:
 
 ```yaml
-# Create users named alice and bob
+- !policy
+  id: myapp/v1
+```
+
+## Create and Update Records
+
+In Ruby, record create/update is enclosed in a `records` block. Each record is created by calling a function with the record `kind`, passing the record id as the argument. Attributes and annotations can be set in a block.
+
+
+```ruby
+records do
+	user "alice"
+	
+	user "bob" do
+		uidnumber 1001
+		annotation "email", "bob@mycorp.com"
+	end
+end
+```
+
+Here's how to create two users in YAML:
+
+```yaml
 - !user alice
 - !user
   id: bob
@@ -46,64 +73,94 @@ The type of record that you want to create is indicated by the YAML tag. The id 
 
 ## Role members
 
-An example:
+`grant` is used to grant roles, which includes group membership.
+
+An example in which `alice` and the `ops` group are the only members of the `developers` group.
+
+```ruby
+grants do
+	grant do
+		role group("developers")
+		member user("alice")
+		member group("ops)", admin:true
+		exclusive true
+	end
+end
+```
+
+And in YAML:
+
 
 ```yaml
-# alice and the ops group are the only members of the 
-# developers group.
-- !members
+- !grant
   role: !group developers
   members:
     - !user alice
     - 
       role: !group ops
       admin: true
-
+  exclusive: true
 ```
 
 A member is composed of the `role` (or `roles`) being granted and the `member` (or `members`) which will get the role. 
 
 The `member` can be a plain role (again using the YAML tag to indicate the record type), if the role is granted without admin capability. To grant a role with admin, the role member is a structured entry composed of the `role` and the `admin` flag.
 
-Note that when the `members` feature is used, any existing role members that are **not** specified in the policy will be revoked. So in the example above, `!user alice` and `!group ops` will be the *only* members of `!group developers`.
-
-To add or remove a role member without affecting the other members, use `!grant`  or `!revoke` instead. For example:
-
-```yaml
-# Add alice to the developers group without affecting
-# the other members.
-- !grant
-  role: !group developers
-  member: !user alice
-```
+Note that when the `exclusive` feature is used, any existing role members that are **not** specified in the policy will be revoked. So in the example above, `!user alice` and `!group ops` will be the *only* members of `!group developers`.
 
 ## Permissions
 
-Like `!members`, `!permissions` is used to control the entire set of permissions on a resource.
+Like `grant` is used to grant roles, `permit` is used to give permissions on a resource.
+
+```ruby
+permissions do
+	permit %w(read execute) do
+		resource variable("db-password")
+		role group("developers")
+		role layer("app-server")
+	end
+	
+	permit "update" do
+		resource variable("db-password")
+		role group("developers")
+		exclusive: true
+	end
+end
+```
 
 ```yaml
-# developers group and the dev/app-server layer are
+# developers group and the app-server layer are
 # the only roles which can read and execute the secret.
 - !permissions
-  resource: !variable dev/db-password
+  resource: !variable db-password
   privilege: [ read, execute ]
   roles:
   - !group developers
-  - !layer dev/app-server
+  - !layer app-server
   
 # developers is the only role which can update the secret.
 - !permissions
-  resource: !variable dev/db-password
+  resource: !variable db-password
   privilege: update
   role: !group developers
+  exclusive: true
 ```
 
-Use `!permit` or `!deny` to add or remove a privilege without affecting the other privileges:
+Use `deny` to remove a privilege without affecting the other privileges:
+
+```ruby
+permissions do
+	deny %w(read execute) do
+		resource variable("db-password")
+		role layer("app-server")
+	end
+end
+```
+
+In YAML:
 
 ```yaml
-# Allow the dev/app-server layer to read and execute
-# the dev/db-password.
-- !permit
+- !deny
   resource: !variable dev/db-password
   privilege: [ read, execute ]
   role: !layer dev/app-server
@@ -111,11 +168,21 @@ Use `!permit` or `!deny` to add or remove a privilege without affecting the othe
 
 # Ownership
 
-Ownership of a record (or group of records) can be assigned using the `!owner` tag:
+Ownership of a record (or group of records) can be assigned using the `owner` field:
+
+```ruby
+records do
+	variable "db_password" do
+		owner group("developers")
+	end
+end
+```
+
+In YAML:
 
 ```yaml
-- !owner
-  record: !variable db_password
+- !variable
+  id: db_password
   owner: !group developers
 ```
 
@@ -126,7 +193,7 @@ The owner tag will update both:
 
 # Expanded discussion of design goals
 
-This DSL format is designed to work much better within automated policy management frameworks. Using these declaractive policy files, the entire authorization model of Conjur can be managed using policies.
+This DSL format is designed to work better within automated policy management frameworks. Using these declaractive policy files, the entire authorization model of Conjur can be managed using policies.
 
 Whenever Conjur needs to be changed, a new policy is  created or an existing policy is modified. This policy is typically managed through standard source control techniques (e.g. Git pull requests), with the security team having authority to approve and merge.
 
