@@ -30,11 +30,12 @@ A `policy` definition creates a versioned policy role and resource. The policy r
 In Ruby, when a DSL is loaded as a policy, the policy record is already created an in scope. Policy fields such as `id`, `records`, `permissions` etc can be populated directly.
 
 ```ruby
-id "myapp/v1"
-records do
-	group "secrets-managers"
+policy "myapp/v1" do
+	body do
+		group "secrets-managers"
 	
-	layer "webserver"
+		layer "webserver"
+	end
 end
 ```
 
@@ -51,13 +52,11 @@ In Ruby, record create/update is enclosed in a `records` block. Each record is c
 
 
 ```ruby
-records do
-	user "alice"
-	
-	user "bob" do
-		uidnumber 1001
-		annotation "email", "bob@mycorp.com"
-	end
+user "alice"
+
+user "bob" do
+	uidnumber 1001
+	annotation "email", "bob@mycorp.com"
 end
 ```
 
@@ -78,13 +77,11 @@ The type of record that you want to create is indicated by the YAML tag. The id 
 An example in which `alice` and the `ops` group are the only members of the `developers` group.
 
 ```ruby
-grants do
-	grant do
-		role group("developers")
-		member user("alice")
-		member group("ops)", admin:true
-		exclusive true
-	end
+grant do
+	role group("developers")
+	member user("alice")
+	member group("ops)", admin:true
+	exclusive true
 end
 ```
 
@@ -113,25 +110,23 @@ Note that when the `exclusive` feature is used, any existing role members that a
 Like `grant` is used to grant roles, `permit` is used to give permissions on a resource.
 
 ```ruby
-permissions do
-	permit %w(read execute) do
-		resource variable("db-password")
-		role group("developers")
-		role layer("app-server")
-	end
+permit %w(read execute) do
+	resource variable("db-password")
+	role group("developers")
+	role layer("app-server")
+end
 	
-	permit "update" do
-		resource variable("db-password")
-		role group("developers")
-		exclusive: true
-	end
+permit "update" do
+	resource variable("db-password")
+	role group("developers")
+	exclusive: true
 end
 ```
 
 ```yaml
 # developers group and the app-server layer are
 # the only roles which can read and execute the secret.
-- !permissions
+- !permit
   resource: !variable db-password
   privilege: [ read, execute ]
   roles:
@@ -139,7 +134,7 @@ end
   - !layer app-server
   
 # developers is the only role which can update the secret.
-- !permissions
+- !permit
   resource: !variable db-password
   privilege: update
   role: !group developers
@@ -149,11 +144,9 @@ end
 Use `deny` to remove a privilege without affecting the other privileges:
 
 ```ruby
-permissions do
-	deny %w(read execute) do
-		resource variable("db-password")
-		role layer("app-server")
-	end
+deny %w(read execute) do
+	resource variable("db-password")
+	role layer("app-server")
 end
 ```
 
@@ -171,10 +164,8 @@ In YAML:
 Ownership of a record (or group of records) can be assigned using the `owner` field:
 
 ```ruby
-records do
-	variable "db_password" do
-		owner group("developers")
-	end
+variable "db_password" do
+	owner group("developers")
 end
 ```
 
@@ -208,6 +199,7 @@ These are the benefits of the policy DSL, as imagined internally by the Conjur t
 * Large permission changes are described in a coherent way (modification of many corresponding rules can be described in single policy)
 * The history of permission changes is more clear and easier to track. For example, it’s easy to list and view all policies which included references to particular ID, and understand how and why specific permissions were applied/revoked. With the current CLI it’s possible to only figure out the operations done on particular object, but not the bigger context (probably involving many corresponding changes on other objects)  in which they were applied.
 * Policies can be formally validated before deployment
+* Policies will implement `dry run` mode which shows the changes that will be applied to Conjur.
 * Policies can be machine-generated:
 	* It's easy to provision many similar assets at once
    * It's easy to generate and deploy policies from within configuration scripts
