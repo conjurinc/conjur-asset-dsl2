@@ -3,7 +3,7 @@ module Conjur
     module Types
       class Permit < Base
         attribute :role, kind: :member
-        attribute :privilege, kind: :string, singular: true, dsl_accessor: true
+        attribute :privilege, kind: :string, dsl_accessor: true
         attribute :resource, dsl_accessor: true
         attribute :exclusive, kind: :boolean, singular: true, dsl_accessor: true
         

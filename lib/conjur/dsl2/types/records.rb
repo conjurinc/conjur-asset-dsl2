@@ -4,9 +4,9 @@ module Conjur
       module ActsAsResource
         def self.included(base)
           base.module_eval do
-            attribute :id, kind: :string, singular: true
+            attribute :id,   kind: :string, singular: true, dsl_accessor: true
             attribute :account, kind: :string, singular: true
-            attribute :owner, kind: :role, singular: true
+            attribute :owner, kind: :role, singular: true, dsl_accessor: true
             
             attribute :annotations, kind: :hash, type: OpenStruct, singular: true
             
@@ -26,7 +26,7 @@ module Conjur
         end
 
         def resourceid default_account
-          [ account || default_account, kind, id ].join(":")
+          [ account || default_account, resource_kind, id ].join(":")
         end
         
         def resource_kind
@@ -52,23 +52,44 @@ module Conjur
       
       module ActsAsRole
         def roleid default_account
-          [ account || default_account, kind, id ].join(":")
+          [ account || default_account, role_kind, id ].join(":")
         end
         
         def role?
           true
+        end
+        
+        def role_kind
+          self.class.name.split("::")[-1].underscore
+        end
+        
+        def role_id
+          id
         end
       end
       
       class Role < Base
         include ActsAsRole
         
-        attribute :kind, kind: :string, singular: true, dsl_accessor: true
         attribute :id,   kind: :string, singular: true, dsl_accessor: true
+        attribute :kind, kind: :string, singular: true, dsl_accessor: true
+        attribute :account, kind: :string, singular: true
+        attribute :owner, kind: :role, singular: true, dsl_accessor: true
         
         def initialize kind = nil, id = nil
           self.kind = kind if kind
           self.id = id if id
+        end
+
+        def roleid default_account
+          [ account || default_account, kind, id ].join(":")
+        end
+        
+        def role_id; id; end
+        def role_kind; kind; end
+                  
+        def immutable_attribute_names
+          []
         end
       end
       
@@ -76,11 +97,14 @@ module Conjur
         include ActsAsResource
 
         attribute :kind, kind: :string, singular: true, dsl_accessor: true
-        attribute :id,   kind: :string, singular: true, dsl_accessor: true
         
         def initialize kind = nil, id = nil
           self.kind = kind if kind
           self.id = id if id
+        end
+        
+        def resource_kind
+          kind
         end
       end
       

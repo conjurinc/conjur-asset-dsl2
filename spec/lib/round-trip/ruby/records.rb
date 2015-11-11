@@ -8,9 +8,9 @@ group "ci-admins" do
   annotation "description", "Admins of the CI team"
 end
 
-host
+host "a-host"
 
-layer
+layer "a-layer"
 
 variable "db-password" do
   mime_type "text/plain"

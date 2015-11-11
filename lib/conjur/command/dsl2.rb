@@ -21,12 +21,32 @@
 require 'conjur-asset-dsl2'
 
 class Conjur::Command::DSL2 < Conjur::DSLCommand
+  def self.loader filename, options
+    result = options[:syntax]
+    if result.nil? && filename
+      filename =~ /\.([^.]+)$/
+      suffix = $1
+      result = case suffix
+      when 'yaml', 'yml'
+        'yaml'
+      when 'rb'
+        'ruby'
+      end
+    end
+    raise "No syntax provided or detected" unless result
+    mod = Conjur::DSL2.const_get result.capitalize
+    mod.const_get "Loader"
+  end
+  
   desc "Load a DSL2 policy"
   command :policy do |policy|
     policy.desc "Load a policy from Conjur YAML DSL"
     policy.arg_name "(policy-file | STDIN)"
     policy.command :load do |c|
       acting_as_option(c)
+
+      c.desc "Syntax (ruby or YAML, will be auto-detected from file extension)"
+      c.switch [:"syntax"]
       
       c.desc "Print the actions that would be performed"
       c.switch [:"dry-run"]
@@ -49,20 +69,21 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
               raise "Unable to read URI #{script} : #{$!.message}"
             end
           end
-          Conjur::DSL2::Loader.load_file filename
+          
+          loader(filename, options).load_file filename
         else
-          Conjur::DSL2::Loader.load STDIN.read
+          loader(filename, options).load STDIN.read
         end
-        
-        executor = if options[:"dry-run"]
-          Conjur::DSL2::DryRunExecutor.new(records)
+
+        plan = Conjur::DSL2::Planner.plan(records, api)
+          
+        if options[:"dry-run"]
+          puts plan.to_yaml
         else
-          Conjur::DSL2::LiveExecutor.new(records, api)
+          executor = Conjur::DSL2::Executor.new(plan)
+          executor.owner = options[:ownerid] if options[:ownerid]
+          executor.execute
         end
-        
-        executor.owner = options[:ownerid] if options[:ownerid]
-  
-        puts executor.execute
       end
     end
   end

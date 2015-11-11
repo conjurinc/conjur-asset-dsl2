@@ -9,8 +9,10 @@
     description: Admins of the CI team
   gidnumber: 1234
   id: ci-admins
-- !host {}
-- !layer {}
+- !host
+  id: a-host
+- !layer
+  id: a-layer
 - !variable
   id: db-password
   kind: Database password

@@ -1,7 +1,7 @@
 module Conjur
   module DSL2
-    module Executors
-      class BaseExecutor
+    module Planner
+      class Base
         attr_reader :record, :api
         
         def initialize record, api
