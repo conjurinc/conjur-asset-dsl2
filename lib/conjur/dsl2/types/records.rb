@@ -10,6 +10,10 @@ module Conjur
             
             attribute :annotations, kind: :hash, type: OpenStruct, singular: true
             
+            def description value
+              annotation 'description', value
+            end
+            
             def annotation name, value
               self.annotations ||= OpenStruct.new
               self.annotations[name] = value

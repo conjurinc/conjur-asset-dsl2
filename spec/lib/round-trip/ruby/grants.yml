@@ -1,27 +1,26 @@
 ---
-- !grants
-  - !grant
-    member:
-    - !member
-      role: !group
-        id: developers
-    - !member
-      role: !group
-        id: support
-    - !member
-      role: !group
-        id: marketing
-    - !member
-      role: !group
-        id: ops
+- !grant
+  member:
+  - !member
     role: !group
-      id: everyone
-  - !grant
-    exclusive: true
-    member: !member
-      role: !group
-        id: developers
-    role: !managed-role
-      record: !layer
-        id: webservice
-      role_name: use_host
+      id: developers
+  - !member
+    role: !group
+      id: support
+  - !member
+    role: !group
+      id: marketing
+  - !member
+    role: !group
+      id: ops
+  role: !group
+    id: everyone
+- !grant
+  exclusive: true
+  member: !member
+    role: !group
+      id: developers
+  role: !managed-role
+    record: !layer
+      id: webservice
+    role_name: use_host

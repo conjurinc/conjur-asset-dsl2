@@ -1,6 +1,5 @@
 ---
-- !records
-  - !group
-    id: developers
-  - !user
-    id: alice
+- !group
+  id: developers
+- !user
+  id: alice

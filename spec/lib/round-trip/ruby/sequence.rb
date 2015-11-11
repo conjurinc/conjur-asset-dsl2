@@ -1,5 +1,3 @@
-records do
-  group "developers"
-  
-  user "alice"
-end
+group "developers"
+
+user "alice"

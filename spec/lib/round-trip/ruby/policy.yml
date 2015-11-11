@@ -1,36 +1,35 @@
---- !policy
-grants:
-- !grant
-  member: !member
-    role: !group
-      id: secrets-managers
-  role: !group
+---
+- !policy
+  body:
+  - !variable
+    id: db-password
+  - !group
+    id: secrets-managers
+  - !group
     id: secrets-users
-id: myapp/v1
-permissions:
-- !permit
-  exclusive: true
-  privilege:
-  - update
-  resource: !variable
-    id: db-password
-  role: !member
-    role: !group
-      id: secrets-managers
-- !permit
-  exclusive: true
-  privilege:
-  - read
-  - execute
-  resource: !variable
-    id: db-password
-  role: !member
+  - !permit
+    exclusive: true
+    privilege:
+    - update
+    resource: !variable
+      id: db-password
+    role: !member
+      role: !group
+        id: secrets-managers
+  - !permit
+    exclusive: true
+    privilege:
+    - read
+    - execute
+    resource: !variable
+      id: db-password
+    role: !member
+      role: !group
+        id: secrets-users
+  - !grant
+    member: !member
+      role: !group
+        id: secrets-managers
     role: !group
       id: secrets-users
-records:
-- !variable
-  id: db-password
-- !group
-  id: secrets-managers
-- !group
-  id: secrets-users
+  id: myapp/v1

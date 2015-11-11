@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Kevin Gilpin"]
   spec.email         = ["kgilpin@conjur.net"]
 
-  spec.summary       = %q{A fully declarative DSL for Conjur with YAML support.}
+  spec.summary       = %q{A fully declarative DSL for Conjur with Ruby and YAML syntax.}
   spec.homepage      = "https://github.com/conjurinc/conjur-asset-dsl2"
   spec.license       = "MIT"
 

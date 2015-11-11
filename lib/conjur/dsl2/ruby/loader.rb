@@ -49,29 +49,6 @@ module Conjur
         end
       end
       
-      module TopLevel
-        def records &block
-          Records.new.tap do |records|
-            push records
-            do_scope records, &block
-          end
-        end
-        
-        def permissions &block
-          Permissions.new.tap do |permissions|
-            push permissions
-            do_scope permissions, &block
-          end
-        end
-        
-        def grants &block
-          Grants.new.tap do |grants|
-            push grants
-            do_scope grants, &block
-          end
-        end
-      end
-      
       class YAMLList < Array
         def tag
           [ "!", self.class.name.split("::")[-1].underscore ].join
@@ -86,25 +63,7 @@ module Conjur
         def tag; nil; end
       end
       
-      # List of records to create. Each one is a Conjur::DSL2::Types type.
-      class Records < YAMLList
-        include RecordFactory
-      end
-      
-      # List of permissions. Each one is a Conjur::DSL2::Types::Permit or Deny.
-      class Permissions < YAMLList
-        def permit privilege, &block
-          permit = Conjur::DSL2::Types::Permit.new(privilege)
-          class << permit
-            include RecordReferenceFactory
-          end
-          push permit
-          do_scope permit, &block
-        end
-      end
-      
-      # List of role grants. Each one is a Conjur::DSL2::Types::Grant or Revoke.
-      class Grants < YAMLList
+      module Grants
         def grant &block
           grant = Conjur::DSL2::Types::Grant.new
           class << grant
@@ -115,15 +74,41 @@ module Conjur
         end
       end
       
-      class Entitlements < YAMLList
-        include TopLevel
-        include Tagless
-      end      
+      module Permissions
+        def permit privilege, &block
+          permit = Conjur::DSL2::Types::Permit.new(privilege)
+          class << permit
+            include RecordReferenceFactory
+          end
+          push permit
+          do_scope permit, &block
+        end
+      end
       
-      # List of permissions. Each one is a Conjur::DSL2::Types type.
-      class Policy
-        include TopLevel
+      # Entitlements will allow creation of any record, as well as declaration
+      # of permit, deny, grant and revoke.
+      class Entitlements < YAMLList
+        include Tagless
+        include RecordFactory
+        include Grants
+        include Permissions
         
+        def policy &block
+          policy = Policy.new
+          push policy
+          do_scope policy, &block
+        end
+      end
+      
+      class Body < YAMLList
+        include RecordFactory
+        include Grants
+        include Permissions
+      end
+      
+      # Policy includes the functionality of Entitlements, wrapped in a 
+      # policy role, policy resource, policy id and policy version.
+      class Policy
         def id val = nil
           if val
             @id = val
@@ -132,16 +117,8 @@ module Conjur
           end
         end
         
-        def records &block
-          singleton :records, lambda { Records.new }, &block
-        end
-        
-        def permissions &block
-          singleton :permissions, lambda { Permissions.new }, &block
-        end
-        
-        def grants &block
-          singleton :grants, lambda { Grants.new }, &block
+        def body &block
+          singleton :body, lambda { Body.new }, &block
         end
         
         protected
@@ -194,9 +171,10 @@ module Conjur
           self
         end
 
-        def load root
+        def load
           args = [ script ]
           args << filename if filename
+          root = Entitlements.new
           do_scope root do
             instance_eval(*args)
           end
