@@ -33,8 +33,6 @@ module Conjur
               scoped_requested = requested_permissions.select do |p|
                 p[1] == privilege && p[2] == scoped_resourceid(resource)
               end
-              p scoped_given
-              p scoped_requested
               (scoped_requested - scoped_given).each do |p|
                 role, privilege, target, admin = p
                 account, kind, id = target.split(':', 3)

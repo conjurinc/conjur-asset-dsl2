@@ -12,7 +12,7 @@ module Conjur
         @base_path = uri.path
         Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
           @http = http
-          actions.each do |step|
+          @actions.each do |step|
             invoke step
           end
         end
@@ -27,16 +27,16 @@ module Conjur
           [ "authz", account, "annotations", record.resource_kind, scoped_id(record) ].join('/')
         end
 
-        send method.downcase, path, parameters
+        send step['action'], step['path'], step['parameters']
       end
       
-      def post path, parameters
+      def create path, parameters
         request = Net::HTTP::Post.new [ @base_path, path ].join('/')
         request.set_form_data parameters
         send_request request
       end
       
-      def put path, parameters
+      def update path, parameters
         request = Net::HTTP::Put.new [ @base_path, path ].join('/')
         request.set_form_data parameters
         send_request request
@@ -47,7 +47,7 @@ module Conjur
         request['Authorization'] = "Token token=\"#{Base64.strict_encode64 @api.token.to_json}\""
         response = @http.request request
         if response.code.to_i >= 300
-          $stderr.puts "Request to #{request.path} failed with error #{response.code}:"
+          $stderr.puts "#{request.method.upcase} #{request.path} #{request.body} failed with error #{response.code}:"
           $stderr.puts response.body
         end
       end
