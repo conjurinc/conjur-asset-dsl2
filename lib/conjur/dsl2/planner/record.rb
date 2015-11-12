@@ -7,14 +7,15 @@ module Conjur
         def change_owner
           return unless resource? && record.owner
 
-          if resource.owner != record.owner.roleid(default_account)
+          if resource.owner != scoped_roleid(record.owner)
             action({
               'service' => 'authz',
               'type' => 'resource',
-              'action' => 'update',
+              'method' => 'put',
+              'action' => 'change_owner',
               'id' => scoped_resourceid(record),
               'path' => resource_path,
-              'parameters' => { "ownerid" => scoped_roleid(record.owner) }
+              'parameters' => { "owner" => scoped_roleid(record.owner) }
             })
           end
         end
@@ -55,6 +56,7 @@ module Conjur
               'service' => 'authz',
               'type' => 'role',
               'action' => 'create',
+              'method' => 'put',
               'path' => role_path,
               'id' => roleid,
               'parameters' => create_parameters
@@ -95,6 +97,7 @@ module Conjur
               'service' => 'authz',
               'type' => 'resource',
               'action' => 'create',
+              'method' => 'put',
               'id' => resourceid,
               'path' => resource_path,
               'parameters' => create_parameters

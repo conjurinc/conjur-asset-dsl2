@@ -62,6 +62,7 @@ describe Planner do
 - service: authz
   type: resource
   action: create
+  method: put
   id: the-account:food:bacon
   path: authz/the-account/resources/food/bacon
   parameters: {}
@@ -84,6 +85,7 @@ describe Planner do
 - service: authz
   type: role
   action: create
+  method: put
   path: authz/the-account/roles/job/cook
   id: the-account:job:cook
   parameters: {}

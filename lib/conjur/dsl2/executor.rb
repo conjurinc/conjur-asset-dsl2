@@ -27,7 +27,8 @@ module Conjur
           [ "authz", account, "annotations", record.resource_kind, scoped_id(record) ].join('/')
         end
 
-        send step['action'], step['path'], step['parameters']
+        method = step['method'] || step['action']
+        send method, step['path'], step['parameters']
       end
       
       def create path, parameters
@@ -35,19 +36,26 @@ module Conjur
         request.set_form_data parameters
         send_request request
       end
+
+      alias post create
       
       def update path, parameters
         request = Net::HTTP::Put.new [ @base_path, path ].join('/')
         request.set_form_data parameters
         send_request request
       end
+      
+      alias put update
 
       def send_request request
+        # $stderr.puts "#{request.method.upcase} #{request.path} #{request.body}"
         require 'base64'
         request['Authorization'] = "Token token=\"#{Base64.strict_encode64 @api.token.to_json}\""
         response = @http.request request
+        # $stderr.puts response.code
         if response.code.to_i >= 300
           $stderr.puts "#{request.method.upcase} #{request.path} #{request.body} failed with error #{response.code}:"
+          # $stderr.puts "Request failed with error #{response.code}:"
           $stderr.puts response.body
         end
       end

@@ -13,7 +13,12 @@ module Conjur
           given_permissions = Set.new
           requested_permissions = Set.new
           Array(record.resources).each do |resource|
-            JSON.parse(api.resource(resource.resourceid default_account).get)['permissions'].each do |permission|
+            permissions = begin
+              JSON.parse(api.resource(scoped_resourceid(resource)).get)['permissions'] 
+            rescue RestClient::ResourceNotFound
+              []
+            end
+            permissions.each do |permission|
               given_permissions.add [ permission['role'], permission['privilege'], permission['resource'], permission['grant_option'] ]
             end
             Array(record.privileges).each do |privilege|
@@ -23,24 +28,25 @@ module Conjur
             end
           end
           
-          privileges = given_permissions.map{|row| row[1]} + requested_permissions.map{|row| row[1]}
-
+          privileges = requested_permissions.map{|row| row[1]}
+            
           Array(record.resources).each do |resource|
             privileges.each do |privilege|
-              scoped_given = given_permissions.select do |p|
+              scoped_given = Set.new(given_permissions.select do |p|
                 p[1] == privilege && p[2] == scoped_resourceid(resource)
-              end
-              scoped_requested = requested_permissions.select do |p|
+              end)
+              scoped_requested = Set.new(requested_permissions.select do |p|
                 p[1] == privilege && p[2] == scoped_resourceid(resource)
-              end
+              end)
+              
               (scoped_requested - scoped_given).each do |p|
                 role, privilege, target, admin = p
                 account, kind, id = target.split(':', 3)
                 action({
                   'service' => 'authz',
                   'type' => 'resource',
-                  'action' => 'update',
-                  'method' => 'permit',
+                  'method' => 'post',
+                  'action' => 'permit',
                   'path' => "authz/#{account}/resources/#{kind}/#{id}?permit",
                   'parameters' => { "privilege" => privilege, "role" => role, "grant_option" => admin }
                 })
@@ -52,8 +58,8 @@ module Conjur
                   action({
                     'service' => 'authz',
                     'type' => 'resource',
-                    'action' => 'update',
-                    'method' => 'deny',
+                    'method' => 'post',
+                    'action' => 'deny',
                     'path' => "authz/#{account}/resources/#{kind}/#{id}?deny", 
                     'parameters' => { "privilege" => privilege, "role" => role }
                   })

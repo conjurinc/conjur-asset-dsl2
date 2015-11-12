@@ -53,8 +53,8 @@ describe Planner do
 ---
 - service: authz
   type: resource
-  action: update
-  method: permit
+  method: post
+  action: permit
   path: authz/the-account/resources/variable/db-password?permit
   parameters:
     privilege: read
@@ -62,8 +62,8 @@ describe Planner do
     grant_option: false
 - service: authz
   type: resource
-  action: update
-  method: permit
+  method: post
+  action: permit
   path: authz/the-account/resources/variable/db-password?permit
   parameters:
     privilege: execute
@@ -72,7 +72,7 @@ describe Planner do
           YAML
         end
       end
-      context "and the resource has a permissions existing" do
+      context "and the resource has permissions existing" do
         let(:permissions) {
           [
             {
@@ -80,6 +80,12 @@ describe Planner do
               "grant_option" => false,
               "resource" => "the-account:variable:db-password",
               "role" => "the-account:group:developers",
+            },
+            {
+              "privilege" => "read",
+              "grant_option" => false,
+              "resource" => "the-account:variable:db-password",
+              "role" => "the-account:group:operations",
             },
             {
               "privilege" => "update",
@@ -94,8 +100,8 @@ describe Planner do
 ---
 - service: authz
   type: resource
-  action: update
-  method: permit
+  method: post
+  action: permit
   path: authz/the-account/resources/variable/db-password?permit
   parameters:
     privilege: execute
@@ -112,16 +118,16 @@ describe Planner do
 ---
 - service: authz
   type: resource
-  action: update
-  method: deny
+  method: post
+  action: deny
   path: authz/the-account/resources/variable/db-password?deny
   parameters:
-    privilege: update
-    role: the-account:group:developers
+    privilege: read
+    role: the-account:group:operations
 - service: authz
   type: resource
-  action: update
-  method: permit
+  method: post
+  action: permit
   path: authz/the-account/resources/variable/db-password?permit
   parameters:
     privilege: execute
