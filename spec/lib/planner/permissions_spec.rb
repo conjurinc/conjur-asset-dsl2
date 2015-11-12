@@ -17,7 +17,7 @@ describe Planner do
       exists?: db_password_exists, 
       kind: "variable", 
       resource_id: "db-password",
-      get: { "id" => "cucumber:variable:db-password", "permissions" => permissions })
+      get: { "id" => "cucumber:variable:db-password", "permissions" => permissions }.to_json)
   }
   let(:developers_resource) { double(:developers_resource, exists?: developers_exists) }
   let(:permissions) { [] }
@@ -29,7 +29,8 @@ describe Planner do
     
   let(:plan_yaml) do
     plan = Plan.new
-    subject.plan plan
+    subject.plan = plan
+    subject.do_plan
     plan.actions.to_yaml
   end
 
@@ -50,16 +51,24 @@ describe Planner do
         it "permits it to all roles" do
           expect(plan_yaml).to eq(<<-YAML)
 ---
-- - PUT
-  - authz/the-account/resources/variable/db-password?permit
-  - :privilege: read
-    :role: the-account:group:developers
-    :grant_option: false
-- - PUT
-  - authz/the-account/resources/variable/db-password?permit
-  - :privilege: execute
-    :role: the-account:group:developers
-    :grant_option: false
+- service: authz
+  type: resource
+  action: update
+  method: permit
+  path: authz/the-account/resources/variable/db-password?permit
+  parameters:
+    privilege: read
+    role: the-account:group:developers
+    grant_option: false
+- service: authz
+  type: resource
+  action: update
+  method: permit
+  path: authz/the-account/resources/variable/db-password?permit
+  parameters:
+    privilege: execute
+    role: the-account:group:developers
+    grant_option: false
           YAML
         end
       end
@@ -83,11 +92,15 @@ describe Planner do
         it "permits it to the new role" do
           expect(plan_yaml).to eq(<<-YAML)
 ---
-- - PUT
-  - authz/the-account/resources/variable/db-password?permit
-  - :privilege: execute
-    :role: the-account:group:developers
-    :grant_option: false
+- service: authz
+  type: resource
+  action: update
+  method: permit
+  path: authz/the-account/resources/variable/db-password?permit
+  parameters:
+    privilege: execute
+    role: the-account:group:developers
+    grant_option: false
           YAML
         end
         context "and the permission is exclusive" do
@@ -97,15 +110,23 @@ describe Planner do
           it "permits it to the new role and revokes the existing role" do
             expect(plan_yaml).to eq(<<-YAML)
 ---
-- - PUT
-  - authz/the-account/resources/variable/db-password?permit
-  - :privilege: execute
-    :role: the-account:group:developers
-    :grant_option: false
-- - PUT
-  - authz/the-account/resources/variable/db-password?deny
-  - :privilege: update
-    :role: the-account:group:developers
+- service: authz
+  type: resource
+  action: update
+  method: deny
+  path: authz/the-account/resources/variable/db-password?deny
+  parameters:
+    privilege: update
+    role: the-account:group:developers
+- service: authz
+  type: resource
+  action: update
+  method: permit
+  path: authz/the-account/resources/variable/db-password?permit
+  parameters:
+    privilege: execute
+    role: the-account:group:developers
+    grant_option: false
             YAML
           end
         end

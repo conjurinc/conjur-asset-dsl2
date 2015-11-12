@@ -7,11 +7,18 @@ module Conjur
   module DSL2
     module Planner
       class << self
-        def plan records, api
-          Plan.new.tap do |plan|
+        def plan records, api, namespace = nil
+          Plan.new.tap do |p|
+            p.namespace = namespace
             records.map do |record|
-              planner_for(record, api).plan(plan)
-            end            
+              planner = planner_for(record, api)
+              planner.plan = p
+              begin
+                planner.do_plan
+              ensure
+                planner.plan = nil
+              end
+            end        
           end
         end
         

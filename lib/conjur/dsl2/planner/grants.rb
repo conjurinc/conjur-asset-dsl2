@@ -4,8 +4,7 @@ module Conjur
   module DSL2
     module Planner
       class Grant < Base
-        def plan
-          []
+        def do_plan
         end
       end
     end

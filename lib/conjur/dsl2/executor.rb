@@ -1,17 +1,18 @@
 module Conjur
   module DSL2
     class Executor
-      def initialize api, plan
+      def initialize api, actions
         @api = api
-        @plan = plan
+        @actions = actions
       end
       
       def execute
-        require 'net/http'
+        require 'net/https'
         uri = URI.parse(Conjur.configuration.appliance_url)
-        Net::HTTP.start uri.host, uri.port do |http|
+        @base_path = uri.path
+        Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
           @http = http
-          @plan.each do |step|
+          actions.each do |step|
             invoke step
           end
         end
@@ -21,16 +22,34 @@ module Conjur
       
       def invoke step
         method, path, parameters = step
-        send method, path, parameters
+
+        def update_annotation_path
+          [ "authz", account, "annotations", record.resource_kind, scoped_id(record) ].join('/')
+        end
+
+        send method.downcase, path, parameters
       end
       
       def post path, parameters
-        uri = [ Conjur.configuration.appliance_url, path ].join('/')
-        request = Net::HTTP::POST.new uri
+        request = Net::HTTP::Post.new [ @base_path, path ].join('/')
         request.set_form_data parameters
-        request['Authorization'] = "Authorization token=\"#{@api.token}\""
+        send_request request
+      end
+      
+      def put path, parameters
+        request = Net::HTTP::Put.new [ @base_path, path ].join('/')
+        request.set_form_data parameters
+        send_request request
+      end
+
+      def send_request request
+        require 'base64'
+        request['Authorization'] = "Token token=\"#{Base64.strict_encode64 @api.token.to_json}\""
         response = @http.request request
-        p response
+        if response.code.to_i >= 300
+          $stderr.puts "Request to #{request.path} failed with error #{response.code}:"
+          $stderr.puts response.body
+        end
       end
     end
   end

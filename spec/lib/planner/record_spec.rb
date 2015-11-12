@@ -7,8 +7,8 @@ describe Planner do
   include_context "planner"
     
   let(:filename) { "spec/lib/planner/record_fixture.rb" }
-  let(:group) { double(:group, exists?: group_exists, gidnumber: 1101) }
-  let(:variable) { double(:variable, exists?: variable_exists, mime_type: "text/plain", kind: "secret") }
+  let(:group) { double(:group, exists?: group_exists, attributes: { 'gidnumber' => 1101 }) }
+  let(:variable) { double(:variable, exists?: variable_exists, attributes: { 'mime_type' => "text/plain", 'kind' => "secret" }) }
   let(:group_resource) { double(:resource, exists?: group_exists, owner: "the-account:group:developers", annotations: {}) }
   let(:variable_resource) { double(:resource, exists?: variable_exists, owner: "the-account:variable:db-password", annotations: {}) }
   let(:cook_role) { double(:role, exists?: role_exists) }
@@ -36,7 +36,8 @@ describe Planner do
   
   let(:plan_yaml) do
     plan = Plan.new
-    subject.plan plan
+    subject.plan = plan
+    subject.do_plan
     plan.actions.to_yaml
   end
   
@@ -44,9 +45,12 @@ describe Planner do
     it "creates a group" do
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- - POST
-  - groups
-  - id: developers
+- service: directory
+  type: group
+  action: create
+  path: groups
+  parameters:
+    id: developers
         YAML
       end
     end
@@ -55,12 +59,19 @@ describe Planner do
     it "creates the resource" do
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- - PUT
-  - authz/the-account/resources/food/bacon
-  - {}
-- - PUT
-  - authz/the-account/annotations/food/bacon
-  - name: tastes
+- service: authz
+  type: resource
+  action: create
+  id: the-account:food:bacon
+  path: authz/the-account/resources/food/bacon
+  parameters: {}
+- service: authz
+  type: annotation
+  action: update
+  id: the-account:food:bacon
+  path: authz/the-account/annotations/food/bacon
+  parameters:
+    name: tastes
     value: Yummy
       YAML
     end
@@ -70,9 +81,12 @@ describe Planner do
     it "creates the role" do
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- - PUT
-  - authz/the-account/roles/job/cook
-  - {}
+- service: authz
+  type: role
+  action: create
+  path: authz/the-account/roles/job/cook
+  id: the-account:job:cook
+  parameters: {}
   YAML
     end
   end
@@ -81,11 +95,15 @@ describe Planner do
     it "creates a variable" do
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- - POST
-  - variables
-  - id: db-password
+- service: directory
+  type: variable
+  action: create
+  path: variables
+  parameters:
+    id: db-password
     kind: database password
-        YAML
+    mime_type: text/plain
+      YAML
       end
     end
     context "when variable exists" do
@@ -107,12 +125,20 @@ describe Planner do
       it "it will update gidnumber and annotations" do
           expect(plan_yaml).to eq(<<-YAML)
 ---
-- - PUT
-  - groups/developers
-  - gidnumber: 1102
-- - PUT
-  - authz/the-account/annotations/group/developers
-  - name: name
+- service: directory
+  type: group
+  action: update
+  path: groups/developers
+  id: developers
+  parameters:
+    gidnumber: 1102
+- service: authz
+  type: annotation
+  action: update
+  id: the-account:group:developers
+  path: authz/the-account/annotations/group/developers
+  parameters:
+    name: name
     value: Developers
     YAML
       end
