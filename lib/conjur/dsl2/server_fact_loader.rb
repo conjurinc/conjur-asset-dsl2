@@ -1,7 +1,9 @@
 module Conjur::DSL2
   # Atrocious name, this class is responsible for fetching a permissions model from
   # Conjur.
-  class PermissionsModelFetcher
+  class ServerFactLoader
+    include Conjur::DSL2::Facts::Helper
+
     attr_reader :api
 
     # API must already be scoped
@@ -16,7 +18,7 @@ module Conjur::DSL2
     # create `HasRole` facts. Finally, we use the `permissions` field of each
     # resource to create `HasPermission` facts.
     def fetch
-      @facts = Facts::FactSet.new
+      @facts = Conjur::DSL2::Facts::FactSet.new
 
       add_record_facts
       add_membership_facts
@@ -28,9 +30,27 @@ module Conjur::DSL2
     private
 
     def add_record_facts
-
+      records.each do |rec|
+        @facts << create_record_exists(rec['kind'], rec['id'], rec['owner'])
+      end
     end
 
+    def add_membership_facts
+      roles_with_members.each do |role_id, member_id|
+        @facts << create_has_role(role_id, member_id)
+      end
+    end
+
+    def add_permission_facts
+      resource_permissions.each do |res_id, permission|
+        @facts << create_permitted(res_id, permission['role'], permission['privilege'], permission['grant_option'])
+      end
+    end
+
+    # Return
+    def records
+
+    end
 
     def resources
       @resources ||= fetch_resources
