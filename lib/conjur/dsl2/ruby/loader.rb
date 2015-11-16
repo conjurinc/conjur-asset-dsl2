@@ -110,17 +110,13 @@ module Conjur
       
       # Policy includes the functionality of Entitlements, wrapped in a 
       # policy role, policy resource, policy id and policy version.
-      class Policy
-        def id val = nil
-          if val
-            @id = val
-          else
-            @id
-          end
-        end
+      class Policy < Conjur::DSL2::Types::Base
+        include Conjur::DSL2::Types::ActsAsResource
+        include Conjur::DSL2::Types::ActsAsRole
         
         def body &block
           singleton :body, lambda { Body.new }, &block
+          @body
         end
         
         protected
@@ -158,9 +154,18 @@ module Conjur
         attr_reader :script, :filename
         
         class << self
-          def create filename
-            new(File.read(filename), filename)
+          def load_file filename
+            load File.read(filename), filename
           end
+
+          def load yaml, filename = nil
+            create(yaml, filename).load
+          end
+
+          def create(yaml, filename=nil)
+            new(yaml, filename)
+          end
+
         end
         
         def initialize script, filename = nil

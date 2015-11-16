@@ -1,0 +1,34 @@
+--- !ruby/object:Conjur::DSL2::Plan
+actions:
+- - PUT
+  - authz/cucumber/roles/policy/myapp/v1
+  - {}
+- - PUT
+  - authz/cucumber/resources/policy/myapp/v1
+  - acting_as: cucumber:policy:myapp/v1
+- - POST
+  - variables
+  - id: myapp/v1/db-password
+- - POST
+  - groups
+  - id: myapp/v1/secrets-managers
+- - POST
+  - groups
+  - id: myapp/v1/secrets-users
+- - PUT
+  - authz/cucumber/resources/variable/myapp/v1/db-password?permit
+  - :privilege: update
+    :role: cucumber:group:myapp/v1/secrets-managers
+    :grant_option: false
+- - PUT
+  - authz/cucumber/resources/variable/myapp/v1/db-password?permit
+  - :privilege: read
+    :role: cucumber:group:myapp/v1/secrets-users
+    :grant_option: false
+- - PUT
+  - authz/cucumber/resources/variable/myapp/v1/db-password?permit
+  - :privilege: execute
+    :role: cucumber:group:myapp/v1/secrets-users
+    :grant_option: false
+collection: 
+policy: 

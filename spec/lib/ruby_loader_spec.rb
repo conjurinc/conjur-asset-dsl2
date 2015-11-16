@@ -8,7 +8,7 @@ describe Loader do
     let(:source) { "spec/lib/round-trip/ruby/#{example}.rb" }
     let(:fixture) { "spec/lib/round-trip/ruby/#{example}.yml" }
     it "#{example}.rb" do
-      target = Conjur::DSL2::Ruby::Loader.create(source).load
+      target = Conjur::DSL2::Ruby::Loader.load_file(source)
       expect(target.to_yaml).to eq(File.read(fixture))
     end
   end

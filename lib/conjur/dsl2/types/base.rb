@@ -273,6 +273,10 @@ module Conjur
           false
         end
         
+        def custom_attribute_names
+          [ ]
+        end
+        
         class << self
           # Hook to register the YAML type.
           def inherited cls
@@ -285,7 +289,7 @@ module Conjur
           end
           
           def register_yaml_type simple_name
-            YAML.add_tag "!#{simple_name}", self
+            ::YAML.add_tag "!#{simple_name}", self
           end
         end
       end
