@@ -112,9 +112,9 @@ describe Planner do
   description: Permit the-account:group:developers to 'execute' the-account:variable:db-password
           YAML
         end
-        context "and the permission is exclusive" do
+        context "and the permission is 'replace'" do
           before {
-            permit.exclusive = true
+            permit.replace = true
           }
           it "permits it to the new role and revokes the existing role" do
             expect(plan_yaml).to eq(<<-YAML)

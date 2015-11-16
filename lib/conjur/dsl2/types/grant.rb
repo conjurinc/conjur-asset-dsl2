@@ -4,7 +4,7 @@ module Conjur
       class Grant < Base
         attribute :role, dsl_accessor: true
         attribute :member
-        attribute :exclusive, kind: :boolean, singular: true, dsl_accessor: true
+        attribute :replace, kind: :boolean, singular: true, dsl_accessor: true
         
         include RoleMemberDSL
         include ManagedRoleDSL

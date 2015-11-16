@@ -5,8 +5,9 @@ module Conjur
   module DSL2
     module Planner
       # Plans a permission.
+      #
       # The Permit record can list multiple roles, privileges, and resources. Each privilege should
-      # be allowed to each role on each resource. If the +exclusive+ option is set, then any existing
+      # be allowed to each role on each resource. If the +replace+ option is set, then any existing
       # privilege on an existing resource that is *not* given should be denied.
       class Permit < Base
         def do_plan
@@ -51,7 +52,7 @@ module Conjur
                   'description' => "Permit #{role} to '#{privilege}' #{target}#{admin ? ' with admin option' : ''}"
                 })
               end
-              if record.exclusive
+              if record.replace
                 (Set.new(given) - Set.new(requested)).each do |p|
                   role, admin = p
                   account, kind, id = target.split(':', 3)

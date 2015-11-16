@@ -9,5 +9,5 @@ permit %w(read execute) do
   resource variable("foobar")
   resource group('users')
 
-  exclusive true
+  replace true
 end

@@ -51,7 +51,7 @@
     "ldap-sync/source": "ldap://util4002.ldap.internal"
 
 # Ensure that all the LDAP users and groups are included in "everyone".
-# This list is exclusive, meaning that group members which are in Conjur
+# This list uses the 'replace' option, meaning that group members which are in Conjur
 # but not in this list (and are not admins of the group) will be removed from "everyone".
 - !grant
   role: !group everyone
@@ -62,17 +62,17 @@
   - !user alice
   - !user bob
   - !user charles
-  exclusive: true
+  replace: true
 
-# Place the users into groups. These groups are exclusive as well.
+# Place the users into groups. These groups are replace as well.
 - !grant
   role: !group role_messaging
   member: !user alice
-  exclusive: true
+  replace: true
 - !grant
   role: !group role_metadata
   member: !user bob
-  exclusive: true
+  replace: true
   
 # Permit the "everyone" group to read every user
 - !permit
