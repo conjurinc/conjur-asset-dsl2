@@ -10,37 +10,36 @@ module Conjur
       # privilege on an existing resource that is *not* given should be denied.
       class Permit < Base
         def do_plan
-          given_permissions = Set.new
-          requested_permissions = Set.new
-          Array(record.resources).each do |resource|
+          resources = Array(record.resources)
+          privileges = Array(record.privileges)
+          given_permissions = Hash.new { |hash, key| hash[key] = [] }
+          requested_permissions = Hash.new { |hash, key| hash[key] = [] }
+          resources.each do |resource|
             permissions = begin
               JSON.parse(api.resource(scoped_resourceid(resource)).get)['permissions'] 
             rescue RestClient::ResourceNotFound
               []
             end
             permissions.each do |permission|
-              given_permissions.add [ permission['role'], permission['privilege'], permission['resource'], permission['grant_option'] ]
+              if privileges.member?(permission['privilege'])
+                given_permissions[[permission['privilege'], permission['resource']]].push [ permission['role'], permission['grant_option'] ]
+              end
             end
-            Array(record.privileges).each do |privilege|
+            privileges.each do |privilege|
               Array(record.roles).each do |role|
-                requested_permissions.add [ scoped_roleid(role.role), privilege, scoped_resourceid(resource), !!role.admin ]
+                requested_permissions[[privilege, scoped_resourceid(resource)]].push [ scoped_roleid(role.role), !!role.admin ]
               end
             end
           end
-          
-          privileges = requested_permissions.map{|row| row[1]}
-            
-          Array(record.resources).each do |resource|
+                      
+          resources.each do |resource|
             privileges.each do |privilege|
-              scoped_given = Set.new(given_permissions.select do |p|
-                p[1] == privilege && p[2] == scoped_resourceid(resource)
-              end)
-              scoped_requested = Set.new(requested_permissions.select do |p|
-                p[1] == privilege && p[2] == scoped_resourceid(resource)
-              end)
+              target = scoped_resourceid(resource)
+              given = given_permissions[[privilege, target]]
+              requested = requested_permissions[[privilege, target]]
               
-              (scoped_requested - scoped_given).each do |p|
-                role, privilege, target, admin = p
+              (Set.new(requested) - Set.new(given)).each do |p|
+                role, admin = p
                 account, kind, id = target.split(':', 3)
                 action({
                   'service' => 'authz',
@@ -48,12 +47,13 @@ module Conjur
                   'method' => 'post',
                   'action' => 'permit',
                   'path' => "authz/#{account}/resources/#{kind}/#{id}?permit",
-                  'parameters' => { "privilege" => privilege, "role" => role, "grant_option" => admin }
+                  'parameters' => { "privilege" => privilege, "role" => role, "grant_option" => admin },
+                  'description' => "Permit #{role} to '#{privilege}' #{target}#{admin ? ' with admin option' : ''}"
                 })
               end
               if record.exclusive
-                (scoped_given - scoped_requested).each do |p|
-                  role, privilege, target, admin = p
+                (Set.new(given) - Set.new(requested)).each do |p|
+                  role, admin = p
                   account, kind, id = target.split(':', 3)
                   action({
                     'service' => 'authz',
@@ -61,7 +61,8 @@ module Conjur
                     'method' => 'post',
                     'action' => 'deny',
                     'path' => "authz/#{account}/resources/#{kind}/#{id}?deny", 
-                    'parameters' => { "privilege" => privilege, "role" => role }
+                    'parameters' => { "privilege" => privilege, "role" => role },
+                    'description' => "Deny #{role} to '#{privilege}' #{target}"
                   })
                 end
               end

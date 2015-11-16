@@ -51,6 +51,7 @@ describe Planner do
   path: groups
   parameters:
     id: developers
+  description: Create group developers
         YAML
       end
     end
@@ -66,6 +67,7 @@ describe Planner do
   id: the-account:food:bacon
   path: authz/the-account/resources/food/bacon
   parameters: {}
+  description: Create resource the-account:food:bacon
 - service: authz
   type: annotation
   action: update
@@ -74,6 +76,7 @@ describe Planner do
   parameters:
     name: tastes
     value: Yummy
+  description: Update 'tastes' annotation on the-account:food:bacon
       YAML
     end
   end
@@ -89,6 +92,7 @@ describe Planner do
   path: authz/the-account/roles/job/cook
   id: the-account:job:cook
   parameters: {}
+  description: Create role the-account:job:cook
   YAML
     end
   end
@@ -105,6 +109,7 @@ describe Planner do
     id: db-password
     kind: database password
     mime_type: text/plain
+  description: Create variable db-password
       YAML
       end
     end
@@ -134,6 +139,7 @@ describe Planner do
   id: developers
   parameters:
     gidnumber: 1102
+  description: Update 'gidnumber' on group developers
 - service: authz
   type: annotation
   action: update
@@ -142,6 +148,7 @@ describe Planner do
   parameters:
     name: name
     value: Developers
+  description: Update 'name' annotation on the-account:group:developers
     YAML
       end
     end
