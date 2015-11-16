@@ -86,6 +86,9 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
       c.desc "Print the actions that would be performed"
       c.switch [:"dry-run"]
 
+      c.desc "Output format of --dry-run mode (text, yaml)"
+      c.flag [:"format"]
+
       c.action do |global_options,options,args|
         Conjur.log = "stderr"
   
@@ -94,7 +97,12 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
         plan = Conjur::DSL2::Planner.plan(records, api, options[:namespace])
           
         if options[:"dry-run"]
-          puts plan.actions.to_yaml
+          case options[:"format"]
+          when 'text'
+            puts plan.actions.map{|a| a['description']}
+          else
+            puts plan.actions.to_yaml
+          end
         else
           execute api, plan.actions, options
         end
