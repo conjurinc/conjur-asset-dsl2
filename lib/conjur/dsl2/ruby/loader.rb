@@ -93,9 +93,11 @@ module Conjur
         include Grants
         include Permissions
         
-        def policy &block
+        def policy id=nil, &block
           policy = Policy.new
+          policy.id(id) unless id.nil?
           push policy
+
           do_scope policy, &block
         end
       end
@@ -145,7 +147,7 @@ module Conjur
           if scope.respond_to?(sym)
             scope.send sym, *args, &block
           else
-            super
+            raise NoMethodError, "undefined method `#{sym}` for #{scope}:#{scope.class}"
           end
         end
       end
@@ -157,11 +159,11 @@ module Conjur
         
         class << self
           def create filename
-            Loader.new(File.read(filename), filename)
+            new(File.read(filename), filename)
           end
         end
         
-        def initialize(script, filename = nil)
+        def initialize script, filename = nil
           @script = script
           @filename = filename
           @scope = []
@@ -171,10 +173,10 @@ module Conjur
           self
         end
 
-        def load
+        def load root = nil
           args = [ script ]
           args << filename if filename
-          root = Entitlements.new
+          root ||= Entitlements.new
           do_scope root do
             instance_eval(*args)
           end

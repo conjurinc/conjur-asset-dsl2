@@ -6,8 +6,8 @@ include Conjur::DSL2
 describe Executors::Record do
   context "group.yml" do
     let(:filename) { "spec/lib/executor/create_fixture.rb" }
-    let(:entitlements) { Ruby::Entitlements.new }
-    let(:records) { entitlements.first }
+    # let(:entitlements) { Ruby::Entitlements.new }
+    # let(:records) { entitlements.first }
     let(:group) { double(:group, exists?: group_exists, gidnumber: 1101) }
     let(:variable) { double(:variable, exists?: variable_exists, mime_type: "text/plain", kind: "secret") }
     let(:group_resource) { double(:resource, owner: "the-account:group:developers", annotations: {}) }
@@ -20,13 +20,15 @@ describe Executors::Record do
 
     let(:group_exists) { false }
     let(:variable_exists) { false }
-      
+
+    attr_reader :records
+
     before do
       allow(Conjur).to receive(:configuration).and_return double(:configuration, account: "the-account")
     end
       
     before do
-      Ruby::Loader.create(filename).load(entitlements)
+      @records = Ruby::Loader.create(filename).load
       allow(api).to receive(:group).with("developers").and_return group
       allow(api).to receive(:variable).with("db-password").and_return variable
       allow(api).to receive(:resource).with("the-account:group:developers").and_return group_resource
