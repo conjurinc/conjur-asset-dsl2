@@ -3,7 +3,7 @@ require 'conjur/dsl2/ruby/loader'
 
 include Conjur::DSL2
 
-describe Planner do
+describe Planner::Permit do
   include_context "planner"
   
   let(:filename) { "spec/lib/planner/permissions_fixture.rb" }

@@ -20,6 +20,7 @@ policy do
     grant do
       role group("secrets-users")
       member group("secrets-managers")
+      replace true
     end
   end
 end
