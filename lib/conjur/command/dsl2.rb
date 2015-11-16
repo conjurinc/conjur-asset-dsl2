@@ -53,13 +53,13 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
       suffix = $1
       syntax = case suffix
       when 'yaml', 'yml'
-        'yaml'
+        'YAML'
       when 'rb'
-        'ruby'
+        'Ruby'
       end
     end
     raise "No syntax provided or detected" unless syntax
-    mod = Conjur::DSL2.const_get syntax.capitalize
+    mod = Conjur::DSL2.const_get syntax
     mod.const_get "Loader"
   end
   
