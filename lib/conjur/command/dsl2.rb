@@ -50,15 +50,15 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
   def self.loader filename, syntax
     if syntax.nil? && filename
       filename =~ /\.([^.]+)$/
-      suffix = $1
-      syntax = case suffix
-      when 'yaml', 'yml'
-        'YAML'
-      when 'rb'
-        'Ruby'
-      end
+      syntax = $1
     end
     raise "No syntax provided or detected" unless syntax
+    syntax = case syntax
+    when 'yaml', 'yml'
+      'YAML'
+    when 'rb', 'ruby'
+      'Ruby'
+    end
     mod = Conjur::DSL2.const_get syntax
     mod.const_get "Loader"
   end
