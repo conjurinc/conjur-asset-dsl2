@@ -21,8 +21,6 @@
 require 'conjur-asset-dsl2'
 
 class Conjur::Command::DSL2 < Conjur::DSLCommand
-  subcommand_option_handling :normal
-
   def self.load filename, syntax
     script = script_from_filename filename
     loader(filename, syntax).load script, filename
@@ -142,7 +140,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
   
         filename = args.pop
         records = load filename, options[:syntax]
-        plan = Conjur::DSL2::Planner.plan(records, api, options[:namespace])
+        plan = Conjur::DSL2::Planner.plan(records, api, options.slice(:namespace, :ownerid))
           
         if options[:"dry-run"]
           case options[:"format"]

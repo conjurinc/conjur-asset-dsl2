@@ -7,9 +7,12 @@ module Conjur
   module DSL2
     module Planner
       class << self
-        def plan records, api, namespace = nil
+        def plan records, api, options = {}
+          namespace = options[:namespace]
+          ownerid = options[:ownerid]
           Plan.new.tap do |p|
-            p.namespace = namespace
+            p.namespace = namespace if namespace
+            p.ownerid = ownerid if ownerid
             records.map do |record|
               planner = planner_for(record, api)
               planner.plan = p

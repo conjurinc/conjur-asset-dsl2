@@ -82,7 +82,11 @@ module Conjur
         
         def create_parameters
           {}.tap do |params|
-            params["acting_as"] = scoped_roleid(record.owner) if record.owner
+            if record.owner
+              params["acting_as"] = scoped_roleid(record.owner.roleid) 
+            elsif plan.ownerid
+              params["acting_as"] = plan.ownerid
+            end
           end
         end
       end
@@ -125,7 +129,11 @@ module Conjur
         
         def create_parameters
           {}.tap do |params|
-            params["acting_as"] = scoped_roleid(record.owner) if record.owner
+            if record.owner
+              params["acting_as"] = scoped_roleid(record.owner) 
+            elsif plan.ownerid
+              params["acting_as"] = plan.ownerid
+            end
           end
         end
       end
@@ -139,20 +147,24 @@ module Conjur
             role.plan = plan
             role.do_plan
           end
-          record.owner = Conjur::DSL2::Types::Role.new "policy", record.id
+          record.owner = Conjur::DSL2::Types::Role.new "policy", plan.scoped_id(record)
           record.owner.account = record.account
           Resource.new(record, api).tap do |resource|
             resource.plan = plan
             resource.do_plan
           end
           record.body.each do |record|
-            plan.policy = self.record
+            ownerid = plan.ownerid
             begin
+              plan.policy = self.record
+              plan.ownerid = plan.policy.roleid(account)
+              
               planner = Planner.planner_for(record, api)
               planner.plan = plan
               planner.do_plan
             ensure
               plan.policy = nil
+              plan.ownerid = ownerid
             end
           end
         end
@@ -212,7 +224,11 @@ module Conjur
               memo
             end
             params.merge! custom_attrs
-            params["ownerid"] = scoped_roleid(record.owner.roleid) if record.owner
+            if record.owner
+              params["ownerid"] = scoped_roleid(record.owner.roleid) 
+            elsif plan.ownerid
+              params["ownerid"] = plan.ownerid
+            end
           end
         end
         
