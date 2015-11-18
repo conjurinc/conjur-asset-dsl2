@@ -47,20 +47,20 @@ module Conjur
                 'parameters' => { "member" => member, "admin_option" => admin },
                 'description' => "Grant #{roleid} to #{member}#{admin ? ' with admin option' : ''}"
               })
-              if record.replace
-                (Set.new(given) - Set.new(requested)).each do |p|
-                  member, admin = p
-                  account, kind, id = roleid.split(':', 3)
-                  action({
-                    'service' => 'authz',
-                    'type' => 'role',
-                    'method' => 'delete',
-                    'action' => 'revoke',
-                    'path' => "authz/#{account}/roles/#{kind}/#{id}?members", 
-                    'parameters' => { "member" => member },
-                    'description' => "Revoke #{roleid} from #{member}"
-                  })
-                end
+            end
+            if record.replace
+              (Set.new(given) - Set.new(requested)).each do |p|
+                member, admin = p
+                account, kind, id = roleid.split(':', 3)
+                action({
+                  'service' => 'authz',
+                  'type' => 'role',
+                  'method' => 'delete',
+                  'action' => 'revoke',
+                  'path' => "authz/#{account}/roles/#{kind}/#{id}?members", 
+                  'parameters' => { "member" => member },
+                  'description' => "Revoke #{roleid} from #{member}"
+                })
               end
             end
           end

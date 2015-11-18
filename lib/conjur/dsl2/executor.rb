@@ -46,6 +46,14 @@ module Conjur
       end
       
       alias put update
+      
+      def delete path, parameters
+        uri = URI.parse([ @base_path, path ].join('/'))
+        uri.query = [uri.query, parameters.map{|k,v| [ k, URI.escape(v) ].join('=')}.join("&")].compact.join('&') 
+        request = Net::HTTP::Delete.new [ uri.path, '?', uri.query ].join
+          
+        send_request request
+      end
 
       def send_request request
         # $stderr.puts "#{request.method.upcase} #{request.path} #{request.body}"
