@@ -1,4 +1,6 @@
-plan*.yml
+.DS_Store
+*.yml
+*.txt
 /.bundle/
 /.yardoc
 /Gemfile.lock

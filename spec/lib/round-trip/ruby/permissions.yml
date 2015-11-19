@@ -10,8 +10,12 @@
   privilege:
   - read
   - execute
-  resource: !variable
+  replace: true
+  resource:
+  - !variable
     id: foobar
+  - !group
+    id: users
   role:
   - !member
     role: !group

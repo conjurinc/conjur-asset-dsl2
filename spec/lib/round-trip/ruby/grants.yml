@@ -16,10 +16,10 @@
   role: !group
     id: everyone
 - !grant
-  exclusive: true
   member: !member
     role: !group
       id: developers
+  replace: true
   role: !managed-role
     record: !layer
       id: webservice

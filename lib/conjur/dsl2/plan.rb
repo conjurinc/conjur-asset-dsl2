@@ -2,7 +2,7 @@ module Conjur
   module DSL2
     class Plan
       attr_reader :actions, :policy
-      attr_accessor :namespace
+      attr_accessor :namespace, :ownerid
       
       def initialize namespace = nil
         @namespace = namespace

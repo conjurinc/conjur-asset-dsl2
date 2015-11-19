@@ -15,7 +15,8 @@ module Conjur
               'action' => 'change_owner',
               'id' => scoped_resourceid(record),
               'path' => resource_path,
-              'parameters' => { "owner" => scoped_roleid(record.owner) }
+              'parameters' => { "owner" => scoped_roleid(record.owner) },
+              'description' => "Change owner of #{scoped_resourceid(record)} to #{scoped_roleid(record.owner)}"
             })
           end
         end
@@ -36,7 +37,8 @@ module Conjur
                 'action' => 'update',
                 'id' => scoped_resourceid(record),
                 'path' => update_annotation_path,
-                'parameters' => { "name" => attr.to_s, "value" => new_value }
+                'parameters' => { "name" => attr.to_s, "value" => new_value },
+                'description' => "Update '#{attr}' annotation on #{scoped_resourceid(record)}"
               })
             end
           end
@@ -59,7 +61,8 @@ module Conjur
               'method' => 'put',
               'path' => role_path,
               'id' => roleid,
-              'parameters' => create_parameters
+              'parameters' => create_parameters,
+              'description' => "Create role #{roleid}"
             })
           end
         end
@@ -79,7 +82,11 @@ module Conjur
         
         def create_parameters
           {}.tap do |params|
-            params["acting_as"] = scoped_roleid(record.owner) if record.owner
+            if record.owner
+              params["acting_as"] = scoped_roleid(record.owner.roleid) 
+            elsif plan.ownerid
+              params["acting_as"] = plan.ownerid
+            end
           end
         end
       end
@@ -100,7 +107,8 @@ module Conjur
               'method' => 'put',
               'id' => resourceid,
               'path' => resource_path,
-              'parameters' => create_parameters
+              'parameters' => create_parameters,
+              'description' => "Create resource #{resourceid}"
             })
             update_annotations
           end
@@ -121,7 +129,11 @@ module Conjur
         
         def create_parameters
           {}.tap do |params|
-            params["acting_as"] = scoped_roleid(record.owner) if record.owner
+            if record.owner
+              params["acting_as"] = scoped_roleid(record.owner) 
+            elsif plan.ownerid
+              params["acting_as"] = plan.ownerid
+            end
           end
         end
       end
@@ -135,20 +147,24 @@ module Conjur
             role.plan = plan
             role.do_plan
           end
-          record.owner = Conjur::DSL2::Types::Role.new "policy", record.id
+          record.owner = Conjur::DSL2::Types::Role.new "policy", plan.scoped_id(record)
           record.owner.account = record.account
           Resource.new(record, api).tap do |resource|
             resource.plan = plan
             resource.do_plan
           end
           record.body.each do |record|
-            plan.policy = self.record
+            ownerid = plan.ownerid
             begin
+              plan.policy = self.record
+              plan.ownerid = plan.policy.roleid(account)
+              
               planner = Planner.planner_for(record, api)
               planner.plan = plan
               planner.do_plan
             ensure
               plan.policy = nil
+              plan.ownerid = ownerid
             end
           end
         end
@@ -168,7 +184,8 @@ module Conjur
               'type' => record.resource_kind,
               'action' => 'create',
               'path' => create_path,
-              'parameters' => create_parameters
+              'parameters' => create_parameters,
+              'description' => "Create #{record.resource_kind} #{scoped_id(record)}"
             })
           end
           update_annotations
@@ -190,7 +207,8 @@ module Conjur
                 'action' => 'update',
                 'path' => update_path,
                 'id' => scoped_id(record), 
-                'parameters' => { attr.to_s => new_value || "" }
+                'parameters' => { attr.to_s => new_value || "" },
+                'description' => "Update '#{attr}' on #{record.resource_kind} #{scoped_id(record)}"
               })
             end
           end
@@ -206,7 +224,11 @@ module Conjur
               memo
             end
             params.merge! custom_attrs
-            params["ownerid"] = scoped_roleid(record.owner.roleid) if record.owner
+            if record.owner
+              params["ownerid"] = scoped_roleid(record.owner.roleid) 
+            elsif plan.ownerid
+              params["ownerid"] = plan.ownerid
+            end
           end
         end
         

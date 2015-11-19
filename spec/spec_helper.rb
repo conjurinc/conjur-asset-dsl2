@@ -8,7 +8,8 @@ end
 shared_context "planner" do
   let(:api) { double(:api) }
   before do
-    allow(Conjur).to receive(:configuration).and_return double(:configuration, account: "the-account")
+    require 'conjur/api'
+    allow(Conjur).to receive(:configuration).and_return(double(:configuration, account: "the-account"))
   end
   let(:records) { Ruby::Loader.load_file(filename) }
 end

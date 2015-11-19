@@ -3,8 +3,10 @@ require 'yaml'
 require 'safe_yaml'
 require 'active_support'
 require 'active_support/core_ext'
+SafeYAML::OPTIONS[:default_mode] = :safe
 SafeYAML::OPTIONS[:deserialize_symbols] = false
    
+require 'rest-client'
 require 'conjur/dsl2/invalid'
 require 'conjur/dsl2/types/base'
 require 'conjur/dsl2/types/records'

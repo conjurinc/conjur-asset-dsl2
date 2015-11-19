@@ -3,7 +3,7 @@ require 'conjur/dsl2/ruby/loader'
 
 include Conjur::DSL2
 
-describe Planner do
+describe Planner::Permit do
   include_context "planner"
   
   let(:filename) { "spec/lib/planner/permissions_fixture.rb" }
@@ -60,6 +60,7 @@ describe Planner do
     privilege: read
     role: the-account:group:developers
     grant_option: false
+  description: Permit the-account:group:developers to 'read' the-account:variable:db-password
 - service: authz
   type: resource
   method: post
@@ -69,6 +70,7 @@ describe Planner do
     privilege: execute
     role: the-account:group:developers
     grant_option: false
+  description: Permit the-account:group:developers to 'execute' the-account:variable:db-password
           YAML
         end
       end
@@ -107,11 +109,12 @@ describe Planner do
     privilege: execute
     role: the-account:group:developers
     grant_option: false
+  description: Permit the-account:group:developers to 'execute' the-account:variable:db-password
           YAML
         end
-        context "and the permission is exclusive" do
+        context "and the permission is 'replace'" do
           before {
-            permit.exclusive = true
+            permit.replace = true
           }
           it "permits it to the new role and revokes the existing role" do
             expect(plan_yaml).to eq(<<-YAML)
@@ -124,6 +127,7 @@ describe Planner do
   parameters:
     privilege: read
     role: the-account:group:operations
+  description: Deny the-account:group:operations to 'read' the-account:variable:db-password
 - service: authz
   type: resource
   method: post
@@ -133,6 +137,7 @@ describe Planner do
     privilege: execute
     role: the-account:group:developers
     grant_option: false
+  description: Permit the-account:group:developers to 'execute' the-account:variable:db-password
             YAML
           end
         end

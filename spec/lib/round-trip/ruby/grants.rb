@@ -9,5 +9,5 @@ end
 grant do
   managed_role layer("webservice"), "use_host"
   member group("developers")
-  exclusive true
+  replace true
 end

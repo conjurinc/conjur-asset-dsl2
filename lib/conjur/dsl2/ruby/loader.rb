@@ -119,6 +119,10 @@ module Conjur
           @body
         end
         
+        def body= body
+          @body = body
+        end
+        
         protected
         
         def singleton id, factory, &block

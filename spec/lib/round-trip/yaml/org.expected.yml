@@ -32,7 +32,6 @@
   id: charles
   uidnumber: 1005
 - !grant
-  exclusive: true
   member:
   - !member
     role: !group
@@ -52,20 +51,21 @@
   - !member
     role: !user
       id: charles
+  replace: true
   role: !group
     id: everyone
 - !grant
-  exclusive: true
   member: !member
     role: !user
       id: alice
+  replace: true
   role: !group
     id: role_messaging
 - !grant
-  exclusive: true
   member: !member
     role: !user
       id: bob
+  replace: true
   role: !group
     id: role_metadata
 - !permit

@@ -9,17 +9,18 @@ policy do
     permit %w(update) do
       resource variable("db-password")
       role group("secrets-managers")
-      exclusive true
+      replace true
     end
     permit %w(read execute) do
       resource variable("db-password")
       role group("secrets-users")
-      exclusive true
+      replace true
     end
   
     grant do
       role group("secrets-users")
       member group("secrets-managers")
+      replace true
     end
   end
 end

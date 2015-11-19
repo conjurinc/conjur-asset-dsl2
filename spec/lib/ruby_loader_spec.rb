@@ -10,6 +10,7 @@ describe Loader do
     it "#{example}.rb" do
       target = Conjur::DSL2::Ruby::Loader.load_file(source)
       expect(target.to_yaml).to eq(File.read(fixture))
+      expect(Conjur::DSL2::YAML::Loader.load_file(fixture).to_yaml).to eq(File.read(fixture))
     end
   end
   

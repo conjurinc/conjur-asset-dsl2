@@ -8,19 +8,19 @@
   - !group
     id: secrets-users
   - !permit
-    exclusive: true
     privilege:
     - update
+    replace: true
     resource: !variable
       id: db-password
     role: !member
       role: !group
         id: secrets-managers
   - !permit
-    exclusive: true
     privilege:
     - read
     - execute
+    replace: true
     resource: !variable
       id: db-password
     role: !member
@@ -30,6 +30,7 @@
     member: !member
       role: !group
         id: secrets-managers
+    replace: true
     role: !group
       id: secrets-users
   id: myapp/v1

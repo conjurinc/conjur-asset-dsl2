@@ -5,7 +5,7 @@ module Conjur
         attribute :role, kind: :member
         attribute :privilege, kind: :string, dsl_accessor: true
         attribute :resource, dsl_accessor: true
-        attribute :exclusive, kind: :boolean, singular: true, dsl_accessor: true
+        attribute :replace, kind: :boolean, singular: true, dsl_accessor: true
         
         include ResourceMemberDSL
         
