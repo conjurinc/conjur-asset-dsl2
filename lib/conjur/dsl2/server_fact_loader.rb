@@ -1,15 +1,23 @@
+require 'conjur/dsl2/facts/base'
 module Conjur::DSL2
   # Atrocious name, this class is responsible for fetching a permissions model from
   # Conjur.
   class ServerFactLoader
     include Conjur::DSL2::Facts::Helper
 
-    attr_reader :api
+    IGNORED_ROLE_IDS = %w(!:!:root)
 
-    # API must already be scoped
-    def initialize api, acting_as=nil
+    attr_reader :api
+    attr_reader :acting_as
+    attr_reader :namespace
+
+    # options are `:acting_as` and `:namespace`.  Requests will
+    # be performed as a role given by `:acting_as`, and only resources
+    # and roles with prefix `:namespace` will be considered.
+    def initialize api, opts={}
       @api = api
-      @acting_as = acting_as
+      @acting_as = opts[:acting_as]
+      @namespace = opts[:namespace]
     end
 
     # Get all roles and resources.  We first list resources (visible to the role),
@@ -30,26 +38,33 @@ module Conjur::DSL2
     private
 
     def add_record_facts
-      records.each do |rec|
-        @facts << create_record_exists(rec['kind'], rec['id'], rec['owner'])
+      resources.each do |res|
+        @facts << create_record_exists(res.kind, res.identifier, res.owner)
       end
     end
 
     def add_membership_facts
-      roles_with_members.each do |role_id, member_id|
-        @facts << create_has_role(role_id, member_id)
+      grants.each do |role_id, members|
+        members.each do |grant|
+          @facts << create_grant(role_id, grant.member.role_id, grant.admin_option)
+        end
       end
     end
 
     def add_permission_facts
       resource_permissions.each do |res_id, permission|
-        @facts << create_permitted(res_id, permission['role'], permission['privilege'], permission['grant_option'])
+        @facts << create_permit(res_id, permission['role'], permission['privilege'], permission['grant_option'])
       end
     end
 
-    # Return
-    def records
-
+    def resource_permissions
+      @resource_permissions ||= [].tap do |ary|
+        resources.each do |res|
+          res.attributes['permissions'].each do |p|
+            ary << [res.resource_id, p]
+          end
+        end
+      end
     end
 
     def resources
@@ -62,17 +77,41 @@ module Conjur::DSL2
 
     def roles_by_id
       @roles_by_id ||= roles.inject({}) do |hash, role|
-        hash[role.id] = role; hash
+        hash[role] = api.role(role); hash
       end
     end
 
     def fetch_resources
-      opts = @acting_as ? {acting_as: @acting_as} : {}
-      api.resources(opts)
+      opts = acting_as ? {acting_as: acting_as} : {}
+      api.resources(opts).tap do |resources|
+        resources.select! { |r| r.identifier.start_with?(namespace) } if namespace
+      end
     end
 
     def fetch_roles
-      # TODO
+      role_graph.inject(Set.new) do |set,edge|
+        set << edge.parent << edge.child
+      end.to_a
+    end
+
+    def role_graph
+      @role_graph ||= begin
+        api.role_graph(acting_as || api.current_role, ancestors: true, descendants: true)
+      end
+    end
+
+    def grants
+      @grants ||= build_grants
+    end
+
+    def build_grants
+      Hash.new{ |h,k| h[k] = [] }.tap do |map|
+        roles.each do |role_id|
+          api.role(role_id).members.each do |grant|
+            map[role_id] << grant
+          end
+        end
+      end
     end
   end
 end

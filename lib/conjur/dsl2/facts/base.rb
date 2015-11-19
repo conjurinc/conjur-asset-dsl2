@@ -2,7 +2,7 @@ module Conjur::DSL2
   module Facts
     class Base
       class << self
-        def verb name
+        def kind name
           define_method(:verb){ name }
         end
 
@@ -27,3 +27,10 @@ module Conjur::DSL2
     end
   end
 end
+
+require 'conjur/dsl2/facts/fact_set'
+require 'conjur/dsl2/facts/grants'
+require 'conjur/dsl2/facts/helper'
+require 'conjur/dsl2/facts/permissions'
+require 'conjur/dsl2/facts/records'
+

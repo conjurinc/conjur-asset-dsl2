@@ -1,16 +1,16 @@
 module Conjur::DSL2
   module Facts
-    class Granted < Base
-      kind 'granted'
-      attributes :role, :member, :grant_option
+    class Grant < Base
+      kind :grant
+      attributes :role, :member, :admin_option
 
-      def initialize role, member, grant_option
-        @role, @member, @grant_option = role, member, grant_option
+      def initialize role, member, admin_option
+        @role, @member, @admin_option = role, member, admin_option
       end
     end
 
-    class Revoked
-      kind 'revoked'
+    class Revoke < Base
+      kind :revoke
       attributes :role, :member
 
       def initialize role, member
