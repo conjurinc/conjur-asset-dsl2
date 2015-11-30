@@ -20,12 +20,18 @@ module Conjur::DSL2
       @namespace = opts[:namespace]
     end
 
+    def facts
+      @facts ||= build_facts
+    end
+
+    private
+
     # Get all roles and resources.  We first list resources (visible to the role),
     # then roles (via role graph).  We match the roles to resources to generate
     # `RoleExists` facts, and use the memberships implicit in the role graph to
     # create `HasRole` facts. Finally, we use the `permissions` field of each
     # resource to create `HasPermission` facts.
-    def fetch
+    def build_facts
       @facts = Conjur::DSL2::Facts::FactSet.new
 
       add_record_facts
@@ -35,7 +41,7 @@ module Conjur::DSL2
       @facts
     end
 
-    private
+
 
     def add_record_facts
       resources.each do |res|

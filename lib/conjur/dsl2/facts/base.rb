@@ -2,16 +2,24 @@ module Conjur::DSL2
   module Facts
     class Base
       class << self
-        def kind name
-          define_method(:verb){ name }
+        def kind name=nil
+          if name
+            @kind = name
+          end
+          @kind
         end
 
         def attributes *args
-          attrs = args.push :verb
-          define_method(:equal_by){ attrs }
+          define_method(:equal_by){ args }
           protected(:equal_by)
-          attrs.each{|s| attr_reader(s)}
+          args.each{|s| attr_reader(s)}
         end
+      end
+
+      def to_s
+        "<#{self.class.kind} " + equal_by.inject([]) do |s, attr|
+          s << "#{attr}=#{send attr}"
+        end.join(' ') + '>'
       end
 
       def == other
@@ -21,7 +29,7 @@ module Conjur::DSL2
       end
 
       def hash
-        @hash ||= equal_by.map{|prop| send(prop)}.hash
+        @hash ||= (equal_by + [self.class.kind]).map{|prop| send(prop)}.hash
       end
 
     end

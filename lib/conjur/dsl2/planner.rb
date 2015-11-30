@@ -9,7 +9,7 @@ module Conjur
       class << self
         def plan records, api, options = {}
           namespace = options[:namespace]
-          ownerid = options[:ownerid]
+          ownerid =   options[:ownerid]
           Plan.new.tap do |p|
             p.namespace = namespace if namespace
             p.ownerid = ownerid if ownerid

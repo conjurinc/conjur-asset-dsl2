@@ -11,6 +11,7 @@ policy do
       role group("secrets-managers")
       replace true
     end
+
     permit %w(read execute) do
       resource variable("db-password")
       role group("secrets-users")

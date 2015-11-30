@@ -3,7 +3,7 @@ grant do
   member group("developers")
   member group("support")
   member group("marketing")
-  member group("ops"), admin_option: true
+  member group("ops"), admin: true
 end
 
 grant do
