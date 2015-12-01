@@ -16,8 +16,19 @@ module Conjur::DSL2
 
     def visit obj
       method = dispatch_method(obj.class)
-      raise NoMethodError "target #{target.class.name} has no visit method for #{obj.class.name}" unless method
-      target.send method, obj
+      if method.nil?
+        if target.respond_to?(:default_visit)
+          target.default_visit obj
+        else
+          raise NoMethodError, "target #{target.class.name} has no visit method for #{obj.class.name}"
+        end
+      else
+        target.send method, obj
+      end
+    end
+
+    def visit_each enumerable
+      enumerable.each{|o| visit(o)}
     end
 
     private
@@ -31,6 +42,7 @@ module Conjur::DSL2
         name = method_name_for_type(type)
         return name if target.respond_to?(name)
       end
+      nil
     end
 
     def method_name_for_type class_or_module
