@@ -49,7 +49,7 @@ module Conjur
                   'action' => 'permit',
                   'path' => "authz/#{account}/resources/#{kind}/#{id}?permit",
                   'parameters' => { "privilege" => privilege, "role" => role, "grant_option" => admin },
-                  'description' => "Permit #{role} to '#{privilege}' #{target}#{admin ? ' with admin option' : ''}"
+                  'description' => "Permit role '#{role}' to '#{privilege}' resource '#{target}'#{admin ? ' with admin option' : ''}"
                 })
               end
               if record.replace
@@ -63,7 +63,7 @@ module Conjur
                     'action' => 'deny',
                     'path' => "authz/#{account}/resources/#{kind}/#{id}?deny", 
                     'parameters' => { "privilege" => privilege, "role" => role },
-                    'description' => "Deny #{role} to '#{privilege}' #{target}"
+                    'description' => "Deny role '#{role}' to '#{privilege}' resource '#{target}'"
                   })
                 end
               end

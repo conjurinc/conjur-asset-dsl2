@@ -8,7 +8,9 @@ describe Planner do
     
   let(:filename) { "spec/lib/planner/record_fixture.rb" }
   let(:group) { double(:group, exists?: group_exists, attributes: { 'gidnumber' => 1101 }) }
+  let(:alice) { double(:user, exists?: user_exists, attributes: { 'uidnumber' => 1101 }) }
   let(:variable) { double(:variable, exists?: variable_exists, attributes: { 'mime_type' => "text/plain", 'kind' => "secret" }) }
+  let(:user_resource) { double(:resource, exists?: user_exists, owner: "the-account:group:developers", annotations: {}) }
   let(:group_resource) { double(:resource, exists?: group_exists, owner: "the-account:group:developers", annotations: {}) }
   let(:variable_resource) { double(:resource, exists?: variable_exists, owner: "the-account:variable:db-password", annotations: {}) }
   let(:cook_role) { double(:role, exists?: role_exists) }
@@ -18,16 +20,19 @@ describe Planner do
   let(:simple_variable) { Planner.planner_for(records[2], api) }
   let(:simple_role) { Planner.planner_for(records[3], api) }
   let(:resource_with_attributes) { Planner.planner_for(records[4], api) }
-  let(:subject) { simple_group }
+  let(:simple_user) { Planner.planner_for(records[5], api) }
 
   let(:group_exists) { false }
+  let(:user_exists) { false }
   let(:variable_exists) { false }
   let(:role_exists) { false }
   let(:resource_exists) { false }
     
   before do
     allow(api).to receive(:group).with("developers").and_return group
+    allow(api).to receive(:user).with("alice").and_return alice
     allow(api).to receive(:variable).with("db-password").and_return variable
+    allow(api).to receive(:resource).with("the-account:user:alice").and_return user_resource
     allow(api).to receive(:resource).with("the-account:group:developers").and_return group_resource
     allow(api).to receive(:resource).with("the-account:variable:db-password").and_return variable_resource
     allow(api).to receive(:role).with("the-account:job:cook").and_return cook_role
@@ -42,8 +47,9 @@ describe Planner do
   end
   
   context "when group doesn't exist" do
+    let(:subject) { simple_group }
     it "creates a group" do
-        expect(plan_yaml).to eq(<<-YAML)
+      expect(plan_yaml).to eq(<<-YAML)
 ---
 - service: directory
   type: group
@@ -51,11 +57,26 @@ describe Planner do
   path: groups
   parameters:
     id: developers
-  description: Create group developers
+  description: Create group 'developers'
         YAML
-      end
     end
-    context "when resource doesn't exist" do
+  end
+  context "when user doesn't exist" do
+    let(:subject) { simple_user }
+    it "creates a user" do
+      expect(plan_yaml).to eq(<<-YAML)
+---
+- service: directory
+  type: user
+  action: create
+  path: users
+  parameters:
+    login: alice
+  description: Create user 'alice'
+        YAML
+    end
+  end
+  context "when resource doesn't exist" do
     let(:subject) { resource_with_attributes }
     it "creates the resource" do
         expect(plan_yaml).to eq(<<-YAML)
@@ -67,7 +88,7 @@ describe Planner do
   id: the-account:food:bacon
   path: authz/the-account/resources/food/bacon
   parameters: {}
-  description: Create resource the-account:food:bacon
+  description: Create resource 'the-account:food:bacon'
 - service: authz
   type: annotation
   action: update
@@ -76,7 +97,7 @@ describe Planner do
   parameters:
     name: tastes
     value: Yummy
-  description: Update 'tastes' annotation on the-account:food:bacon
+  description: Update 'tastes' annotation on 'the-account:food:bacon'
       YAML
     end
   end
@@ -92,7 +113,7 @@ describe Planner do
   path: authz/the-account/roles/job/cook
   id: the-account:job:cook
   parameters: {}
-  description: Create role the-account:job:cook
+  description: Create role 'the-account:job:cook'
   YAML
     end
   end
@@ -109,7 +130,7 @@ describe Planner do
     id: db-password
     kind: database password
     mime_type: text/plain
-  description: Create variable db-password
+  description: Create variable 'db-password'
       YAML
       end
     end
@@ -121,9 +142,10 @@ describe Planner do
     end
   end
   context "when group exists" do
+    let(:subject) { simple_group }
     let(:group_exists) { true }
     it "it can be a nop" do
-        expect(plan_yaml).to eq(<<-YAML)
+      expect(plan_yaml).to eq(<<-YAML)
 --- []
       YAML
       end
@@ -139,7 +161,7 @@ describe Planner do
   id: developers
   parameters:
     gidnumber: 1102
-  description: Update 'gidnumber' on group developers
+  description: Update 'gidnumber' on group 'developers'
 - service: authz
   type: annotation
   action: update
@@ -148,7 +170,7 @@ describe Planner do
   parameters:
     name: name
     value: Developers
-  description: Update 'name' annotation on the-account:group:developers
+  description: Update 'name' annotation on 'the-account:group:developers'
     YAML
       end
     end

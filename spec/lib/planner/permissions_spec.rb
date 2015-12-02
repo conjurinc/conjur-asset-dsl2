@@ -60,7 +60,7 @@ describe Planner::Permit do
     privilege: read
     role: the-account:group:developers
     grant_option: false
-  description: Permit the-account:group:developers to 'read' the-account:variable:db-password
+  description: Permit role 'the-account:group:developers' to 'read' resource 'the-account:variable:db-password'
 - service: authz
   type: resource
   method: post
@@ -70,7 +70,7 @@ describe Planner::Permit do
     privilege: execute
     role: the-account:group:developers
     grant_option: false
-  description: Permit the-account:group:developers to 'execute' the-account:variable:db-password
+  description: Permit role 'the-account:group:developers' to 'execute' resource 'the-account:variable:db-password'
           YAML
         end
       end
@@ -109,7 +109,7 @@ describe Planner::Permit do
     privilege: execute
     role: the-account:group:developers
     grant_option: false
-  description: Permit the-account:group:developers to 'execute' the-account:variable:db-password
+  description: Permit role 'the-account:group:developers' to 'execute' resource 'the-account:variable:db-password'
           YAML
         end
         context "and the permission is 'replace'" do
@@ -127,7 +127,7 @@ describe Planner::Permit do
   parameters:
     privilege: read
     role: the-account:group:operations
-  description: Deny the-account:group:operations to 'read' the-account:variable:db-password
+  description: Deny role 'the-account:group:operations' to 'read' resource 'the-account:variable:db-password'
 - service: authz
   type: resource
   method: post
@@ -137,7 +137,7 @@ describe Planner::Permit do
     privilege: execute
     role: the-account:group:developers
     grant_option: false
-  description: Permit the-account:group:developers to 'execute' the-account:variable:db-password
+  description: Permit role 'the-account:group:developers' to 'execute' resource 'the-account:variable:db-password'
             YAML
           end
         end

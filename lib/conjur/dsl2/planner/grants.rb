@@ -45,7 +45,7 @@ module Conjur
                 'action' => 'grant',
                 'path' => "authz/#{account}/roles/#{kind}/#{id}?members",
                 'parameters' => { "member" => member, "admin_option" => admin },
-                'description' => "Grant #{roleid} to #{member}#{admin ? ' with admin option' : ''}"
+                'description' => "Grant role '#{roleid}' to role '#{member}'#{admin ? ' with admin option' : ''}"
               })
             end
             if record.replace
@@ -59,7 +59,7 @@ module Conjur
                   'action' => 'revoke',
                   'path' => "authz/#{account}/roles/#{kind}/#{id}?members", 
                   'parameters' => { "member" => member },
-                  'description' => "Revoke #{roleid} from #{member}"
+                  'description' => "Revoke role '#{roleid}' from role '#{member}'"
                 })
               end
             end

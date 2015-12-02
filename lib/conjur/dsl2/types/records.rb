@@ -114,6 +114,8 @@ module Conjur
         
         attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
         
+        def id_attribute; 'login'; end
+        
         def custom_attribute_names
           [ :uidnumber ]
         end

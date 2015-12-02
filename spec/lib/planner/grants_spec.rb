@@ -54,7 +54,7 @@ describe Planner::Grant do
   parameters:
     member: the-account:group:secrets-managers
     admin_option: false
-  description: Grant the-account:group:secrets-users to the-account:group:secrets-managers
+  description: Grant role 'the-account:group:secrets-users' to role 'the-account:group:secrets-managers'
           YAML
         end
       end
@@ -78,7 +78,7 @@ describe Planner::Grant do
   parameters:
     member: the-account:group:secrets-managers
     admin_option: false
-  description: Grant the-account:group:secrets-users to the-account:group:secrets-managers
+  description: Grant role 'the-account:group:secrets-users' to role 'the-account:group:secrets-managers'
           YAML
         end
         context "with 'replace'" do
@@ -96,7 +96,7 @@ describe Planner::Grant do
   parameters:
     member: the-account:group:secrets-managers
     admin_option: false
-  description: Grant the-account:group:secrets-users to the-account:group:secrets-managers
+  description: Grant role 'the-account:group:secrets-users' to role 'the-account:group:secrets-managers'
 - service: authz
   type: role
   method: delete
@@ -104,7 +104,7 @@ describe Planner::Grant do
   path: authz/the-account/roles/group/secrets-users?members
   parameters:
     member: the-account:group:developers
-  description: Revoke the-account:group:secrets-users from the-account:group:developers
+  description: Revoke role 'the-account:group:secrets-users' from role 'the-account:group:developers'
             YAML
           end
         end

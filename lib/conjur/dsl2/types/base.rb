@@ -273,6 +273,8 @@ module Conjur
           false
         end
         
+        def id_attribute; 'id'; end
+        
         def custom_attribute_names
           [ ]
         end

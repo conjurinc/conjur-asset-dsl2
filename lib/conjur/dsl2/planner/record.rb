@@ -16,7 +16,7 @@ module Conjur
               'id' => scoped_resourceid(record),
               'path' => resource_path,
               'parameters' => { "owner" => scoped_roleid(record.owner) },
-              'description' => "Change owner of #{scoped_resourceid(record)} to #{scoped_roleid(record.owner)}"
+              'description' => "Change owner of '#{scoped_resourceid(record)}' to '#{scoped_roleid(record.owner)}'"
             })
           end
         end
@@ -38,7 +38,7 @@ module Conjur
                 'id' => scoped_resourceid(record),
                 'path' => update_annotation_path,
                 'parameters' => { "name" => attr.to_s, "value" => new_value },
-                'description' => "Update '#{attr}' annotation on #{scoped_resourceid(record)}"
+                'description' => "Update '#{attr}' annotation on '#{scoped_resourceid(record)}'"
               })
             end
           end
@@ -62,7 +62,7 @@ module Conjur
               'path' => role_path,
               'id' => roleid,
               'parameters' => create_parameters,
-              'description' => "Create role #{roleid}"
+              'description' => "Create role '#{roleid}'"
             })
           end
         end
@@ -108,7 +108,7 @@ module Conjur
               'id' => resourceid,
               'path' => resource_path,
               'parameters' => create_parameters,
-              'description' => "Create resource #{resourceid}"
+              'description' => "Create resource '#{resourceid}'"
             })
             update_annotations
           end
@@ -185,7 +185,7 @@ module Conjur
               'action' => 'create',
               'path' => create_path,
               'parameters' => create_parameters,
-              'description' => "Create #{record.resource_kind} #{scoped_id(record)}"
+              'description' => "Create #{record.resource_kind} '#{scoped_id(record)}'"
             })
           end
           update_annotations
@@ -206,9 +206,9 @@ module Conjur
                 'type' => record.resource_kind, 
                 'action' => 'update',
                 'path' => update_path,
-                'id' => scoped_id(record), 
+                record.id_attribute => scoped_id(record), 
                 'parameters' => { attr.to_s => new_value || "" },
-                'description' => "Update '#{attr}' on #{record.resource_kind} #{scoped_id(record)}"
+                'description' => "Update '#{attr}' on #{record.resource_kind} '#{scoped_id(record)}'"
               })
             end
           end
@@ -216,7 +216,7 @@ module Conjur
         
         def create_parameters
           {
-            "id" => scoped_id(record)
+            record.id_attribute => scoped_id(record)
           }.tap do |params|
             custom_attrs = record.custom_attribute_names.inject({}) do |memo, attr|
               value = record.send(attr)
