@@ -97,4 +97,51 @@ In addition to the standard record members, variables support the following memb
 
 Note that both of these attributes are immutable once the variable has been created.
 
+### Permit and Deny
+
+These elements give a role permission on a resource, or take it away.  For example,
+this element will permit `ops` to `update` and `execute` `layer-a`:
+
+```yaml
+- !permit
+    privilege: [update, execute]
+    role: !group ops
+    resource: !layer layer-a
+```
+
+Notice that the `role`s and `resource`s must be *tagged* with their kind: `!group` and `!layer` in this example.
+
+Permit elements can have a `replace` member set to `true`: this directs Conjur to replace existing permissions on the resource with
+those listed in this element.
+
+A `deny` element is similar, but does not support the `replace` member.
+
+### Grant and Revoke
+
+These elements grant roles to other roles, and revoke those grants.
+
+A typical `grant` element looks like this:
+
+```yaml
+- !grant
+  role: !group everyone
+  members:
+    - !group developers
+    - !group
+      id: support
+    - !group marketing
+    - 
+      role: !group ops
+      admin: true
+```
+
+This will grant the role `group:everyone` to groups `developers`, `support`, `marketing` and `ops`.  The 
+`admin: true` member of the `ops` entry will allow `ops` to grant the role `group:everyone` to other roles.  Note
+that `admin: false` can be used in a grant statement to take this ability away from a member.
+
+A `grant` element may also have a `replace: true` member, which will revoke any existing grants of the role before
+adding the new one.
+
+A `revoke` element revokes a grant, and is like the `grant` element except that `admin` and `replace` are meaningless.
+
 
