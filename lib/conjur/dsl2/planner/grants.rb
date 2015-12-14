@@ -37,30 +37,19 @@ module Conjur
             
             (Set.new(requested) - Set.new(given)).each do |p|
               member, admin = p
-              account, kind, id = roleid.split(':', 3)
-              action({
-                'service' => 'authz',
-                'type' => 'role',
-                'method' => 'put',
-                'action' => 'grant',
-                'path' => "authz/#{account}/roles/#{kind}/#{id}?members",
-                'parameters' => { "member" => member, "admin_option" => admin },
-                'description' => "Grant role '#{roleid}' to role '#{member}'#{admin ? ' with admin option' : ''}"
-              })
+              grant = Conjur::DSL2::Types::Grant.new
+              grant.role = role_record roleid
+              grant.member = Conjur::DSL2::Types::Member.new role_record(member)
+              grant.member.admin = true if admin
+              action grant
             end
             if record.replace
               (Set.new(given) - Set.new(requested)).each do |p|
                 member, admin = p
-                account, kind, id = roleid.split(':', 3)
-                action({
-                  'service' => 'authz',
-                  'type' => 'role',
-                  'method' => 'delete',
-                  'action' => 'revoke',
-                  'path' => "authz/#{account}/roles/#{kind}/#{id}?members", 
-                  'parameters' => { "member" => member },
-                  'description' => "Revoke role '#{roleid}' from role '#{member}'"
-                })
+                revoke = Conjur::DSL2::Types::Revoke.new
+                revoke.role = role_record roleid
+                revoke.member = role_record(member)
+                action revoke
               end
             end
           end

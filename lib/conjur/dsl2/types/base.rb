@@ -66,14 +66,23 @@ module Conjur
           end
         end
 
+        def test_record r
+          r.is_a?(Record)
+        end
+
         # Duck-type roles.
         def test_role r
-          r.respond_to?(:role?) && r.role?          
+          r.role?          
         end
         
         # Duck-type resources.
         def test_resource r
-          r.respond_to?(:resource?) && r.resource?
+          r.resource?
+        end
+        
+        # If it's a Record
+        def expect_record value
+          expect_type value, "Record", lambda{ test_record value }
         end
         
         # If it looks like a resource.
@@ -277,6 +286,14 @@ module Conjur
         
         def custom_attribute_names
           [ ]
+        end
+        
+        def resource?
+          false
+        end
+        
+        def role?
+          false
         end
         
         class << self

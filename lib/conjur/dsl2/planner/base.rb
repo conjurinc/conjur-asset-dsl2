@@ -35,6 +35,78 @@ module Conjur
         def default_account
           Conjur.configuration.account
         end
+        
+        def role_record fullid
+          account, kind, id = fullid.split(':', 3)
+          Conjur::DSL2::Types.const_get(kind.classify).new.tap do |record|
+            record.account = account unless account == default_account
+            record.kind = kind if record.respond_to?(kind)
+            record.id = id
+          end
+        end
+        
+        alias resource_record role_record
+        
+        def resource
+          api.resource(scoped_resourceid record)
+        end
+        
+        def role
+          api.role(scoped_roleid record)
+        end
+        
+        def update_record
+          update = Conjur::DSL2::Types::Update.new
+          update.record = record
+          record.id = scoped_id(record)
+
+          record.custom_attribute_names.each do |attr|
+            existing_value = object.attributes[attr]
+            new_value = record.send(attr)
+            if new_value && new_value == existing_value
+              record.send "@#{attr}=", nil
+            else
+              raise "Cannot modify immutable attribute '#{record.resource_kind}.#{attr}'" if record.immutable_attribute_names.member?(attr)
+            end
+          end
+          
+          if record.resource?
+            existing = resource.exists? ? resource.annotations : {}
+            (record.annotations||{}).keys.each do |attr|
+              existing_value = existing[attr]
+              new_value = record.annotations[attr]
+              if new_value == existing_value
+                record.annotations.delete attr
+              end
+            end
+          end
+          
+        end
+        
+        def create_record
+          create = Conjur::DSL2::Types::Create.new
+          create.record = record
+          record.account ||= default_account
+          record.id = scoped_id(record)
+          if record.owner
+            record.owner = scoped_roleid(record.owner.roleid) 
+          elsif plan.ownerid
+            record.owner = plan.ownerid
+          end
+          
+          if record.resource?
+            existing = resource.exists? ? resource.annotations : {}
+            (record.annotations||{}).keys.each do |attr|
+              existing_value = existing[attr]
+              new_value = record.annotations[attr]
+              if new_value == existing_value
+                record.annotations.delete attr
+              end
+            end
+          end
+          
+          action create
+        end
       end
     end
   end

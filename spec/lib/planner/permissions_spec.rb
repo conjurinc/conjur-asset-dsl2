@@ -3,8 +3,7 @@ require 'conjur/dsl2/ruby/loader'
 
 include Conjur::DSL2
 
-describe Planner::Permit do
-  include_context "planner"
+describe Planner::Permit, planning: true do
   
   let(:filename) { "spec/lib/planner/permissions_fixture.rb" }
   let(:permit) { records[0] }
@@ -25,15 +24,6 @@ describe Planner::Permit do
   let(:db_password_exists) { true }
   let(:developers_exists) { true }
     
-  subject { planner }
-    
-  let(:plan_yaml) do
-    plan = Plan.new
-    subject.plan = plan
-    subject.do_plan
-    plan.actions.to_yaml
-  end
-
   before do
     allow(api).to receive(:resource).with("the-account:variable:db-password").and_return db_password_resource
     allow(api).to receive(:resource).with("the-account:group:developers").and_return developers_resource
@@ -49,28 +39,26 @@ describe Planner::Permit do
     context "when the role and resource exist" do
       context "and the resource has no permissions existing" do
         it "permits it to all roles" do
+          expect(plan_descriptions).to eq([
+            "Permit group 'developers' to 'read' variable 'db-password'",
+            "Permit group 'developers' to 'execute' variable 'db-password'"
+            ])
           expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: authz
-  type: resource
-  method: post
-  action: permit
-  path: authz/the-account/resources/variable/db-password?permit
-  parameters:
-    privilege: read
-    role: the-account:group:developers
-    grant_option: false
-  description: Permit role 'the-account:group:developers' to 'read' resource 'the-account:variable:db-password'
-- service: authz
-  type: resource
-  method: post
-  action: permit
-  path: authz/the-account/resources/variable/db-password?permit
-  parameters:
-    privilege: execute
-    role: the-account:group:developers
-    grant_option: false
-  description: Permit role 'the-account:group:developers' to 'execute' resource 'the-account:variable:db-password'
+- !permit
+  privilege: read
+  resource: !variable
+    id: db-password
+  role: !member
+    role: !group
+      id: developers
+- !permit
+  privilege: execute
+  resource: !variable
+    id: db-password
+  role: !member
+    role: !group
+      id: developers
           YAML
         end
       end
@@ -98,46 +86,34 @@ describe Planner::Permit do
           ]
         }
         it "permits it to the new role" do
-          expect(plan_yaml).to eq(<<-YAML)
----
-- service: authz
-  type: resource
-  method: post
-  action: permit
-  path: authz/the-account/resources/variable/db-password?permit
-  parameters:
-    privilege: execute
-    role: the-account:group:developers
-    grant_option: false
-  description: Permit role 'the-account:group:developers' to 'execute' resource 'the-account:variable:db-password'
-          YAML
+          expect(plan_descriptions).to eq([
+            "Permit group 'developers' to 'execute' variable 'db-password'",
+            ])
         end
         context "and the permission is 'replace'" do
           before {
             permit.replace = true
           }
-          it "permits it to the new role and revokes the existing role" do
+          it "permits it to the new role and denies to the existing role" do
+            expect(plan_descriptions).to eq([
+              "Deny group 'operations' to 'read' variable 'db-password'",
+              "Permit group 'developers' to 'execute' variable 'db-password'",
+              ])
             expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: authz
-  type: resource
-  method: post
-  action: deny
-  path: authz/the-account/resources/variable/db-password?deny
-  parameters:
-    privilege: read
-    role: the-account:group:operations
-  description: Deny role 'the-account:group:operations' to 'read' resource 'the-account:variable:db-password'
-- service: authz
-  type: resource
-  method: post
-  action: permit
-  path: authz/the-account/resources/variable/db-password?permit
-  parameters:
-    privilege: execute
-    role: the-account:group:developers
-    grant_option: false
-  description: Permit role 'the-account:group:developers' to 'execute' resource 'the-account:variable:db-password'
+- !deny
+  privilege: read
+  resource: !variable
+    id: db-password
+  role: !group
+    id: operations
+- !permit
+  privilege: execute
+  resource: !variable
+    id: db-password
+  role: !member
+    role: !group
+      id: developers
             YAML
           end
         end

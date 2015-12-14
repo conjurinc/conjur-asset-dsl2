@@ -3,8 +3,7 @@ require 'conjur/dsl2/ruby/loader'
 
 include Conjur::DSL2
 
-describe Planner::Grant do
-  include_context "planner"
+describe Planner::Grant, planning: true do
   
   let(:filename) { "spec/lib/planner/grants_fixture.rb" }
   let(:grant) { records[0] }
@@ -23,13 +22,6 @@ describe Planner::Grant do
     
   subject { planner }
     
-  let(:plan_yaml) do
-    plan = Plan.new
-    subject.plan = plan
-    subject.do_plan
-    plan.actions.to_yaml
-  end
-
   before do
     allow(api).to receive(:role).with("the-account:group:secrets-users").and_return secrets_users_role
   end
@@ -44,17 +36,15 @@ describe Planner::Grant do
     context "when the role and member exist" do
       context "and the role has no grants existing" do
         it "grants it to all roles" do
+          expect(plan_descriptions).to eq(["Grant group 'secrets-users' to group 'secrets-managers'"])
           expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: authz
-  type: role
-  method: put
-  action: grant
-  path: authz/the-account/roles/group/secrets-users?members
-  parameters:
-    member: the-account:group:secrets-managers
-    admin_option: false
-  description: Grant role 'the-account:group:secrets-users' to role 'the-account:group:secrets-managers'
+- !grant
+  member: !member
+    role: !group
+      id: secrets-managers
+  role: !group
+    id: secrets-users
           YAML
         end
       end
@@ -68,43 +58,28 @@ describe Planner::Grant do
           ]
         }
         it "permits it to the new role" do
-          expect(plan_yaml).to eq(<<-YAML)
----
-- service: authz
-  type: role
-  method: put
-  action: grant
-  path: authz/the-account/roles/group/secrets-users?members
-  parameters:
-    member: the-account:group:secrets-managers
-    admin_option: false
-  description: Grant role 'the-account:group:secrets-users' to role 'the-account:group:secrets-managers'
-          YAML
+          expect(plan_descriptions).to eq(["Grant group 'secrets-users' to group 'secrets-managers'"])
         end
         context "with 'replace'" do
           before {
             grant.replace = true
           }
           it "permits it to the new role and revokes the existing non-admin role" do
+            expect(plan_descriptions).to eq(["Grant group 'secrets-users' to group 'secrets-managers'",
+              "Revoke group 'secrets-users' from group 'developers'"])
             expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: authz
-  type: role
-  method: put
-  action: grant
-  path: authz/the-account/roles/group/secrets-users?members
-  parameters:
-    member: the-account:group:secrets-managers
-    admin_option: false
-  description: Grant role 'the-account:group:secrets-users' to role 'the-account:group:secrets-managers'
-- service: authz
-  type: role
-  method: delete
-  action: revoke
-  path: authz/the-account/roles/group/secrets-users?members
-  parameters:
-    member: the-account:group:developers
-  description: Revoke role 'the-account:group:secrets-users' from role 'the-account:group:developers'
+- !grant
+  member: !member
+    role: !group
+      id: secrets-managers
+  role: !group
+    id: secrets-users
+- !revoke
+  member: !group
+    id: developers
+  role: !group
+    id: secrets-users
             YAML
           end
         end

@@ -1,18 +1,61 @@
 module Conjur
   module DSL2
-    class Executor
-      def initialize api, actions
+    module Executor
+    end
+  end
+end
+
+require 'conjur/dsl2/executor/base'
+require 'conjur/dsl2/executor/annotate'
+require 'conjur/dsl2/executor/create'
+require 'conjur/dsl2/executor/give'
+require 'conjur/dsl2/executor/grants'
+require 'conjur/dsl2/executor/permissions'
+require 'conjur/dsl2/executor/retire'
+require 'conjur/dsl2/executor/update'
+
+module Conjur
+  module DSL2
+    class BasicExecutor
+      class << self
+        def collect plan
+          result = []
+          plan.actions.each do |record|
+            class_name = action.class.name.split("::")[-1]
+            executor = Conjur::DSL2:Executor.const_get(class_name).new(record, api, result)
+            executor.execute
+          end
+          result
+        end
+        
+        def execute plan
+          actions = collect plan
+          
+          require 'net/https'
+          uri = URI.parse(Conjur.configuration.appliance_url)
+          @base_path = uri.path
+          Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
+            @http = http
+            actions.each do |step|
+              invoke step
+            end
+          end
+        end
+      end
+    end
+    
+    class HTTPExecutor
+      def initialize api
         @api = api
-        @actions = actions
       end
       
-      def execute
+      def execute actions
         require 'net/https'
         uri = URI.parse(Conjur.configuration.appliance_url)
         @base_path = uri.path
         Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
           @http = http
-          @actions.each do |step|
+          actions.each do |step|
             invoke step
           end
         end
@@ -21,14 +64,7 @@ module Conjur
       protected
       
       def invoke step
-        method, path, parameters = step
-
-        def update_annotation_path
-          [ "authz", account, "annotations", record.resource_kind, scoped_id(record) ].join('/')
-        end
-
-        method = step['method'] || step['action']
-        send method, step['path'], step['parameters']
+        send step['method'], step['path'], step['parameters']
       end
       
       def create path, parameters

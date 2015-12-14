@@ -3,8 +3,7 @@ require 'conjur/dsl2/ruby/loader'
 
 include Conjur::DSL2
 
-describe Planner do
-  include_context "planner"
+describe Planner, planning: true do
     
   let(:filename) { "spec/lib/planner/record_fixture.rb" }
   let(:group) { double(:group, exists?: group_exists, attributes: { 'gidnumber' => 1101 }) }
@@ -39,98 +38,77 @@ describe Planner do
     allow(api).to receive(:resource).with("the-account:food:bacon").and_return bacon_resource
   end
   
-  let(:plan_yaml) do
-    plan = Plan.new
-    subject.plan = plan
-    subject.do_plan
-    plan.actions.to_yaml
-  end
-  
   context "when group doesn't exist" do
     let(:subject) { simple_group }
     it "creates a group" do
+      expect(plan_descriptions).to eq([
+        "Create group 'developers'"
+      ])
       expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: directory
-  type: group
-  action: create
-  path: groups
-  parameters:
+- !create
+  record: !group
     id: developers
-  description: Create group 'developers'
         YAML
     end
   end
   context "when user doesn't exist" do
     let(:subject) { simple_user }
     it "creates a user" do
+      expect(plan_descriptions).to eq([
+        "Create user 'alice'"
+      ])
       expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: directory
-  type: user
-  action: create
-  path: users
-  parameters:
+- !create
+  record: !user
     login: alice
-  description: Create user 'alice'
         YAML
     end
   end
   context "when resource doesn't exist" do
     let(:subject) { resource_with_attributes }
     it "creates the resource" do
+      expect(plan_descriptions).to eq([
+        "Create food 'bacon'\nSet food 'bacon' annotation 'tastes'",
+        ])
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: authz
-  type: resource
-  action: create
-  method: put
-  id: the-account:food:bacon
-  path: authz/the-account/resources/food/bacon
-  parameters: {}
-  description: Create resource 'the-account:food:bacon'
-- service: authz
-  type: annotation
-  action: update
-  id: the-account:food:bacon
-  path: authz/the-account/annotations/food/bacon
-  parameters:
-    name: tastes
-    value: Yummy
-  description: Update 'tastes' annotation on 'the-account:food:bacon'
+- !create
+  record: !resource
+    annotations:
+      tastes: Yummy
+    id: bacon
+    kind: food
       YAML
     end
   end
   context "when role doesn't exist" do
     let(:subject) { simple_role }
     it "creates the role" do
+      expect(plan_descriptions).to eq(["Create job 'cook'"])
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: authz
-  type: role
-  action: create
-  method: put
-  path: authz/the-account/roles/job/cook
-  id: the-account:job:cook
-  parameters: {}
-  description: Create role 'the-account:job:cook'
+- !create
+  record: !role
+    id: cook
+    kind: job
   YAML
     end
   end
   context "when variable doesn't exist" do
     let(:subject) { simple_variable }
     it "creates a variable" do
+      expect(plan_descriptions).to eq([
+        "Create variable 'db-password'"
+        ])
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: directory
-  type: variable
-  action: create
-  path: variables
-  parameters:
+- !create
+  record: !variable
     id: db-password
     kind: database password
     mime_type: text/plain
-  description: Create variable 'db-password'
       YAML
       end
     end
@@ -152,25 +130,18 @@ describe Planner do
       context "and has attributes" do
       let(:subject) { group_with_attributes }
       it "it will update gidnumber and annotations" do
-          expect(plan_yaml).to eq(<<-YAML)
+        expect(plan_descriptions).to eq([
+          "Update field 'gidnumber' and annotation 'name' on group 'developers'",
+        ])
+        expect(plan_yaml).to eq(<<-YAML)
 ---
-- service: directory
-  type: group
-  action: update
-  path: groups/developers
+- !group
   id: developers
+  create: false
   parameters:
     gidnumber: 1102
-  description: Update 'gidnumber' on group 'developers'
-- service: authz
-  type: annotation
-  action: update
-  id: the-account:group:developers
-  path: authz/the-account/annotations/group/developers
-  parameters:
-    name: name
-    value: Developers
-  description: Update 'name' annotation on 'the-account:group:developers'
+  annotations:
+    name: Developers
     YAML
       end
     end

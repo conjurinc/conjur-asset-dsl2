@@ -41,30 +41,21 @@ module Conjur
               
               (Set.new(requested) - Set.new(given)).each do |p|
                 role, admin = p
-                account, kind, id = target.split(':', 3)
-                action({
-                  'service' => 'authz',
-                  'type' => 'resource',
-                  'method' => 'post',
-                  'action' => 'permit',
-                  'path' => "authz/#{account}/resources/#{kind}/#{id}?permit",
-                  'parameters' => { "privilege" => privilege, "role" => role, "grant_option" => admin },
-                  'description' => "Permit role '#{role}' to '#{privilege}' resource '#{target}'#{admin ? ' with admin option' : ''}"
-                })
+                permit = Conjur::DSL2::Types::Permit.new
+                permit.resource = resource_record target
+                permit.privilege = privilege
+                permit.role = Conjur::DSL2::Types::Member.new role_record(role)
+                permit.role.admin = true if admin
+                action permit
               end
               if record.replace
                 (Set.new(given) - Set.new(requested)).each do |p|
                   role, admin = p
-                  account, kind, id = target.split(':', 3)
-                  action({
-                    'service' => 'authz',
-                    'type' => 'resource',
-                    'method' => 'post',
-                    'action' => 'deny',
-                    'path' => "authz/#{account}/resources/#{kind}/#{id}?deny", 
-                    'parameters' => { "privilege" => privilege, "role" => role },
-                    'description' => "Deny role '#{role}' to '#{privilege}' resource '#{target}'"
-                  })
+                  deny = Conjur::DSL2::Types::Deny.new
+                  deny.resource = resource_record target
+                  deny.privilege = privilege
+                  deny.role = role_record(role)
+                  action deny
                 end
               end
             end

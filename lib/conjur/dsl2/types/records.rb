@@ -1,6 +1,10 @@
 module Conjur
   module DSL2
     module Types
+      # A createable record type.
+      class Record < Base
+      end
+      
       module ActsAsResource
         def self.included(base)
           base.module_eval do
@@ -25,7 +29,11 @@ module Conjur
           self.id = id if id
         end
 
-        def resourceid default_account
+        def to_s
+          "#{account ? account + ' ' : ''}#{resource_kind} '#{id}'"
+        end
+        
+        def resourceid default_account = nil
           [ account || default_account, resource_kind, id ].join(":")
         end
         
@@ -68,20 +76,32 @@ module Conjur
         end
       end
       
-      class Role < Base
+      module ActsAsCompoundId
+        def initialize kind_or_id = nil, id = nil
+          if kind_or_id && id
+            self.kind = kind_or_id
+            self.id = id
+          elsif id.nil? && kind_or_id && kind_or_id.index(":")
+            self.account, self.kind, self.id = kind_or_id.split(':', 3)
+          end
+        end
+          
+        def to_s
+          "#{account ? account + ' ' : ''}#{kind} '#{id}'"
+        end
+      end
+      
+      class Role < Record
         include ActsAsRole
+        include ActsAsCompoundId
         
         attribute :id,   kind: :string, singular: true, dsl_accessor: true
         attribute :kind, kind: :string, singular: true, dsl_accessor: true
         attribute :account, kind: :string, singular: true
         attribute :owner, kind: :role, singular: true, dsl_accessor: true
-        
-        def initialize kind = nil, id = nil
-          self.kind = kind if kind
-          self.id = id if id
-        end
 
-        def roleid default_account
+        def roleid default_account = nil
+          raise "account is required" unless account || default_account
           [ account || default_account, kind, id ].join(":")
         end
         
@@ -93,22 +113,18 @@ module Conjur
         end
       end
       
-      class Resource < Base
+      class Resource < Record
         include ActsAsResource
+        include ActsAsCompoundId
 
         attribute :kind, kind: :string, singular: true, dsl_accessor: true
-        
-        def initialize kind = nil, id = nil
-          self.kind = kind if kind
-          self.id = id if id
-        end
         
         def resource_kind
           kind
         end
       end
       
-      class User < Base
+      class User < Record
         include ActsAsResource
         include ActsAsRole
         
@@ -121,7 +137,7 @@ module Conjur
         end
       end
       
-      class Group < Base
+      class Group < Record
         include ActsAsResource
         include ActsAsRole
         
@@ -132,17 +148,17 @@ module Conjur
         end
       end
       
-      class Host < Base
+      class Host < Record
         include ActsAsResource
         include ActsAsRole
       end
       
-      class Layer < Base
+      class Layer < Record
         include ActsAsResource
         include ActsAsRole
       end
       
-      class Variable < Base
+      class Variable < Record
         include ActsAsResource
         
         attribute :kind,      kind: :string, singular: true, dsl_accessor: true
@@ -157,7 +173,7 @@ module Conjur
         end
       end
       
-      class Webservice < Base
+      class Webservice < Record
         include ActsAsResource
       end
       

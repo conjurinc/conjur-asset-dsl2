@@ -2,6 +2,7 @@ require 'conjur/dsl2/plan'
 require 'conjur/dsl2/planner/record'
 require 'conjur/dsl2/planner/permissions'
 require 'conjur/dsl2/planner/grants'
+require 'conjur/dsl2/planner/owner'
 
 module Conjur
   module DSL2
@@ -31,6 +32,7 @@ module Conjur
           rescue NameError
             Record
           end
+          p cls
           cls.new record, api
         end
       end
