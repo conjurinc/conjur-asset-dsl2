@@ -16,13 +16,26 @@ require 'conjur/dsl2/executor/update'
 
 module Conjur
   module DSL2
+    module Executor
+      class << self
+        def creator_class_for create
+          class_name = create.record.class.name.split("::")[-1]
+          begin
+            Conjur::DSL2::Executor.const_get([ "Create", class_name ].join)
+          rescue NameError
+            Conjur::DSL2::Executor::CreateRecord
+          end
+        end
+      end
+    end
+    
     class BasicExecutor
       class << self
         def collect plan
           result = []
           plan.actions.each do |record|
             class_name = action.class.name.split("::")[-1]
-            executor = Conjur::DSL2:Executor.const_get(class_name).new(record, api, result)
+            executor = Conjur::DSL2::Executor.const_get(class_name).new(record, api, result)
             executor.execute
           end
           result

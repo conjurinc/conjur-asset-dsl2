@@ -42,12 +42,13 @@ describe Planner, planning: true do
     let(:subject) { simple_group }
     it "creates a group" do
       expect(plan_descriptions).to eq([
-        "Create group 'developers'"
+        "Create group 'developers' in account 'the-account'"
       ])
       expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !group
+    account: the-account
     id: developers
         YAML
     end
@@ -56,13 +57,14 @@ describe Planner, planning: true do
     let(:subject) { simple_user }
     it "creates a user" do
       expect(plan_descriptions).to eq([
-        "Create user 'alice'"
+        "Create user 'alice' in account 'the-account'"
       ])
       expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !user
-    login: alice
+    account: the-account
+    id: alice
         YAML
     end
   end
@@ -70,12 +72,13 @@ describe Planner, planning: true do
     let(:subject) { resource_with_attributes }
     it "creates the resource" do
       expect(plan_descriptions).to eq([
-        "Create food 'bacon'\nSet food 'bacon' annotation 'tastes'",
+        "Create food 'bacon' in account 'the-account'\n\tSet annotation 'tastes'",
         ])
         expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !resource
+    account: the-account
     annotations:
       tastes: Yummy
     id: bacon
@@ -86,11 +89,12 @@ describe Planner, planning: true do
   context "when role doesn't exist" do
     let(:subject) { simple_role }
     it "creates the role" do
-      expect(plan_descriptions).to eq(["Create job 'cook'"])
+      expect(plan_descriptions).to eq(["Create job 'cook' in account 'the-account'"])
         expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !role
+    account: the-account
     id: cook
     kind: job
   YAML
@@ -100,15 +104,15 @@ describe Planner, planning: true do
     let(:subject) { simple_variable }
     it "creates a variable" do
       expect(plan_descriptions).to eq([
-        "Create variable 'db-password'"
+        "Create variable 'db-password' in account 'the-account'"
         ])
         expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !variable
+    account: the-account
     id: db-password
     kind: database password
-    mime_type: text/plain
       YAML
       end
     end
@@ -131,17 +135,16 @@ describe Planner, planning: true do
       let(:subject) { group_with_attributes }
       it "it will update gidnumber and annotations" do
         expect(plan_descriptions).to eq([
-          "Update field 'gidnumber' and annotation 'name' on group 'developers'",
+          "Update group 'developers'\n\tSet field 'gidnumber'\n\tSet annotation 'name'",
         ])
         expect(plan_yaml).to eq(<<-YAML)
 ---
-- !group
-  id: developers
-  create: false
-  parameters:
+- !update
+  record: !group
+    annotations:
+      name: Developers
     gidnumber: 1102
-  annotations:
-    name: Developers
+    id: developers
     YAML
       end
     end

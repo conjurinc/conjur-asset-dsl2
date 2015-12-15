@@ -3,24 +3,33 @@ require 'conjur/dsl2/planner/base'
 module Conjur
   module DSL2
     module Planner      
-      class Role < Base
+      module ActsAsRecord
         def do_plan
-          if role.exists?
-            change_owner
+          if object.exists?
+            update_record
           else
             create_record
           end
         end
       end
       
+      class Role < Base
+        include ActsAsRecord
+        
+        alias object role
+      end
+      
       class Resource < Base
-        def do_plan
-          if resource.exists?
-            change_owner
-            update_record
-          else
-            create_record
-          end
+        include ActsAsRecord
+        
+        alias object resource
+      end
+      
+      class Record < Base
+        include ActsAsRecord
+        
+        def object
+          @object ||= api.send(record.resource_kind, scoped_id(record))
         end
       end
       
@@ -52,30 +61,6 @@ module Conjur
               plan.policy = nil
               plan.ownerid = ownerid
             end
-          end
-        end
-      end
-      
-      class Record < Base
-        def do_plan
-          if object.exists?
-            change_owner
-            update_record
-          else
-            create_record
-          end
-        end
-        
-        def object
-          @object ||= api.send(record.resource_kind, scoped_id(record))
-        end
-      end
-      
-      class Variable < Record
-        def create_parameters
-          super.tap do |params|
-            params['mime_type'] ||= 'text/plain'
-            params['kind'] ||= 'secret'
           end
         end
       end

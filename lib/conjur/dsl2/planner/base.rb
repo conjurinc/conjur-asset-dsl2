@@ -81,6 +81,7 @@ module Conjur
             end
           end
           
+          action update if update.will_modify_fields?
         end
         
         def create_record

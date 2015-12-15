@@ -42,6 +42,15 @@ module Conjur::DSL2::Executor
     end
   end
   
+  class CreateVariable < CreateRecord
+    def create_parameters
+      super.tap do |params|
+        params['mime_type'] ||= 'text/plain'
+        params['kind'] ||= 'secret'
+      end
+    end
+  end
+  
   module ActingAs
     def acting_as_parameters
       {}.tap do |params|

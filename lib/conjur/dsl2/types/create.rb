@@ -6,7 +6,7 @@ module Conjur::DSL2::Types
       messages = [ "Create #{record}" ]
       if record.resource?
         (record.annotations||{}).each do |k,v|
-          messages.push "Set #{record} annotation '#{k}'"
+          messages.push "\tSet annotation '#{k}'"
         end
       end
       messages.join("\n")

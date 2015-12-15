@@ -23,6 +23,7 @@ describe Executor, planning: true do
   
   describe Executor::Create do
     let(:filename) { "spec/lib/executor/create_fixture.rb" }
+    let(:executor_class) { Executor.creator_class_for record }
     let(:group) { plan.actions[0] }
     let(:variable) { plan.actions[1] }
     let(:role) { plan.actions[2] }
@@ -30,25 +31,21 @@ describe Executor, planning: true do
       
     describe "group" do
       let(:record) { group }
-      let(:executor_class) { Executor::CreateRecord }
       let(:requests) { [{method: "post", path: "groups", parameters: {"id"=>"developers", "gidnumber"=>1102}}] }
       it_should_behave_like "proper HTTP request"
     end
     describe "variable" do
       let(:record) { variable }
-      let(:executor_class) { Executor::CreateRecord }
-      let(:requests) { [{method: "post", path: "variables", parameters: {"id"=>"db-password", "kind"=>"database password"}}] }
+      let(:requests) { [{method: "post", path: "variables", parameters: {"id"=>"db-password", "mime_type" => "text/plain", "kind"=>"database password"}}] }
       it_should_behave_like "proper HTTP request"
     end
-    describe "variable" do
+    describe "role" do
       let(:record) { role }
-      let(:executor_class) { Executor::CreateRole }
       let(:requests) { [{method: "put", path: "authz/the-account/roles/job/cook", parameters: {}}] }
       it_should_behave_like "proper HTTP request"
     end
-    describe "variable" do
+    describe "resource" do
       let(:record) { resource }
-      let(:executor_class) { Executor::CreateResource }
       let(:requests) { [{method: "put", path: "authz/the-account/resources/food/bacon", parameters: {}}] }
       it_should_behave_like "proper HTTP request"
     end

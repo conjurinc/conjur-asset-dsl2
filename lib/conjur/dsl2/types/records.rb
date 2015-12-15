@@ -30,7 +30,7 @@ module Conjur
         end
 
         def to_s
-          "#{account ? account + ' ' : ''}#{resource_kind} '#{id}'"
+          "#{resource_kind} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
         end
         
         def resourceid default_account = nil
@@ -87,7 +87,7 @@ module Conjur
         end
           
         def to_s
-          "#{account ? account + ' ' : ''}#{kind} '#{id}'"
+          "#{kind} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
         end
       end
       
