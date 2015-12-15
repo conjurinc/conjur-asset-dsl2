@@ -60,13 +60,17 @@ module Conjur
           update.record = record
           record.id = scoped_id(record)
 
+          changed = false
           record.custom_attribute_names.each do |attr|
             existing_value = object.attributes[attr]
             new_value = record.send(attr)
-            if new_value && new_value == existing_value
-              record.send "@#{attr}=", nil
-            else
-              raise "Cannot modify immutable attribute '#{record.resource_kind}.#{attr}'" if record.immutable_attribute_names.member?(attr)
+            if new_value
+              if new_value == existing_value
+                record.send "@#{attr}=", nil
+              else
+                raise "Cannot modify immutable attribute '#{record.resource_kind}.#{attr}'" if record.immutable_attribute_names.member?(attr)
+                changed = true
+              end
             end
           end
           
@@ -77,11 +81,29 @@ module Conjur
               new_value = record.annotations[attr]
               if new_value == existing_value
                 record.annotations.delete attr
+              else
+                changed = true
+              end
+            end
+            
+            if record.owner && resource.owner != scoped_roleid(record.owner)
+              give = Conjur::DSL2::Types::Give.new
+              give.resource = resource
+              give.owner = scoped_roleid(record.owner)
+              action give
+              
+              if record.role?
+                grant = Conjur::DSL2::Types::Grant.new
+                grant.role = role
+                grant.member = Conjur::DSL2::Types::Member.new
+                grant.member.role = scoped_roleid(record.owner)
+                grant.member.admin = true
+                action grant
               end
             end
           end
           
-          action update if update.will_modify_fields?
+          action update if changed
         end
         
         def create_record

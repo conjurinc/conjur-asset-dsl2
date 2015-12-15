@@ -10,14 +10,4 @@ module Conjur::DSL2::Executor
       })
     end
   end
-
-  class Revoke < Base
-    def execute
-      action({
-        'method' => 'delete',
-        'path' => "authz/#{account}/roles/#{kind}/#{id}?members",
-        'parameters' => { "member" => member }
-      })
-    end
-  end
 end

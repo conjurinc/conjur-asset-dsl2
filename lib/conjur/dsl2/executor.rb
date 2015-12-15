@@ -6,11 +6,12 @@ module Conjur
 end
 
 require 'conjur/dsl2/executor/base'
-require 'conjur/dsl2/executor/annotate'
 require 'conjur/dsl2/executor/create'
 require 'conjur/dsl2/executor/give'
-require 'conjur/dsl2/executor/grants'
-require 'conjur/dsl2/executor/permissions'
+require 'conjur/dsl2/executor/grant'
+require 'conjur/dsl2/executor/revoke'
+require 'conjur/dsl2/executor/permit'
+require 'conjur/dsl2/executor/deny'
 require 'conjur/dsl2/executor/retire'
 require 'conjur/dsl2/executor/update'
 
