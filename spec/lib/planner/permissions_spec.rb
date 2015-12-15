@@ -8,6 +8,7 @@ describe Planner::Permit, planning: true do
   let(:filename) { "spec/lib/planner/permissions_fixture.rb" }
   let(:permit) { records[0] }
   let(:planner) { Planner.planner_for(permit, api) }
+  subject { planner }
     
   let(:db_password) { double(:db_password, exists?: db_password_exists) }
   let(:developers) { double(:developers, exists?: developers_exists) }

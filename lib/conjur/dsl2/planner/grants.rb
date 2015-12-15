@@ -20,6 +20,7 @@ module Conjur
             rescue RestClient::ResourceNotFound
               []
             end
+            
             grants.each do |grant|
               # Don't revoke admins from roles
               next if grant.admin_option

@@ -3,30 +3,19 @@ require 'conjur/dsl2/ruby/loader'
 
 include Conjur::DSL2
 
-describe Planner::Grant, planning: true do
-  
+describe Planner, planning: true do
   let(:filename) { "spec/lib/planner/grants_fixture.rb" }
-  let(:grant) { records[0] }
-  let(:planner) { Planner.planner_for(grant, api) }
+  let(:api) { MockAPI.new 'the-account', fixture }
+  let(:grant_record) { records[0] }
+  let(:grant_plan) { Planner.planner_for(grant_record, api) }
+  subject { grant_plan }
     
-  let(:secrets_users_role) {
-    double(:secrets_users_role, 
-      exists?: secrets_users_exists, 
-      kind: "group", 
-      role_id: "secrets-users",
-      members: members)
-  }
-  let(:members) { [] }
-    
-  let(:secrets_users_exists) { true }
-    
-  subject { planner }
-    
-  before do
-    allow(api).to receive(:role).with("the-account:group:secrets-users").and_return secrets_users_role
-  end
-
   context "when the grant is brand new" do
+    let(:fixture) {
+      Conjur::DSL2::YAML::Loader.load <<-YAML
+[]
+      YAML
+    }
     context "when the role does not exist" do
       it "reports the error"
     end
@@ -34,6 +23,16 @@ describe Planner::Grant, planning: true do
       it "reports the error"
     end
     context "when the role and member exist" do
+      let(:fixture) {
+        Conjur::DSL2::YAML::Loader.load <<-YAML
+- !role
+  kind: group
+  id: secrets-managers
+- !role
+  kind: group
+  id: secrets-users
+        YAML
+      }
       context "and the role has no grants existing" do
         it "grants it to all roles" do
           expect(plan_descriptions).to eq(["Grant group 'secrets-users' to group 'secrets-managers'"])
@@ -57,12 +56,15 @@ describe Planner::Grant, planning: true do
             Conjur::RoleGrant.new(double(:operations, roleid: "the-account:group:operations"), grantor, true),
           ]
         }
+        before {
+          expect(api.role("the-account:group:secrets-users")).to receive(:members).and_return(members)
+        }
         it "permits it to the new role" do
           expect(plan_descriptions).to eq(["Grant group 'secrets-users' to group 'secrets-managers'"])
         end
         context "with 'replace'" do
           before {
-            grant.replace = true
+            grant_record.replace = true
           }
           it "permits it to the new role and revokes the existing non-admin role" do
             expect(plan_descriptions).to eq(["Grant group 'secrets-users' to group 'secrets-managers'",

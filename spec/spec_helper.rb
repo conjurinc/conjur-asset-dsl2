@@ -13,8 +13,6 @@ shared_context "planner", planning: true do
   end
   let(:records) { Ruby::Loader.load_file(filename) }
     
-  subject { planner }
-    
   let(:plan_actions) do
     plan = Plan.new
     subject.plan = plan
@@ -42,6 +40,10 @@ module MockAsset
     @api = api
     @record = record
   end
+  
+  def to_s
+    record.to_s
+  end
 end
 
 class MockRole
@@ -51,6 +53,10 @@ class MockRole
   
   def exists?
     !!@record
+  end
+  
+  def members
+    []
   end
 end
 
@@ -93,27 +99,44 @@ class MockAPI
   def initialize account, records
     @account = account
     @records = records
+    @roles_by_id = {}
+    @resources_by_id = {}
+    @records_by_id = {}
   end
   
   def resource id
-    record = @records.find do |r|
-      r.resource? && r.resourceid(account) == id
+    find_or_create @resources_by_id, id do
+      record = @records.find do |r|
+        r.resource? && r.resourceid(account) == id
+      end
+      MockResource.new(self, record)
     end
-    MockResource.new(self, record)
   end
   
   def role id
-    role = @records.find do |r|
-      r.role? && r.roleid(account) == id
+    find_or_create @roles_by_id, id do
+      role = @records.find do |r|
+        r.role? && r.roleid(account) == id
+      end
+      MockRole.new(self, role)
     end
-    MockRole.new(self, role)
   end
   
   def group id
-    record = @records.find do |r|
-      r.is_a?(Types::Group) && r.id == id
+    find_or_create @records_by_id, [ "group", id ].join(":") do
+      record = @records.find do |r|
+        r.is_a?(Types::Group) && r.id == id
+      end
+      MockRecord.new self, record
     end
-    MockRecord.new self, record
+  end
+  
+  protected
+  
+  def find_or_create list, id
+    result = list[id]
+    return result if result
+    list[id] = yield
   end
 
   def variable id
