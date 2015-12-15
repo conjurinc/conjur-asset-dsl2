@@ -66,7 +66,7 @@ module Conjur
             new_value = record.send(attr)
             if new_value
               if new_value == existing_value
-                record.send "@#{attr}=", nil
+                record.send "#{attr}=", nil
               else
                 raise "Cannot modify immutable attribute '#{record.resource_kind}.#{attr}'" if record.immutable_attribute_names.member?(attr)
                 changed = true

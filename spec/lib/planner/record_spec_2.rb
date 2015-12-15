@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'conjur/dsl2/ruby/loader'
-
 include Conjur::DSL2
 
 describe Planner, planning: true do
@@ -10,6 +9,7 @@ describe Planner, planning: true do
   let(:group_with_attributes) { Planner.planner_for(records[1], api) }
   let(:group_with_new_owner) { Planner.planner_for(records[6], api) }
   let(:simple_role){ Planner.planner_for(records[3], api) }
+  let(:variable){ Planner.planner_for(records[2], api) }
   let(:resource_with_annotation){ Planner.planner_for(records[4], api) }
   let(:api) { MockAPI.new 'the-account', fixture }
 
@@ -187,5 +187,69 @@ YAML
       end
     end
   end
+
+  describe 'variable records' do
+    subject{ variable }
+
+    context 'when the variable does not exist' do
+      let(:fixture){ empty_fixture }
+      it 'creates it' do
+        expect(plan_descriptions).to eq( ["Create variable 'db-password' in account 'the-account'"])
+        expect(plan_yaml).to eq(<<-YAML)
+---
+- !create
+  record: !variable
+    account: the-account
+    id: db-password
+    kind: database password
+        YAML
+      end
+    end
+
+    context 'when the variable exists and has the same kind' do
+      let(:fixture){
+        Conjur::DSL2::YAML::Loader.load <<-YAML
+- !variable
+  id: db-password
+  kind: database password
+        YAML
+      }
+
+      it 'does nothing' do
+        expect(plan_descriptions).to be_empty
+        expect(plan_yaml).to eq([].to_yaml)
+      end
+    end
+
+    context 'when the variable exists and has different kind' do
+      let(:fixture){
+        Conjur::DSL2::YAML::Loader.load <<-YAML
+- !variable
+  id: db-password
+  kind: generic password
+        YAML
+      }
+
+      it 'fails' do
+        expect{ plan_descriptions }.to raise_error(RuntimeError, /Cannot modify immutable attribute.*/)
+      end
+    end
+
+    context 'when the variable exists and has a different mime_type' do
+      let(:fixture){
+        Conjur::DSL2::YAML::Loader.load <<-YAML
+- !variable
+  id: db-password
+  kind: generic password
+  mime_type: whatever
+        YAML
+      }
+
+      it 'fails' do
+        expect{ plan_descriptions }.to raise_error(RuntimeError, /Cannot modify immutable attribute.*/)
+      end
+    end
+  end
+
 
 end
