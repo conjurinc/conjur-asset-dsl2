@@ -8,6 +8,7 @@ describe Planner, planning: true do
   let(:simple_group) { Planner.planner_for(records[0], api) }
   let(:group_with_attributes) { Planner.planner_for(records[1], api) }
   let(:group_with_new_owner) { Planner.planner_for(records[6], api) }
+  let(:simple_role){ Planner.planner_for(records[3], api) }
   let(:api) { MockAPI.new 'the-account', fixture }
 
   context "when group doesn't exist" do
@@ -91,4 +92,47 @@ describe Planner, planning: true do
       end
     end
   end
+
+  describe 'role creation' do
+    context 'when the role does not exist' do
+      let(:fixture){
+        Conjur::DSL2::YAML::Loader.load('[]')
+      }
+      subject{ simple_role }
+
+      it 'creates the role' do
+        expect(plan_descriptions).to eq(["Create job 'cook' in account 'the-account'"])
+        expect(plan_yaml).to eq(<<-YAML)
+---
+- !create
+  record: !role
+    account: the-account
+    id: cook
+    kind: job
+YAML
+      end
+
+    end
+
+    context 'when the role exists' do
+      let(:fixture){
+        Conjur::DSL2::YAML::Loader.load <<-YAML
+---
+- !role
+  kind: job
+  id: cook
+YAML
+      }
+      subject{ simple_role }
+
+      it 'does nothing' do
+        expect(plan_descriptions).to be_empty
+        expect(plan_yaml).to eq([].to_yaml)
+      end
+
+    end
+  end
+
+
+
 end
