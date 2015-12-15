@@ -72,12 +72,12 @@ module Conjur
 
         # Duck-type roles.
         def test_role r
-          r.role?          
+          r.respond_to?(:role?) && r.role?          
         end
         
         # Duck-type resources.
         def test_resource r
-          r.resource?
+          r.respond_to?(:resource?) && r.resource?
         end
         
         # If it's a Record

@@ -31,10 +31,23 @@ shared_context "planner", planning: true do
   end
 end
 
-class MockRole
-  def initialize record
+module MockAsset
+  def self.included base
+    base.module_eval do
+      attr_reader :api, :record
+    end
+  end
+  
+  def initialize api, record
+    @api = api
     @record = record
   end
+end
+
+class MockRole
+  include MockAsset
+  
+  def role?; true; end
   
   def exists?
     !!@record
@@ -42,12 +55,16 @@ class MockRole
 end
 
 class MockResource
-  def initialize record
-    @record = record
-  end
-  
+  include MockAsset
+
   def exists?
     !!@record
+  end
+  
+  def resource?; true; end
+  
+  def owner
+    @record.owner || [ @api.account, 'group', 'operations' ].join(":")
   end
   
   def annotations
@@ -56,9 +73,7 @@ class MockResource
 end
 
 class MockRecord
-  def initialize record
-    @record = record
-  end
+  include MockAsset
   
   def exists?
     !!@record
@@ -84,20 +99,20 @@ class MockAPI
     record = @records.find do |r|
       r.resource? && r.resourceid(account) == id
     end
-    MockResource.new(record)
+    MockResource.new(self, record)
   end
   
   def role id
     role = @records.find do |r|
       r.role? && r.roleid(account) == id
     end
-    MockRole.new(role)
+    MockRole.new(self, role)
   end
   
   def group id
     record = @records.find do |r|
       r.is_a?(Types::Group) && r.id == id
     end
-    MockRecord.new record
+    MockRecord.new self, record
   end
 end

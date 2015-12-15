@@ -88,15 +88,15 @@ module Conjur
             
             if record.owner && resource.owner != scoped_roleid(record.owner)
               give = Conjur::DSL2::Types::Give.new
-              give.resource = resource
-              give.owner = scoped_roleid(record.owner)
+              give.resource = Conjur::DSL2::Types::Resource.new(record.resourceid(default_account))
+              give.owner = Conjur::DSL2::Types::Role.new scoped_roleid(record.owner)
               action give
               
               if record.role?
                 grant = Conjur::DSL2::Types::Grant.new
-                grant.role = role
+                grant.role = Conjur::DSL2::Types::Role.new(record.roleid(default_account))
                 grant.member = Conjur::DSL2::Types::Member.new
-                grant.member.role = scoped_roleid(record.owner)
+                grant.member.role = Conjur::DSL2::Types::Role.new scoped_roleid(record.owner)
                 grant.member.admin = true
                 action grant
               end
