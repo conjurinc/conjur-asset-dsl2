@@ -7,7 +7,7 @@ describe Planner, planning: true do
   let(:filename) { "spec/lib/planner/record_fixture.rb" }
   let(:simple_group) { Planner.planner_for(records[0], api) }
   let(:group_with_attributes) { Planner.planner_for(records[1], api) }
-  let(:group_with_new_owner) { Planner.planner_for(records[2], api) }
+  let(:group_with_new_owner) { Planner.planner_for(records[6], api) }
   let(:api) { MockAPI.new 'the-account', fixture }
 
   context "when group doesn't exist" do

@@ -5,10 +5,6 @@ group "developers" do
   annotation 'name', "Developers"
 end
 
-group "developers" do
-  owner Conjur::DSL2::Types::Role.new('foreign-account:group:operations')
-end
-
 variable "db-password" do
   kind "database password"
 end
@@ -20,3 +16,7 @@ resource "food", "bacon" do
 end
 
 user 'alice'
+
+group "developers" do
+  owner Conjur::DSL2::Types::Role.new('foreign-account:group:operations')
+end
