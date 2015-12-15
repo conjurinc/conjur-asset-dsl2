@@ -25,8 +25,4 @@ require 'conjur/dsl2/yaml/loader'
 require 'conjur/dsl2/ruby/loader'
 require 'conjur/dsl2/planner'
 require 'conjur/dsl2/executor'
-require 'conjur/dsl2/visitor'
-require 'conjur/dsl2/facts/base'
-require 'conjur/dsl2/server_fact_loader'
-require 'conjur/dsl2/policy_fact_loader'
 
