@@ -5,18 +5,16 @@ include Conjur::DSL2
 
 describe Planner, planning: true do
   let(:filename) { "spec/lib/planner/record_fixture.rb" }
+  let(:empty_fixture){ Conjur::DSL2::YAML::Loader.load('[]') }
   let(:simple_group) { Planner.planner_for(records[0], api) }
   let(:group_with_attributes) { Planner.planner_for(records[1], api) }
   let(:group_with_new_owner) { Planner.planner_for(records[6], api) }
   let(:simple_role){ Planner.planner_for(records[3], api) }
+  let(:resource_with_annotation){ Planner.planner_for(records[4], api) }
   let(:api) { MockAPI.new 'the-account', fixture }
 
   context "when group doesn't exist" do
-    let(:fixture) {
-      Conjur::DSL2::YAML::Loader.load <<-YAML
-[]
-      YAML
-    }
+    let(:fixture) { empty_fixture }
     let(:subject) { simple_group }
     it "creates a group" do
       expect(plan_descriptions).to eq([
@@ -95,9 +93,7 @@ describe Planner, planning: true do
 
   describe 'role creation' do
     context 'when the role does not exist' do
-      let(:fixture){
-        Conjur::DSL2::YAML::Loader.load('[]')
-      }
+      let(:fixture){ empty_fixture }
       subject{ simple_role }
 
       it 'creates the role' do
@@ -133,6 +129,63 @@ YAML
     end
   end
 
+  describe 'resource creation' do
+    subject{ resource_with_annotation }
+    context 'when the resource does not exist' do
+      let(:fixture){ empty_fixture }
+      it 'creates the resource and annotates it' do
+        expect(plan_descriptions).to eq(["Create food 'bacon' in account 'the-account'\n\tSet annotation 'tastes'"])
+        expect(plan_yaml).to eq(<<-YAML)
+---
+- !create
+  record: !resource
+    account: the-account
+    annotations:
+      tastes: Yummy
+    id: bacon
+    kind: food
+YAML
+      end
+    end
 
+    context 'when the resource exists but does not have any annotations' do
+      let(:fixture){
+        Conjur::DSL2::YAML::Loader.load <<-YAML
+- !resource
+  kind: food
+  id: bacon
+        YAML
+      }
+      it 'updates the resource with the annotation' do
+        expect(plan_descriptions).to eq(["Update food 'bacon'\n\tSet annotation 'tastes'"])
+        expect(plan_yaml).to eq(<<-YAML)
+---
+- !update
+  record: !resource
+    annotations:
+      tastes: Yummy
+    id: bacon
+    kind: food
+YAML
+      end
+    end
+
+    context 'when the resource exists and has the annotation' do
+      let(:fixture){
+        Conjur::DSL2::YAML::Loader.load <<-YAML
+- !resource
+  kind: food
+  id: bacon
+  annotations:
+    tastes: Yummy
+      YAML
+      }
+
+      it 'does nothing' do
+        expect(plan_descriptions).to be_empty
+        expect(plan_yaml).to eq([].to_yaml)
+      end
+    end
+  end
 
 end
