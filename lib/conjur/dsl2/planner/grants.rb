@@ -14,6 +14,7 @@ module Conjur
           members = Array(record.members)
           given_grants = Hash.new { |hash, key| hash[key] = [] }
           requested_grants = Hash.new { |hash, key| hash[key] = [] }
+            
           roles.each do |role|
             grants = begin
               api.role(scoped_roleid(role)).members

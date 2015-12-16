@@ -38,12 +38,31 @@ module Conjur
         
         def role_record fullid
           account, kind, id = fullid.split(':', 3)
-          Conjur::DSL2::Types.const_get(kind.classify).new.tap do |record|
-            record.account = account unless account == default_account
-            record.kind = kind if record.respond_to?(kind)
-            record.id = id
+          if kind == '@'
+            Conjur::DSL2::Types::ManagedRole.build fullid, default_account
+          else
+            if record_class = record_type(kind)
+              record_class.new.tap do |record|
+                record.account = account unless account == default_account
+                unless record.is_a?(Conjur::DSL2::Types::Variable)
+                  record.kind = kind if record.respond_to?(:kind=)
+                end
+                record.id = id
+              end
+            else
+              Conjur::DSL2::Types::Role.new(fullid, default_account: default_account)
+            end
           end
         end
+        
+        def record_type kind
+          begin
+            Conjur::DSL2::Types.const_get(kind.classify)
+          rescue NameError
+            nil
+          end
+        end
+            
         
         alias resource_record role_record
         
@@ -88,15 +107,15 @@ module Conjur
             
             if record.owner && resource.owner != scoped_roleid(record.owner)
               give = Conjur::DSL2::Types::Give.new
-              give.resource = Conjur::DSL2::Types::Resource.new(record.resourceid(default_account))
-              give.owner = Conjur::DSL2::Types::Role.new scoped_roleid(record.owner)
+              give.resource = Conjur::DSL2::Types::Resource.new(record.resourceid(default_account), default_account: default_account)
+              give.owner = Conjur::DSL2::Types::Role.new(scoped_roleid(record.owner), default_account: default_account)
               action give
               
               if record.role?
                 grant = Conjur::DSL2::Types::Grant.new
-                grant.role = Conjur::DSL2::Types::Role.new(record.roleid(default_account))
+                grant.role = Conjur::DSL2::Types::Role.new(record.roleid(default_account), default_account: default_account)
                 grant.member = Conjur::DSL2::Types::Member.new
-                grant.member.role = Conjur::DSL2::Types::Role.new scoped_roleid(record.owner)
+                grant.member.role = Conjur::DSL2::Types::Role.new(scoped_roleid(record.owner), default_account: default_account)
                 grant.member.admin = true
                 action grant
               end

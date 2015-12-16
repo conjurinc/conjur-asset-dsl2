@@ -62,8 +62,8 @@ describe Planner, planning: true do
     context "with a different owner changes" do
       let(:subject) { group_with_new_owner }
       it "changes the owner" do
-        expect(plan_descriptions).to eq(["Give group 'developers' in account 'the-account' to group 'operations' in account 'foreign-account'",
-                    "Grant group 'developers' in account 'the-account' to group 'operations' in account 'foreign-account' with admin option"])
+        expect(plan_descriptions).to eq(["Give group 'developers' to group 'operations' in account 'foreign-account'", 
+          "Grant group 'developers' to group 'operations' in account 'foreign-account' with admin option"])
         expect(plan_yaml).to eq(<<-YAML)
 ---
 - !give
@@ -72,7 +72,6 @@ describe Planner, planning: true do
     id: operations
     kind: group
   resource: !resource
-    account: the-account
     id: developers
     kind: group
 - !grant
@@ -83,7 +82,6 @@ describe Planner, planning: true do
       id: operations
       kind: group
   role: !role
-    account: the-account
     id: developers
     kind: group
         YAML

@@ -77,12 +77,14 @@ module Conjur
       end
       
       module ActsAsCompoundId
-        def initialize kind_or_id = nil, id = nil
-          if kind_or_id && id
+        def initialize kind_or_id = nil, id_or_options = nil
+          if kind_or_id && id_or_options && id_or_options.is_a?(String)
             self.kind = kind_or_id
-            self.id = id
-          elsif id.nil? && kind_or_id && kind_or_id.index(":")
-            self.account, self.kind, self.id = kind_or_id.split(':', 3)
+            self.id = id_or_options
+          elsif kind_or_id && kind_or_id.index(":")
+            id_or_options ||= {}
+            account, self.kind, self.id = kind_or_id.split(':', 3)
+            self.account = account if account != id_or_options[:default_account]
           end
         end
           
@@ -187,6 +189,36 @@ module Conjur
         
         attribute :record,    kind: :role,   singular: true
         attribute :role_name, kind: :string, singular: true
+        
+        class << self
+          def build fullid, default_account
+            account, kind, id = fullid.split(':', 3)
+            raise "Expecting @ for kind, got #{kind}" unless kind == "@"
+            record_kind, record_id, role_name = id.split('/', 3)
+            record = Conjur::DSL2::Types.const_get(record_kind.classify).new.tap do |record|
+              record.id = record_id
+              record.account = account unless account == default_account
+            end
+            self.new record, role_name
+          end
+        end
+        
+        def to_s
+          role_name = self.id.split('/')[-1]
+          "'#{role_name}' on #{record}"
+        end
+        
+        def account
+          record.account
+        end
+        
+        def role_kind
+          "@"
+        end
+        
+        def id
+          [ record.role_kind, record.id, role_name ].join('/')
+        end
       end
     end
   end

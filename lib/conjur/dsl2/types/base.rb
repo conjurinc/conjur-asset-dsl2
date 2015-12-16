@@ -361,7 +361,7 @@ module Conjur
       
       module ManagedRoleDSL
         def managed_role record, role_name
-          self.role = ManagedRole.new(record, role_name)
+          ManagedRole.new(record, role_name)
         end
       end
     end
