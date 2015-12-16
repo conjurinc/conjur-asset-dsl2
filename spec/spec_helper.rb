@@ -11,7 +11,7 @@ shared_context "planner", planning: true do
     require 'conjur/api'
     allow(Conjur).to receive(:configuration).and_return(double(:configuration, account: "the-account"))
   end
-  let(:records) { Ruby::Loader.load_file(filename) }
+  let(:records) { Conjur::DSL2::YAML::Loader.load_file(filename) }
     
   let(:plan_actions) do
     plan = Plan.new
@@ -123,9 +123,23 @@ class MockAPI
   end
   
   def group id
-    find_or_create @records_by_id, [ "group", id ].join(":") do
+    find_or_create_record Types::Group, id
+  end
+  
+  def layer id
+    find_or_create_record Types::Layer, id
+  end
+  
+  def host_factory id
+    find_or_create_record Types::HostFactory, id
+  end
+  
+  protected
+  
+  def find_or_create_record kind_class, id
+    find_or_create @records_by_id, [ kind_class.short_name.underscore, id ].join(":") do
       record = @records.find do |r|
-        r.is_a?(Types::Group) && r.id == id
+        r.is_a?(kind_class) && r.id == id
       end
       MockRecord.new self, record
     end

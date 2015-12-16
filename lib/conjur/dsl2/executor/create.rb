@@ -3,6 +3,10 @@ module Conjur::DSL2::Executor
     def record
       statement.record
     end
+    
+    def record_account
+      record.account || default_account
+    end
   end
 
   class CreateRecord < Create
@@ -41,6 +45,15 @@ module Conjur::DSL2::Executor
       end
     end
   end
+
+  class CreateHostFactory < CreateRecord
+    def create_parameters
+      super.tap do |params|
+        params['roleid'] = (record.roles||[]).map(&:roleid)
+        params['layer'] =  (record.layers||[]).map(&:id)
+      end
+    end
+  end
   
   class CreateVariable < CreateRecord
     def create_parameters
@@ -71,7 +84,7 @@ module Conjur::DSL2::Executor
     end
     
     def resource_path
-      [ "authz", record.account, "resources", record.resource_kind, record.id ].join('/')
+      [ "authz", record_account, "resources", record.resource_kind, record.id ].join('/')
     end
   end
 
@@ -87,7 +100,7 @@ module Conjur::DSL2::Executor
     end
 
     def role_path
-      [ "authz", record.account, "roles", record.role_kind, record.id ].join('/')
+      [ "authz", record_account, "roles", record.role_kind, record.id ].join('/')
     end
   end
 end

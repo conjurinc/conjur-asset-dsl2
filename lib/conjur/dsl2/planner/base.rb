@@ -128,7 +128,6 @@ module Conjur
         def create_record
           create = Conjur::DSL2::Types::Create.new
           create.record = record
-          record.account ||= default_account
           record.id = scoped_id(record)
           if record.owner
             record.owner = scoped_roleid(record.owner.roleid) 

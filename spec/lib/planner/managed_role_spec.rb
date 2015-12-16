@@ -4,7 +4,7 @@ require 'conjur/dsl2/ruby/loader'
 include Conjur::DSL2
 
 describe Planner, planning: true do
-  let(:filename) { "spec/lib/planner/managed_role_fixture.rb" }
+  let(:filename) { "spec/lib/planner/managed_role_fixture.yml" }
   let(:api) { MockAPI.new 'the-account', fixture }
   let(:grant_plan) { Planner.planner_for(grant_record, api) }
   subject { grant_plan }

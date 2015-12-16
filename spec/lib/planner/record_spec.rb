@@ -3,7 +3,7 @@ require 'conjur/dsl2/ruby/loader'
 include Conjur::DSL2
 
 describe Planner, planning: true do
-  let(:filename) { "spec/lib/planner/record_fixture.rb" }
+  let(:filename) { "spec/lib/planner/record_fixture.yml" }
   let(:empty_fixture){ Conjur::DSL2::YAML::Loader.load('[]') }
   let(:simple_group) { Planner.planner_for(records[0], api) }
   let(:group_with_attributes) { Planner.planner_for(records[1], api) }
@@ -11,6 +11,8 @@ describe Planner, planning: true do
   let(:simple_role){ Planner.planner_for(records[3], api) }
   let(:variable){ Planner.planner_for(records[2], api) }
   let(:resource_with_annotation){ Planner.planner_for(records[4], api) }
+  let(:layer){ Planner.planner_for(records[7], api) }
+  let(:host_factory){ Planner.planner_for(records[8], api) }
   let(:api) { MockAPI.new 'the-account', fixture }
 
   context "when group doesn't exist" do
@@ -18,13 +20,12 @@ describe Planner, planning: true do
     let(:subject) { simple_group }
     it "creates a group" do
       expect(plan_descriptions).to eq([
-                  "Create group 'developers' in account 'the-account'"
+                  "Create group 'developers'"
               ])
       expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !group
-    account: the-account
     id: developers
       YAML
     end
@@ -95,12 +96,11 @@ describe Planner, planning: true do
       subject{ simple_role }
 
       it 'creates the role' do
-        expect(plan_descriptions).to eq(["Create job 'cook' in account 'the-account'"])
+        expect(plan_descriptions).to eq(["Create job 'cook'"])
         expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !role
-    account: the-account
     id: cook
     kind: job
         YAML
@@ -132,12 +132,11 @@ describe Planner, planning: true do
     context 'when the resource does not exist' do
       let(:fixture){ empty_fixture }
       it 'creates the resource and annotates it' do
-        expect(plan_descriptions).to eq(["Create food 'bacon' in account 'the-account'\n\tSet annotation 'tastes'"])
+        expect(plan_descriptions).to eq(["Create food 'bacon'\n\tSet annotation 'tastes'"])
         expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !resource
-    account: the-account
     annotations:
       tastes: Yummy
     id: bacon
@@ -192,12 +191,11 @@ describe Planner, planning: true do
     context 'when the variable does not exist' do
       let(:fixture){ empty_fixture }
       it 'creates it' do
-        expect(plan_descriptions).to eq( ["Create variable 'db-password' in account 'the-account'"])
+        expect(plan_descriptions).to eq( ["Create variable 'db-password'"])
         expect(plan_yaml).to eq(<<-YAML)
 ---
 - !create
   record: !variable
-    account: the-account
     id: db-password
     kind: database password
         YAML
@@ -249,5 +247,24 @@ describe Planner, planning: true do
     end
   end
 
+  describe 'host factory' do
+    subject{ host_factory }
 
+    context 'when it does not exist' do
+      let(:fixture){ empty_fixture }
+      it 'creates it' do
+        expect(plan_descriptions).to eq( ["Create host factory 'frontend'"])
+        expect(plan_yaml).to eq(<<-YAML)
+---
+- !create
+  record: !host-factory
+    id: frontend
+    layer: !layer
+      id: frontend
+    role: !group
+      id: dev-admin
+        YAML
+      end
+    end
+  end
 end

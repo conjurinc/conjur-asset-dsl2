@@ -66,10 +66,6 @@ module Conjur
           end
         end
 
-        def test_record r
-          r.is_a?(Record)
-        end
-
         # Duck-type roles.
         def test_role r
           r.respond_to?(:role?) && r.role?          
@@ -82,7 +78,12 @@ module Conjur
         
         # If it's a Record
         def expect_record value
-          expect_type value, "Record", lambda{ test_record value }
+          expect_type value, "Record", lambda{ value.is_a?(Record) }
+        end
+        
+        # If it's a Layer
+        def expect_layer value
+          expect_type value, "Layer", lambda{ value.is_a?(Layer) }
         end
         
         # If it looks like a resource.

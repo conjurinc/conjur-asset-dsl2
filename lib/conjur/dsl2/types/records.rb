@@ -30,7 +30,7 @@ module Conjur
         end
 
         def to_s
-          "#{resource_kind} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
+          "#{resource_kind.gsub('_', ' ')} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
         end
         
         def resourceid default_account = nil
@@ -177,6 +177,13 @@ module Conjur
       
       class Webservice < Record
         include ActsAsResource
+      end
+      
+      class HostFactory < Record
+        include ActsAsResource
+        
+        attribute :role, kind: :role, dsl_accessor: true
+        attribute :layer, kind: :layer, dsl_accessor: true
       end
       
       class ManagedRole < Base

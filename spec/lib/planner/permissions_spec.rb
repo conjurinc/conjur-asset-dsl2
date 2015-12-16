@@ -5,7 +5,7 @@ include Conjur::DSL2
 
 describe Planner::Permit, planning: true do
   
-  let(:filename) { "spec/lib/planner/permissions_fixture.rb" }
+  let(:filename) { "spec/lib/planner/permissions_fixture.yml" }
   let(:permit) { records[0] }
   let(:planner) { Planner.planner_for(permit, api) }
   subject { planner }

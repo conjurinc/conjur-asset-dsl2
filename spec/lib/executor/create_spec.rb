@@ -6,12 +6,11 @@ include Conjur::DSL2
 describe Executor, planning: true do
   let(:plan) { Planner.plan(records, api) }
   let(:actions) { [] }
-  let(:executor) { executor_class.new record, actions }
+  let(:executor) { executor_class.new record, actions, 'the-account' }
   let(:nothing) { double(:nothing, exists?: false) }
   let(:api) { double(:api, group: nothing, variable: nothing, role: nothing, resource: nothing) }
 
   before {
-    allow(Conjur).to receive(:configuration).and_return double(:configuration, account: 'the-account')
     executor.execute
   }
   
@@ -22,7 +21,7 @@ describe Executor, planning: true do
   end
   
   describe Executor::Create do
-    let(:filename) { "spec/lib/executor/create_fixture.rb" }
+    let(:filename) { "spec/lib/executor/create_fixture.yml" }
     let(:executor_class) { Executor.creator_class_for record }
     let(:group) { plan.actions[0] }
     let(:variable) { plan.actions[1] }
