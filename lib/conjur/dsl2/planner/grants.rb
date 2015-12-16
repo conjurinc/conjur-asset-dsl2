@@ -57,6 +57,19 @@ module Conjur
           end
         end
       end
+      
+      class Revoke < Base
+        def do_plan
+          Array(record.roles).each do |role|
+            Array(record.members).each do |member|
+              revoke = Conjur::DSL2::Types::Revoke.new
+              revoke.role = role
+              revoke.member = member
+              action revoke
+            end
+          end
+        end        
+      end
     end
   end
 end

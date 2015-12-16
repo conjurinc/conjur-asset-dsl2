@@ -63,4 +63,49 @@ describe Planner, planning: true do
       end
     end
   end
+  describe "revoking a role" do
+    describe "using 'revoke'" do
+      let(:grant_record) { records[2] }
+      it "revokes the role" do
+        expect(plan_descriptions).to eq(["Revoke 'users' on layer 'bastion' from group 'developers'"])
+        expect(plan_yaml).to eq(<<-YAML)
+---
+- !revoke
+  member: !group
+    id: developers
+  role: !managed-role
+    record: !layer
+      id: bastion
+    role_name: users
+        YAML
+      end
+    end
+    describe "using 'grant' with 'replace'" do
+      let(:grant_record) { records[3] }
+      let(:grantor) { double(:grantor) }
+      let(:members) {
+        require 'conjur/api'
+        [
+          Conjur::RoleGrant.new(double(:developers, roleid: "the-account:group:developers"), grantor, false),
+          Conjur::RoleGrant.new(double(:operations, roleid: "the-account:group:operations"), grantor, false),
+        ]
+      }
+      before {
+        expect(api.role("the-account:@:layer/bastion/users")).to receive(:members).and_return(members)
+      }
+      it "revokes the role" do
+        expect(plan_descriptions).to eq(["Revoke 'users' on layer 'bastion' from group 'operations'"])
+        expect(plan_yaml).to eq(<<-YAML)
+---
+- !revoke
+  member: !group
+    id: operations
+  role: !managed-role
+    record: !layer
+      id: bastion
+    role_name: users
+        YAML
+      end
+    end
+  end
 end

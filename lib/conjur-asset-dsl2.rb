@@ -24,4 +24,3 @@ require 'conjur/dsl2/yaml/loader'
 require 'conjur/dsl2/ruby/loader'
 require 'conjur/dsl2/planner'
 require 'conjur/dsl2/executor'
-
