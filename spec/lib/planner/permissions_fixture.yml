@@ -1,0 +1,9 @@
+- !permit
+  privilege:
+  - read
+  - execute
+  resource: !variable
+    id: db-password
+  role: !member
+    role: !group
+      id: developers

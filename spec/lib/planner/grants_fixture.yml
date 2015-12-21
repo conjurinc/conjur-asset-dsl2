@@ -1,0 +1,6 @@
+- !grant
+  member: !member
+    role: !group
+      id: secrets-managers
+  role: !group
+    id: secrets-users

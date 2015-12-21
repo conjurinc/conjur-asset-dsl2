@@ -1,6 +1,5 @@
 plan*.yaml
 .DS_Store
-*.yml
 *.txt
 /.bundle/
 /.yardoc
