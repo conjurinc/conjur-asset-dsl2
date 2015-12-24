@@ -44,6 +44,11 @@ module MockAsset
   def to_s
     record.to_s
   end
+
+  def get
+    raise RestClient::ResourceNotFound unless exists?
+    @record.attributes
+  end
 end
 
 class MockRole
@@ -57,6 +62,10 @@ class MockRole
   
   def members
     []
+  end
+
+  def attributes
+    {}
   end
 end
 
@@ -76,6 +85,13 @@ class MockResource
   def annotations
     (@record.annotations||{})
   end
+
+  def attributes
+    {
+        'permissions' => []
+    }
+  end
+
 end
 
 class MockRecord
@@ -84,7 +100,7 @@ class MockRecord
   def exists?
     !!@record
   end
-  
+
   def attributes
     @record.custom_attribute_names.inject({}) do |memo,key|
       memo[key] = @record.send key

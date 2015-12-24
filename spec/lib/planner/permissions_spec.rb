@@ -4,40 +4,45 @@ require 'conjur/dsl2/ruby/loader'
 include Conjur::DSL2
 
 describe Planner::Permit, planning: true do
-  
-  let(:filename) { "spec/lib/planner/permissions_fixture.yml" }
-  let(:permit) { records[0] }
-  let(:planner) { Planner.planner_for(permit, api) }
-  subject { planner }
-    
-  let(:db_password) { double(:db_password, exists?: db_password_exists) }
-  let(:developers) { double(:developers, exists?: developers_exists) }
-  let(:db_password_resource) {
-    double(:db_password_resource, 
-      exists?: db_password_exists, 
-      kind: "variable", 
-      resource_id: "db-password",
-      get: { "id" => "cucumber:variable:db-password", "permissions" => permissions }.to_json)
+
+  let(:filename) { "spec/lib/planner/permissions_fixture.rb" }
+  let(:permit) { Planner.planner_for(records[0], api) }
+  let(:api) { MockAPI.new 'the-account', fixture }
+
+  let(:yaml_fixtures){ [] }
+  let(:fixture_yaml){ yaml_fixtures.join "\n" }
+
+  let(:fixture){
+    Conjur::DSL2::YAML::Loader.load(fixture_yaml, filename)
   }
-  let(:developers_resource) { double(:developers_resource, exists?: developers_exists) }
-  let(:permissions) { [] }
-    
-  let(:db_password_exists) { true }
-  let(:developers_exists) { true }
-    
-  before do
-    allow(api).to receive(:resource).with("the-account:variable:db-password").and_return db_password_resource
-    allow(api).to receive(:resource).with("the-account:group:developers").and_return developers_resource
+
+  shared_context 'role exists' do
+    before { yaml_fixtures << '- !group developers' }
   end
+
+  shared_context 'resource exists' do
+    before { yaml_fixtures << '- !variable db-password' }
+  end
+
+  subject{permit}
 
   context "when the permission is brand new" do
     context "when the role does not exist" do
-      it "reports the error"
+      include_context 'resource exists'
+
+      it "reports the error" do
+        expect{ plan_descriptions }.to raise_error(RuntimeError, /role not found.*/i)
+      end
     end
+
     context "when the resource does not exist" do
+      include_context 'role exists'
       it "reports the error"
     end
+
     context "when the role and resource exist" do
+      include_context 'role exists'
+      include_context 'resource exists'
       context "and the resource has no permissions existing" do
         it "permits it to all roles" do
           expect(plan_descriptions).to eq([

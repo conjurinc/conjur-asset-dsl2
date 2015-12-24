@@ -73,7 +73,12 @@ module Conjur
         def role
           api.role(scoped_roleid record)
         end
-        
+
+        def error message
+          # For now raise it, we can think about trying to recover down the road
+          raise message
+        end
+
         def update_record
           update = Conjur::DSL2::Types::Update.new
           update.record = record
