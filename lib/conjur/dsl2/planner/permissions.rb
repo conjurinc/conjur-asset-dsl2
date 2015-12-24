@@ -11,21 +11,27 @@ module Conjur
       # privilege on an existing resource that is *not* given should be denied.
       class Permit < Base
         def do_plan
+
           resources = Array(record.resources)
           privileges = Array(record.privileges)
           given_permissions = Hash.new { |hash, key| hash[key] = [] }
           requested_permissions = Hash.new { |hash, key| hash[key] = [] }
+
+
+
           resources.each do |resource|
             permissions = begin
               JSON.parse(api.resource(scoped_resourceid(resource)).get)['permissions'] 
             rescue RestClient::ResourceNotFound
               []
             end
+
             permissions.each do |permission|
               if privileges.member?(permission['privilege'])
                 given_permissions[[permission['privilege'], permission['resource']]].push [ permission['role'], permission['grant_option'] ]
               end
             end
+
             privileges.each do |privilege|
               Array(record.roles).each do |role|
                 requested_permissions[[privilege, scoped_resourceid(resource)]].push [ scoped_roleid(role.role), !!role.admin ]
@@ -34,11 +40,12 @@ module Conjur
           end
                       
           resources.each do |resource|
+
             privileges.each do |privilege|
+
               target = scoped_resourceid(resource)
               given = given_permissions[[privilege, target]]
               requested = requested_permissions[[privilege, target]]
-              
               (Set.new(requested) - Set.new(given)).each do |p|
                 role, admin = p
                 permit = Conjur::DSL2::Types::Permit.new
@@ -48,6 +55,7 @@ module Conjur
                 permit.role.admin = true if admin
                 action permit
               end
+
               if record.replace
                 (Set.new(given) - Set.new(requested)).each do |p|
                   role, admin = p

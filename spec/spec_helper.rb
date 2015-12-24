@@ -47,7 +47,7 @@ module MockAsset
 
   def get
     raise RestClient::ResourceNotFound unless exists?
-    @record.attributes
+    attributes.to_json
   end
 end
 
@@ -87,7 +87,7 @@ class MockResource
   end
 
   def attributes
-    {
+    @attributes ||= {
         'permissions' => []
     }
   end
@@ -121,6 +121,7 @@ class MockAPI
   end
   
   def resource id
+
     find_or_create @resources_by_id, id do
       record = @records.find do |r|
         r.resource? && r.resourceid(account) == id
@@ -170,9 +171,7 @@ class MockAPI
   end
 
   def variable id
-    record = @records.find do |r|
-      r.is_a?(Types::Variable) && r.id == id
-    end
+    record = find_or_create_record Types::Variable, id
     MockRecord.new self, record
   end
 end
