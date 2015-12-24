@@ -1,13 +1,16 @@
 module Conjur
   module DSL2
     class Plan
-      attr_reader :actions, :policy
+      attr_reader :actions, :policy, :roles_created, :resources_created
       attr_accessor :namespace, :ownerid
+
       
       def initialize namespace = nil
         @namespace = namespace
         @actions = []
         @policy = nil
+        @roles_created = Set.new
+        @resources_created = Set.new
       end
       
       def scoped_id id

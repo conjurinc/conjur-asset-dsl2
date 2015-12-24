@@ -3,6 +3,12 @@ module Conjur
     module Types
       # A createable record type.
       class Record < Base
+        def role?
+          false
+        end
+        def resource?
+          false
+        end
       end
       
       module ActsAsResource

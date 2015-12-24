@@ -2,6 +2,20 @@ module Conjur
   module DSL2
     module Planner
       class Base
+        # Define a canonical order for Record types
+        RECORD_ORDER = [
+            Conjur::DSL2::Types::Create,
+            Conjur::DSL2::Types::Permit,
+            Conjur::DSL2::Types::Grant,
+            Conjur::DSL2::Types::Deny,
+            Conjur::DSL2::Types::Give,
+            Conjur::DSL2::Types::Revoke
+        ]
+
+        RECORD_ORDER_KEYS = RECORD_ORDER.each_with_index.inject({}) do |hash, type_and_index|
+          hash.merge type_and_index[0] => type_and_index[1]
+        end
+
         attr_reader :record, :api
         attr_accessor :plan
         
@@ -29,7 +43,7 @@ module Conjur
         end
           
         def account
-          record.account || default_account
+          (record.account rescue nil) || default_account
         end
 
         def default_account
@@ -71,6 +85,26 @@ module Conjur
         
         def role
           api.role(scoped_roleid record)
+        end
+
+        # Sort in canonical order
+        def <=> other
+          self_index  = RECORD_ORDER_KEYS[self.record.class]
+          other_index = RECORD_ORDER_KEYS[other.record.class]
+          if self_index.nil? or other_index.nil?
+            puts "unknown types in #{self.class}, #{other.class}"
+            0
+          else
+            self_index <=> other_index
+          end
+        end
+
+        def resource_exists? resource_id
+          plan.resources_created.include?(resource_id) ||  api.resource(resource_id).exists?
+        end
+
+        def role_exists? role_id
+          plan.roles_created.include?(role_id) || api.role(role_id).exists?
         end
 
         def error message
@@ -149,15 +183,24 @@ module Conjur
               end
             end
           end
-          
+
+          plan.roles_created.add(record.roleid(account)) if record.role?
+          plan.resources_created.add(record.resourceid(account)) if record.resource?
           action create
         end
       end
       
       class Array < Base
+        def <=> other
+          -1 # Array should always happen first, right?
+        end
+
         def do_plan
-          record.each do |item|
-            planner = Planner.planner_for(item, api)
+          planners = record.map do |item|
+            Planner.planner_for(item, api)
+          end.sort!
+
+          planners.each do |planner|
             planner.plan = self.plan
             planner.do_plan
           end

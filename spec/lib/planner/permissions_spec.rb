@@ -13,7 +13,7 @@ describe Planner::Permit, planning: true do
   let(:fixture_yaml){ yaml_fixtures.join "\n" }
 
   let(:fixture){
-    Conjur::DSL2::YAML::Loader.load(fixture_yaml, filename)
+    Conjur::DSL2::YAML::Loader.load(fixture_yaml)
   }
 
   shared_context 'role exists' do

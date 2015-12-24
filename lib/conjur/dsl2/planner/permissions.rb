@@ -40,6 +40,7 @@ module Conjur
           end
                       
           resources.each do |resource|
+            error("resource not found: #{resource}") unless resource_exists?(resource.resourceid(account))
 
             privileges.each do |privilege|
 
@@ -48,6 +49,9 @@ module Conjur
               requested = requested_permissions[[privilege, target]]
               (Set.new(requested) - Set.new(given)).each do |p|
                 role, admin = p
+
+                error("role not found: #{role}") unless role_exists?(role)
+
                 permit = Conjur::DSL2::Types::Permit.new
                 permit.resource = resource_record target
                 permit.privilege = privilege

@@ -152,7 +152,11 @@ class MockAPI
   def host_factory id
     find_or_create_record Types::HostFactory, id
   end
-  
+
+  def variable id
+    find_or_create_record Types::Variable, id
+  end
+
   protected
   
   def find_or_create_record kind_class, id
@@ -172,10 +176,5 @@ class MockAPI
     list[id] = yield
   end
 
-  def variable id
-    record = @records.find do |r|
-      r.is_a?(Types::Variable) && r.id == id
-    end
-    MockRecord.new self, record
-  end
+
 end

@@ -4,6 +4,10 @@ module Conjur
   module DSL2
     module Planner      
       module ActsAsRecord
+        def <=> other
+          other.kind_of?(ActsAsRecord) ? 0 : -1
+        end
+
         def do_plan
           if object.exists?
             update_record
@@ -49,13 +53,19 @@ module Conjur
             resource.plan = plan
             resource.do_plan
           end
-          record.body.each do |record|
+
+          planners = record.body.map do |record|
+            Planner.planner_for(record, api)
+          end
+          planners.sort!
+
+
+          planners.each do |planner|
             ownerid = plan.ownerid
             begin
               plan.policy = self.record
               plan.ownerid = plan.policy.roleid(account)
-              
-              planner = Planner.planner_for(record, api)
+
               planner.plan = plan
               planner.do_plan
             ensure
