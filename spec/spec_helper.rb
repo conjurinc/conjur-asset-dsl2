@@ -179,7 +179,9 @@ class MockAPI
   end
 
   def variable id
-    record = find_or_create_record Types::Variable, id
+    record = @records.find do |r|
+      r.is_a?(Types::Variable) && r.id == id
+    end
     MockRecord.new self, record
   end
 end
