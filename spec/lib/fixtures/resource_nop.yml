@@ -1,0 +1,20 @@
+---
+conjur: |
+  - !resource
+    annotations:
+      tastes: Yummy
+    id: bacon
+    kind: food
+
+policy: |
+  - !resource
+    annotations:
+      tastes: Yummy
+    id: bacon
+    kind: food
+
+plan: |
+  --- []
+
+execution: |
+  --- []

@@ -1,0 +1,16 @@
+# Variable 'kind' is immutable
+
+---
+conjur: |
+  - !variable
+    id: db-password
+    kind: secret
+
+policy: |
+  - !variable
+    id: db-password
+    kind: database password
+
+exception:
+  class: RuntimeError
+  message: Cannot modify immutable attribute 'variable.kind'

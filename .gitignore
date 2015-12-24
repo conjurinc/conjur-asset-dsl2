@@ -1,4 +1,5 @@
 plan*.yaml
+plan*.yml
 .DS_Store
 *.txt
 /.bundle/

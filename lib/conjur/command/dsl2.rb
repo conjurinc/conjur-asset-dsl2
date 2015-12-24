@@ -61,18 +61,20 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
     mod.const_get "Loader"
   end
   
-  def self.execute api, actions, options
-    executor = Conjur::DSL2::Executor.new api, actions
-    executor.owner = options[:ownerid] if options[:ownerid]
-    executor.execute
+  def self.execute api, records
+    actions = []
+    records.each do |record|
+      executor = Conjur::DSL2::Executor.class_for(record).new(record, actions, Conjur::Core::API.conjur_account)
+      executor.execute
+    end
+    Conjur::DSL2::HTTPExecutor.new(api).execute actions
   end
   
   desc "Load a DSL2 policy"
-  command :policy do |policy|
+  command :policy2 do |policy|
     
     policy.desc "Load a policy from Conjur YAML DSL"
-    # This hack seems to be necessary to override the long description
-    policy.commands_declaration_order.find{|c| c.name == :"load"}.instance_variable_set("@long_description", <<-DESC)
+    policy.long_desc <<-DESC
 Using this command, Conjur data can be specified as Ruby or YAML statements and 
 loaded into the server.
 
@@ -150,7 +152,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
             puts plan.actions.to_yaml
           end
         else
-          execute api, plan.actions, options
+          execute api, plan.actions
         end
       end
     end

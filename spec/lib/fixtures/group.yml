@@ -1,0 +1,25 @@
+# Create a group
+
+---
+conjur: |
+  []
+
+policy: |
+  - !group
+    id: developers
+
+description:
+  - Create group 'developers'
+
+plan: |
+  ---
+  - !create
+    record: !group
+      id: developers
+
+execution: |
+  ---
+  - method: post
+    path: groups
+    parameters:
+      id: developers

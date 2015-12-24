@@ -1,0 +1,51 @@
+# Change the owner of a group
+
+---
+conjur: |
+  - !group
+    id: developers
+
+policy: |
+  - !group
+    id: developers
+    owner: !role
+      account: foreign-account
+      id: operations
+      kind: group
+
+description:
+  - Give group resource 'developers' to group role 'operations' in account 'foreign-account'
+  - Grant group role 'developers' to group role 'operations' in account 'foreign-account' with admin option
+
+plan: |
+  ---
+  - !give
+    owner: !role
+      account: foreign-account
+      id: operations
+      kind: group
+    resource: !resource
+      id: developers
+      kind: group
+  - !grant
+    member: !member
+      admin: true
+      role: !role
+        account: foreign-account
+        id: operations
+        kind: group
+    role: !role
+      id: developers
+      kind: group
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/resources/group/developers
+    parameters:
+      owner: foreign-account:group:operations
+  - method: put
+    path: authz/the-account/roles/group/developers?members
+    parameters:
+      member: foreign-account:group:operations
+      admin_option: true

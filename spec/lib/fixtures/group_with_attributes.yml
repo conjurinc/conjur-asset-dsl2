@@ -1,0 +1,39 @@
+# Create a group with attributes and annotations
+
+---
+conjur: |
+  []
+
+policy: |
+  - !group
+    annotations:
+      name: Developers
+    gidnumber: 1102
+    id: developers
+
+description:
+  - |
+    Create group 'developers'
+      Set annotation 'name'
+
+plan: |
+  ---
+  - !create
+    record: !group
+      annotations:
+        name: Developers
+      gidnumber: 1102
+      id: developers
+
+execution: |
+  ---
+  - method: post
+    path: groups
+    parameters:
+      id: developers
+      gidnumber: 1102
+  - method: put
+    path: authz/the-account/annotations/group/developers
+    parameters:
+      name: name
+      value: Developers

@@ -3,8 +3,8 @@ module Conjur::DSL2::Executor
     def execute
       action({
         'method' => 'delete',
-        'path' => "authz/#{account}/roles/#{kind}/#{id}?members",
-        'parameters' => { "member" => member }
+        'path' => "#{role_path(statement.role)}?members",
+        'parameters' => { "member" => statement.member.roleid(default_account)}
       })
     end
   end

@@ -1,0 +1,39 @@
+# Update a group with attributes and annotations
+
+---
+conjur: |
+  - !group
+    id: developers
+
+policy: |
+  - !group
+    annotations:
+      name: Developers
+    gidnumber: 1102
+    id: developers
+
+description:
+  - |
+    Update group 'developers'
+      Set field 'gidnumber'
+      Set annotation 'name'
+
+plan: |
+  ---
+  - !update
+    record: !group
+      annotations:
+        name: Developers
+      gidnumber: 1102
+      id: developers
+execution: |
+  ---
+  - method: put
+    path: groups/developers
+    parameters:
+      gidnumber: 1102
+  - method: put
+    path: authz/the-account/annotations/group/developers
+    parameters:
+      name: name
+      value: Developers

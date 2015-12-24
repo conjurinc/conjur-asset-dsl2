@@ -5,10 +5,10 @@ module Conjur::DSL2::Types
     def to_s
       messages = [ "Update #{record}" ]
       (record.custom_attribute_names||[]).each do |k|
-        messages.push "\tSet field '#{k}'" 
+        messages.push "  Set field '#{k}'" 
       end
       (record.annotations||{}).each do |k,v|
-        messages.push "\tSet annotation '#{k}'"
+        messages.push "  Set annotation '#{k}'"
       end
       messages.join("\n")
     end

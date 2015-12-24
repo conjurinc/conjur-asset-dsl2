@@ -1,0 +1,36 @@
+# Annotate a resource
+
+---
+conjur: |
+  - !resource
+    id: bacon
+    kind: food
+
+policy: |
+  - !resource
+    annotations:
+      tastes: Yummy
+    id: bacon
+    kind: food
+
+description:
+  - |
+    Update food resource 'bacon'
+      Set annotation 'tastes'
+
+plan: |
+  ---
+  - !update
+    record: !resource
+      annotations:
+        tastes: Yummy
+      id: bacon
+      kind: food
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/annotations/food/bacon
+    parameters:
+      name: tastes
+      value: Yummy

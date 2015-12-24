@@ -71,6 +71,14 @@ end
 
 class MockResource
   include MockAsset
+  
+  def get
+    if exists?
+      raise "get not mocked"
+    else
+      raise RestClient::ResourceNotFound
+    end
+  end
 
   def exists?
     !!@record

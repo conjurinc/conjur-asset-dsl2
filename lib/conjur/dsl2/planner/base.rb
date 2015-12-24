@@ -62,7 +62,6 @@ module Conjur
             nil
           end
         end
-            
         
         alias resource_record role_record
         
@@ -135,9 +134,9 @@ module Conjur
           create.record = record
           record.id = scoped_id(record)
           if record.owner
-            record.owner = scoped_roleid(record.owner.roleid) 
+            record.owner = Conjur::DSL2::Types::Role.new(scoped_roleid(record.owner), default_account: default_account)
           elsif plan.ownerid
-            record.owner = plan.ownerid
+            record.owner = Conjur::DSL2::Types::Role.new(plan.ownerid, default_account: default_account)
           end
           
           if record.resource?
@@ -152,6 +151,16 @@ module Conjur
           end
           
           action create
+        end
+      end
+      
+      class Array < Base
+        def do_plan
+          record.each do |item|
+            planner = Planner.planner_for(item, api)
+            planner.plan = self.plan
+            planner.do_plan
+          end
         end
       end
     end

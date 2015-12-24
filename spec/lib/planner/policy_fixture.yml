@@ -1,0 +1,13 @@
+- !policy
+  id: artifactory
+  body:
+    - &variables
+      - !variable username
+      - !variable password
+      
+    - !group secrets-users
+    
+    - !permit
+      privilege: [ read, execute ]
+      resource: *variables
+      role: !group secrets-users

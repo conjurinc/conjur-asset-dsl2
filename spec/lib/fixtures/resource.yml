@@ -1,0 +1,37 @@
+# Create a resource
+
+---
+conjur: |
+  []
+
+policy: |
+  - !resource
+    annotations:
+      tastes: Yummy
+    id: bacon
+    kind: food
+
+description:
+  - |
+    Create food resource 'bacon'
+      Set annotation 'tastes'
+
+plan: |
+  ---
+  - !create
+    record: !resource
+      annotations:
+        tastes: Yummy
+      id: bacon
+      kind: food
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/resources/food/bacon
+    parameters: {}
+  - method: put
+    path: authz/the-account/annotations/food/bacon
+    parameters:
+      name: tastes
+      value: Yummy

@@ -1,0 +1,16 @@
+---
+conjur: |
+  - !variable
+    id: db-password
+    kind: database password
+
+policy: |
+  - !variable
+    id: db-password
+    kind: database password
+
+plan: |
+  --- []
+
+execution: |
+  --- []

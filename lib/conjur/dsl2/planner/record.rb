@@ -38,13 +38,14 @@ module Conjur
 
       class Policy < Base
         def do_plan
-          Role.new(record, api).tap do |role|
+          role = record.role(default_account)
+          Role.new(role, api).tap do |role|
             role.plan = plan
             role.do_plan
           end
-          record.owner = Conjur::DSL2::Types::Role.new "policy", plan.scoped_id(record)
-          record.owner.account = record.account
-          Resource.new(record, api).tap do |resource|
+          plan.ownerid = role.roleid(account)
+          resource = record.resource(default_account)
+          Resource.new(resource, api).tap do |resource|
             resource.plan = plan
             resource.do_plan
           end

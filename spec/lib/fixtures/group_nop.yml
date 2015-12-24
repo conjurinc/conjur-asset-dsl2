@@ -1,0 +1,16 @@
+# Create an existing group
+
+---
+conjur: |
+  - !group
+    id: developers
+
+policy: |
+  - !group
+    id: developers
+
+plan: |
+  --- []
+
+execution: |
+  --- []

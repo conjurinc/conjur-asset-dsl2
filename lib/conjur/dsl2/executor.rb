@@ -19,45 +19,22 @@ module Conjur
   module DSL2
     module Executor
       class << self
-        def creator_class_for create
-          class_name = create.record.class.name.split("::")[-1]
-          begin
-            Conjur::DSL2::Executor.const_get([ "Create", class_name ].join)
-          rescue NameError
-            Conjur::DSL2::Executor::CreateRecord
-          end
-        end
-      end
-    end
-    
-    class BasicExecutor
-      class << self
-        def collect plan
-          result = []
-          plan.actions.each do |record|
-            class_name = action.class.name.split("::")[-1]
-            executor = Conjur::DSL2::Executor.const_get(class_name).new(record, api, result)
-            executor.execute
-          end
-          result
-        end
-        
-        def execute plan
-          actions = collect plan
-          
-          require 'net/https'
-          uri = URI.parse(Conjur.configuration.appliance_url)
-          @base_path = uri.path
-          Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
-            @http = http
-            actions.each do |step|
-              invoke step
+        def class_for action
+          if action.is_a?(Conjur::DSL2::Types::Create)
+            class_name = action.record.class.name.split("::")[-1]
+            begin
+              Conjur::DSL2::Executor.const_get([ "Create", class_name ].join)
+            rescue NameError
+              Conjur::DSL2::Executor::CreateRecord
             end
+          else
+            class_name = action.class.name.split("::")[-1]
+            Conjur::DSL2::Executor.const_get(class_name)
           end
         end
       end
     end
-    
+        
     class HTTPExecutor
       def initialize api
         @api = api

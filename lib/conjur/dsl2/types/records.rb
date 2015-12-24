@@ -89,7 +89,7 @@ module Conjur
         end
           
         def to_s
-          "#{kind} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
+          "#{kind} #{self.class.short_name.underscore} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
         end
       end
       
@@ -182,7 +182,7 @@ module Conjur
       class HostFactory < Record
         include ActsAsResource
         
-        attribute :role, kind: :role, dsl_accessor: true
+        attribute :role, kind: :role, dsl_accessor: true, singular: true
         attribute :layer, kind: :layer, dsl_accessor: true
       end
       
