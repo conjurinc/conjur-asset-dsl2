@@ -17,10 +17,14 @@ describe Planner, planning: true do
       YAML
     }
     context "when the role does not exist" do
-      it "reports the error"
+      it "reports the error" do
+        expect{ plan_actions }.to raise_error(RuntimeError, /role not found.*/i)
+      end
     end
     context "when the member does not exist" do
-      it "reports the error"
+      it "reports the error" do
+        expect{ plan_actions }.to raise_error(RuntimeError, /role not found.*/i)
+      end
     end
     context "when the role and member exist" do
       let(:fixture) {

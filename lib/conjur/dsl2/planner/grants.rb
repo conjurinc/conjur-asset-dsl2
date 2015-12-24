@@ -14,7 +14,13 @@ module Conjur
           members = Array(record.members)
           given_grants = Hash.new { |hash, key| hash[key] = [] }
           requested_grants = Hash.new { |hash, key| hash[key] = [] }
-            
+
+          # Check all roles / members involved
+          (roles + members.map(&:role)).each do |role|
+            error("role not found: #{role.inspect}") unless role_exists?(role.roleid(account))
+          end
+
+
           roles.each do |role|
             grants = begin
               api.role(scoped_roleid(role)).members

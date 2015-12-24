@@ -104,6 +104,8 @@ module Conjur
         end
 
         def role_exists? role_id
+          # I believe it's correct to assume that managed roles exist?
+          return true if role_id.split(':',2).last.start_with?('@')
           plan.roles_created.include?(role_id) || api.role(role_id).exists?
         end
 
