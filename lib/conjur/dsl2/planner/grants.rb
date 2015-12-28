@@ -10,7 +10,6 @@ module Conjur
         # be granted every role. If the +replace+ option is set, then any existing
         # grant on a role that is *not* given should be revoked.
         def do_plan
-          puts "planning grant #{record}"
 
           roles = Array(record.roles)
           members = Array(record.members)
@@ -45,8 +44,6 @@ module Conjur
             end
           end
 
-          puts "roles are #{roles}"
-
           roles.each do |role|
             roleid = scoped_roleid(role)
             given = given_grants[roleid]
@@ -61,9 +58,7 @@ module Conjur
               action grant
             end
 
-            puts "replace on #{record} is #{record.replace}"
             if record.replace
-              puts "grant with replace: #{record}, #{given}, #{requested}"
               (Set.new(given) - Set.new(requested)).each do |p|
                 member, admin = p
                 revoke = Conjur::DSL2::Types::Revoke.new
