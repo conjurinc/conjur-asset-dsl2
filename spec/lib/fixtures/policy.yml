@@ -1,0 +1,95 @@
+# Create records namespaced by a policy
+
+---
+conjur: |
+  []
+
+policy: |
+  - !policy
+    id: artifactory
+    body:
+      - !group
+        id: secrets-users
+        
+      - !role
+        id: webapp-users
+        kind: client
+        
+      - !variable mysql/username
+      - !variable mysql/password
+      
+      - !permit
+        resource: 
+        - !variable mysql/username
+        - !variable mysql/password
+        privilege: [ read, execute ]
+        role: !group secrets-users
+        replace: true
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: artifactory
+      kind: policy
+  - !create
+    record: !resource
+      id: artifactory
+      kind: policy
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !variable
+      id: artifactory/mysql/username
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !variable
+      id: artifactory/mysql/password
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !group
+      id: artifactory/secrets-users
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !role
+      id: artifactory/webapp-users
+      kind: client
+  - !permit
+    privilege: read
+    resource: !variable
+      id: artifactory/mysql/username
+    role: !member
+      role: !group
+        id: artifactory/secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: artifactory/mysql/username
+    role: !member
+      role: !group
+        id: artifactory/secrets-users
+  - !permit
+    privilege: read
+    resource: !variable
+      id: artifactory/mysql/password
+    role: !member
+      role: !group
+        id: artifactory/secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: artifactory/mysql/password
+    role: !member
+      role: !group
+        id: artifactory/secrets-users
+    
+
+execution: |
+  --- []
