@@ -4,6 +4,7 @@ module Conjur
   module DSL2
     module Planner      
       module ActsAsRecord
+        # Record objects sort before everything else
         def <=> other
           other.kind_of?(ActsAsRecord) ? 0 : -1
         end
@@ -14,6 +15,10 @@ module Conjur
           else
             create_record
           end
+        end
+
+        def to_s
+          "<#{self.class.name} #{record.to_s}>"
         end
       end
       
@@ -56,9 +61,9 @@ module Conjur
 
           planners = record.body.map do |record|
             Planner.planner_for(record, api)
-          end
-          planners.sort!
+          end.sort
 
+          puts "policy plan body is #{planners.map{|o| o.to_s}}"
 
           planners.each do |planner|
             ownerid = plan.ownerid

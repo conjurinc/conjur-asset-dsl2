@@ -18,11 +18,17 @@ module Conjur
         if id[0] == '/'
           id[1..-1]
         else
+
           tokens = []
           tokens.push @namespace if @namespace
           tokens.push @policy.id if @policy
-          tokens.push id
-          tokens.join('/')
+
+          if id.start_with?(tokens.join('/') + '/')
+            id
+          else
+            tokens.push id
+            tokens.join('/')
+          end
         end
       end
       

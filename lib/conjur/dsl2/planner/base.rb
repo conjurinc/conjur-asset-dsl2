@@ -2,19 +2,6 @@ module Conjur
   module DSL2
     module Planner
       class Base
-        # Define a canonical order for Record types
-        RECORD_ORDER = [
-            Conjur::DSL2::Types::Create,
-            Conjur::DSL2::Types::Permit,
-            Conjur::DSL2::Types::Grant,
-            Conjur::DSL2::Types::Deny,
-            Conjur::DSL2::Types::Give,
-            Conjur::DSL2::Types::Revoke
-        ]
-
-        RECORD_ORDER_KEYS = RECORD_ORDER.each_with_index.inject({}) do |hash, type_and_index|
-          hash.merge type_and_index[0] => type_and_index[1]
-        end
 
         attr_reader :record, :api
         attr_accessor :plan
@@ -87,25 +74,24 @@ module Conjur
           api.role(scoped_roleid record)
         end
 
-        # Sort in canonical order
+        # Sort in canonical order -- basically, a `Record` or `Create` comes before everything
+        # else.  So the base class's sort just places those before us, and anything else gets 0.
         def <=> other
-          self_index  = RECORD_ORDER_KEYS[self.record.class]
-          other_index = RECORD_ORDER_KEYS[other.record.class]
-          if self_index.nil? or other_index.nil?
-            puts "unknown types in #{self.class}, #{other.class}"
-            0
-          else
-            self_index <=> other_index
+          other.kind_of?(Conjur::DSL2::Planner::ActsAsRecord) ? 1 : 0
+        end
+
+        def resource_exists? resource
+          resource_id = resource.kind_of?(String) ? resource : scoped_resourceid(resource)
+          (plan.resources_created.include?(resource_id) ||  api.resource(resource_id).exists?).tap do |exists|
+            puts "resource #{resource_id} exists? #{exists} in #{plan.resources_created.to_a}"
           end
         end
 
-        def resource_exists? resource_id
-          plan.resources_created.include?(resource_id) ||  api.resource(resource_id).exists?
-        end
-
-        def role_exists? role_id
-          # I believe it's correct to assume that managed roles exist?
+        def role_exists? role
+          role_id = role.kind_of?(String) ? role : scoped_roleid(role)
+          # I believe it's correct to assume manged roles exist?
           return true if role_id.split(':',2).last.start_with?('@')
+
           plan.roles_created.include?(role_id) || api.role(role_id).exists?
         end
 
@@ -193,14 +179,11 @@ module Conjur
       end
       
       class Array < Base
-        def <=> other
-          -1 # Array should always happen first, right?
-        end
 
         def do_plan
           planners = record.map do |item|
             Planner.planner_for(item, api)
-          end.sort!
+          end.sort
 
           planners.each do |planner|
             planner.plan = self.plan

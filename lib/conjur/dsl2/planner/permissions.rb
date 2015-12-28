@@ -40,7 +40,7 @@ module Conjur
           end
                       
           resources.each do |resource|
-            error("resource not found: #{resource}") unless resource_exists?(resource.resourceid(account))
+            error("resource not found: #{resource}") unless resource_exists?(resource)
 
             privileges.each do |privilege|
 

@@ -13,8 +13,7 @@ module Conjur
           Plan.new.tap do |p|
             p.namespace = namespace if namespace
             p.ownerid = ownerid if ownerid
-            records.map do |record|
-              planner = planner_for(record, api)
+            records.map{ |record| planner_for(record, api) }.sort do |planner|
               planner.plan = p
               begin
                 planner.do_plan

@@ -40,18 +40,6 @@ plan: |
         id: artifactory
         kind: policy
   - !create
-    record: !variable
-      id: artifactory/mysql/username
-      owner: !role
-        id: artifactory
-        kind: policy
-  - !create
-    record: !variable
-      id: artifactory/mysql/password
-      owner: !role
-        id: artifactory
-        kind: policy
-  - !create
     record: !group
       id: artifactory/secrets-users
       owner: !role
@@ -61,6 +49,21 @@ plan: |
     record: !role
       id: artifactory/webapp-users
       kind: client
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !variable
+      id: artifactory/mysql/password
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !variable
+      id: artifactory/mysql/username
+      owner: !role
+        id: artifactory
+        kind: policy
   - !permit
     privilege: read
     resource: !variable
@@ -89,7 +92,56 @@ plan: |
     role: !member
       role: !group
         id: artifactory/secrets-users
-    
 
 execution: |
-  --- []
+  ---
+  - method: put
+    path: authz/the-account/roles/policy/artifactory
+    parameters: {}
+  - method: put
+    path: authz/the-account/resources/policy/artifactory
+    parameters:
+      acting_as: the-account:policy:artifactory
+  - method: post
+    path: groups
+    parameters:
+      id: artifactory/secrets-users
+      ownerid: the-account:policy:artifactory
+  - method: put
+    path: authz/the-account/roles/client/artifactory/webapp-users
+    parameters:
+      acting_as: the-account:policy:artifactory
+  - method: post
+    path: variables
+    parameters:
+      id: artifactory/mysql/password
+      ownerid: the-account:policy:artifactory
+      mime_type: text/plain
+      kind: secret
+  - method: post
+    path: variables
+    parameters:
+      id: artifactory/mysql/username
+      ownerid: the-account:policy:artifactory
+      mime_type: text/plain
+      kind: secret
+  - method: post
+    path: authz/the-account/resources/variable/artifactory/mysql/username?permit
+    parameters:
+      privilege: read
+      role: the-account:group:artifactory/secrets-users
+  - method: post
+    path: authz/the-account/resources/variable/artifactory/mysql/username?permit
+    parameters:
+      privilege: execute
+      role: the-account:group:artifactory/secrets-users
+  - method: post
+    path: authz/the-account/resources/variable/artifactory/mysql/password?permit
+    parameters:
+      privilege: read
+      role: the-account:group:artifactory/secrets-users
+  - method: post
+    path: authz/the-account/resources/variable/artifactory/mysql/password?permit
+    parameters:
+      privilege: execute
+      role: the-account:group:artifactory/secrets-users

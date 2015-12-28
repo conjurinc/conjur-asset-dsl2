@@ -48,7 +48,7 @@ module Conjur::DSL2::Executor
           memo
         end
         params.merge! custom_attrs
-        params["ownerid"] = record.owner.roleid if record.owner
+        params["ownerid"] = record.owner.roleid(record.owner.account || default_account) if record.owner
       end
     end
   end

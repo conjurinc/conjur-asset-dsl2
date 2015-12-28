@@ -62,6 +62,7 @@ module Conjur
         def immutable_attribute_names
           []
         end
+
       end
       
       module ActsAsRole
@@ -93,7 +94,11 @@ module Conjur
             self.account = account if account != id_or_options[:default_account]
           end
         end
-          
+
+        def == other
+          other.kind_of?(ActsAsCompoundId) && kind == other.kind && id == other.id && account == other.account
+        end
+
         def to_s
           "#{kind} #{self.class.short_name.underscore} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
         end
