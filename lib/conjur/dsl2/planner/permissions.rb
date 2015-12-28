@@ -13,7 +13,7 @@ module Conjur
         def do_plan
 
           resources = Array(record.resources)
-          privileges = Array(record.privileges)
+          privileges = Array(record.privilege)
           given_permissions = Hash.new { |hash, key| hash[key] = [] }
           requested_permissions = Hash.new { |hash, key| hash[key] = [] }
 
@@ -47,6 +47,7 @@ module Conjur
               target = scoped_resourceid(resource)
               given = given_permissions[[privilege, target]]
               requested = requested_permissions[[privilege, target]]
+
               (Set.new(requested) - Set.new(given)).each do |p|
                 role, admin = p
 

@@ -48,7 +48,6 @@ describe "planning and execution" do
     }
     it("matches plan YAML") {
       unless exception
-        puts "plan_yaml is #{plan_yaml}"
         expect(plan_yaml).to eq(fixture['plan'])
       end
     }

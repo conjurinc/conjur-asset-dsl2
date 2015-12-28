@@ -93,7 +93,7 @@ class MockResource
 
   def attributes
     @attributes ||= {
-        'permissions' => []
+        'permissions' => @api.permissions(@record)
     }
   end
 
@@ -173,6 +173,27 @@ class MockAPI
         end
       end
     end
+  end
+
+  def permissions resource_record
+    return [] if resource_record.nil?
+    permissions = []
+    @records.each do |record|
+      next unless record.kind_of?(Types::Permit)
+      resources = Array(record.resource).select{|r| r.resourceid(account) == resource_record.resourceid(account)}
+      Array(record.role).product(resources).product(Array(record.privilege)).each do |pair, priv|
+        member, resource = pair
+        role = member.role
+
+        permissions.push({
+          'role' => role.roleid(account),
+          'resource' => resource.resourceid(account),
+          'privilege' => priv,
+          'grant_option' => !!member.admin
+        })
+      end
+    end
+    permissions
   end
 
   protected

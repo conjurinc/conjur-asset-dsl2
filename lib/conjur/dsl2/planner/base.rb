@@ -82,9 +82,7 @@ module Conjur
 
         def resource_exists? resource
           resource_id = resource.kind_of?(String) ? resource : scoped_resourceid(resource)
-          (plan.resources_created.include?(resource_id) ||  api.resource(resource_id).exists?).tap do |exists|
-            puts "resource #{resource_id} exists? #{exists} in #{plan.resources_created.to_a}"
-          end
+          (plan.resources_created.include?(resource_id) ||  api.resource(resource_id).exists?)
         end
 
         def role_exists? role

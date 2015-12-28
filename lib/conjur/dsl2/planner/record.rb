@@ -63,7 +63,6 @@ module Conjur
             Planner.planner_for(record, api)
           end.sort
 
-          puts "policy plan body is #{planners.map{|o| o.to_s}}"
 
           planners.each do |planner|
             ownerid = plan.ownerid
