@@ -16,6 +16,7 @@ describe "planning and execution" do
       plan.actions
     rescue
       @exception = $!
+      puts "EXCEPTION: #{$!}\n#{$@.join "\n\t"}"
       []
     end
   end
