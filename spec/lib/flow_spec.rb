@@ -36,7 +36,7 @@ describe "planning and execution" do
   end
   before do
     require 'conjur/api'
-    allow(Conjur).to receive(:configuration).and_return(double(:configuration, account: "the-account"))
+    allow(Conjur).to receive(:configuration).and_return(double(:configuration, account: "the-account", authz_url: "https://conjur/api/authz"))
   end
   
   shared_examples_for "verify plan" do

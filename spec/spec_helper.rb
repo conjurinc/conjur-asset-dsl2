@@ -114,15 +114,6 @@ class MockRecord
   end
 end
 
-class MockRoleMembership
-  attr_reader :admin_option, :role, :member
-
-  def initialize role, member, admin_option
-    @role, @member, @admin_option = role, member, admin_option
-  end
-
-end
-
 class MockAPI
   attr_reader :account, :records
 
@@ -177,7 +168,8 @@ class MockAPI
         next unless record.kind_of?(Types::Grant)
         Array(record.role).product(Array(record.member)).each do |role, member|
           next unless role.roleid(account) == roleid
-          members << MockRoleMembership.new(role, member, member.admin)
+          role_member = Conjur::Role.new(Conjur::Authz::API.host, {})[Conjur::API.parse_role_id(record.member.role.roleid(account)).join('/')]
+          members << Conjur::RoleGrant.new(role_member, "role grantor", member.admin)
         end
       end
     end

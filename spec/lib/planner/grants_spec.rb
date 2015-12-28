@@ -56,8 +56,8 @@ describe Planner, planning: true do
         let(:members) {
           require 'conjur/api'
           [
-            Conjur::RoleGrant.new(double(:developers, roleid: "the-account:group:developers"), grantor, false),
-            Conjur::RoleGrant.new(double(:operations, roleid: "the-account:group:operations"), grantor, true),
+            Conjur::RoleGrant.new(double(:developers, role: double(:developers_role, roleid: "the-account:group:developers")), grantor, false),
+            Conjur::RoleGrant.new(double(:operations, role: double(:operations_role, roleid: "the-account:group:operations")), grantor, true),
           ]
         }
         before {
