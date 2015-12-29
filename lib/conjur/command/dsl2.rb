@@ -147,7 +147,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         if options[:"dry-run"]
           case options[:"format"]
           when 'text'
-            puts plan.actions.map{|a| a['description']}
+            puts plan.actions.map(&:to_s)
           else
             puts plan.actions.to_yaml
           end
