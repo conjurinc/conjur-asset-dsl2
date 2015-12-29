@@ -143,7 +143,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         filename = args.pop
         records = load filename, options[:syntax]
         plan = Conjur::DSL2::Planner.plan(records, api, options.slice(:namespace, :ownerid))
-          
+
         if options[:"dry-run"]
           case options[:"format"]
           when 'text'
