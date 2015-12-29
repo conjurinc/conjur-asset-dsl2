@@ -1,0 +1,27 @@
+# Create a group with a namespace argument
+
+---
+conjur: |
+  []
+
+namespace: dev
+
+policy: |
+  - !group
+    id: developers
+
+description:
+  - Create group 'dev/developers'
+
+plan: |
+  ---
+  - !create
+    record: !group
+      id: dev/developers
+
+execution: |
+  ---
+  - method: post
+    path: groups
+    parameters:
+      id: dev/developers

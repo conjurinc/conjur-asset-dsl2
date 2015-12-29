@@ -63,12 +63,19 @@ module Conjur
             Planner.planner_for(record, api)
           end.sort
 
-
           planners.each do |planner|
             ownerid = plan.ownerid
             begin
               plan.policy = self.record
-              plan.ownerid = plan.policy.roleid(account)
+              
+              # Set the ownerid to the namespace-scoped roleid of the policy
+              ownerid = plan.policy.roleid(account)
+              if plan.namespace
+                account, kind, id = ownerid.split(':', 3)
+                ownerid = [ account, kind, [ plan.namespace, id ].join("/") ].join(":")
+              end
+              ownerid = ownerid
+              plan.ownerid = ownerid
 
               planner.plan = plan
               planner.do_plan

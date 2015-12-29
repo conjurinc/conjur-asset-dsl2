@@ -1,0 +1,110 @@
+# Create records namespaced by a policy
+
+---
+conjur: |
+  []
+
+namespace: dev
+
+policy: |
+  - !policy
+    id: artifactory
+    body:
+      - !group
+        id: secrets-users
+        
+      - !role
+        id: webapp-users
+        kind: client
+        
+      - !variable mysql/username
+      
+      - !permit
+        resource: 
+        - !variable mysql/username
+        privilege: [ read, execute ]
+        role: !group secrets-users
+        replace: true
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: dev/artifactory
+      kind: policy
+  - !create
+    record: !resource
+      id: dev/artifactory
+      kind: policy
+      owner: !role
+        id: dev/artifactory
+        kind: policy
+  - !create
+    record: !group
+      id: dev/artifactory/secrets-users
+      owner: !role
+        id: dev/artifactory
+        kind: policy
+  - !create
+    record: !role
+      id: dev/artifactory/webapp-users
+      kind: client
+      owner: !role
+        id: dev/artifactory
+        kind: policy
+  - !create
+    record: !variable
+      id: dev/artifactory/mysql/username
+      owner: !role
+        id: dev/artifactory
+        kind: policy
+  - !permit
+    privilege: read
+    resource: !variable
+      id: dev/artifactory/mysql/username
+    role: !member
+      role: !group
+        id: dev/artifactory/secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: dev/artifactory/mysql/username
+    role: !member
+      role: !group
+        id: dev/artifactory/secrets-users
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/policy/dev/artifactory
+    parameters: {}
+  - method: put
+    path: authz/the-account/resources/policy/dev/artifactory
+    parameters:
+      acting_as: the-account:policy:dev/artifactory
+  - method: post
+    path: groups
+    parameters:
+      id: dev/artifactory/secrets-users
+      ownerid: the-account:policy:dev/artifactory
+  - method: put
+    path: authz/the-account/roles/client/dev/artifactory/webapp-users
+    parameters:
+      acting_as: the-account:policy:dev/artifactory
+  - method: post
+    path: variables
+    parameters:
+      id: dev/artifactory/mysql/username
+      ownerid: the-account:policy:dev/artifactory
+      mime_type: text/plain
+      kind: secret
+  - method: post
+    path: authz/the-account/resources/variable/dev/artifactory/mysql/username?permit
+    parameters:
+      privilege: read
+      role: the-account:group:dev/artifactory/secrets-users
+  - method: post
+    path: authz/the-account/resources/variable/dev/artifactory/mysql/username?permit
+    parameters:
+      privilege: execute
+      role: the-account:group:dev/artifactory/secrets-users

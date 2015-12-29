@@ -10,6 +10,7 @@ describe "planning and execution" do
   let(:api) { MockAPI.new 'the-account', conjur_state }
   let(:plan_actions) do
     plan = Plan.new
+    plan.namespace = fixture['namespace']
     planner.plan = plan
     begin
       planner.do_plan
