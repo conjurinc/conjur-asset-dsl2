@@ -12,6 +12,10 @@ module Conjur
         def initialize privilege = nil
           self.privilege = privilege
         end
+        
+        def to_s
+          "Permit #{role.role} to '#{privilege}' #{resource}#{role.admin ? ' with grant option' : ''}"
+        end
       end
     end
   end

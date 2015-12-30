@@ -1,0 +1,29 @@
+# Create a variable
+
+---
+conjur: |
+  []
+
+policy: |
+  - !variable
+    id: db-password
+    kind: database password
+
+description:
+  - Create variable 'db-password'
+
+plan: |
+  ---
+  - !create
+    record: !variable
+      id: db-password
+      kind: database password
+
+execution: |
+  ---
+  - method: post
+    path: variables
+    parameters:
+      id: db-password
+      kind: database password
+      mime_type: text/plain

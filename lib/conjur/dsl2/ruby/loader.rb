@@ -39,7 +39,7 @@ module Conjur
         end
       end
       
-      # Contsruct record properties in a block and yield the record to the loader.
+      # Construct record properties in a block and yield the record to the loader.
       module RecordFactory
         include RecordReferenceFactory
         
@@ -63,25 +63,52 @@ module Conjur
         def tag; nil; end
       end
       
-      module Grants
-        def grant &block
-          grant = Conjur::DSL2::Types::Grant.new
-          class << grant
+      module CustomStatement
+        def custom_statement handler, &block
+          record = yield
+          class << record
             include RecordReferenceFactory
           end
-          push grant
-          do_scope grant, &block
+          push record
+          do_scope record, &handler
+        end
+      end
+      
+      module Grants
+        include CustomStatement
+        
+        def grant &block
+          custom_statement(block) do
+            Conjur::DSL2::Types::Grant.new
+          end
+        end
+        
+        def revoke &block
+          custom_statement(block) do
+            Conjur::DSL2::Types::Revoke.new
+          end
         end
       end
       
       module Permissions
+        include CustomStatement
+        
         def permit privilege, &block
-          permit = Conjur::DSL2::Types::Permit.new(privilege)
-          class << permit
-            include RecordReferenceFactory
+          custom_statement(block) do
+            Conjur::DSL2::Types::Permit.new(privilege)
           end
-          push permit
-          do_scope permit, &block
+        end
+        
+        def give &block
+          custom_statement(block) do
+            Conjur::DSL2::Types::Give.new
+          end
+        end
+        
+        def retire &block
+          custom_statement(block) do
+            Conjur::DSL2::Types::Retire.new
+          end
         end
       end
       

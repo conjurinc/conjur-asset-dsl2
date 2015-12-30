@@ -8,6 +8,10 @@ module Conjur
         
         include RoleMemberDSL
         include ManagedRoleDSL
+        
+        def to_s
+          "Grant #{role} to #{member.role}#{replace ? ' exclusively ' : ''}#{member.admin ? ' with admin option' : ''}"
+        end
       end
     end
   end

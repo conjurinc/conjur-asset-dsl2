@@ -1,18 +1,52 @@
 module Conjur
   module DSL2
-    class Executor
-      def initialize api, actions
+    module Executor
+    end
+  end
+end
+
+require 'conjur/dsl2/executor/base'
+require 'conjur/dsl2/executor/create'
+require 'conjur/dsl2/executor/give'
+require 'conjur/dsl2/executor/grant'
+require 'conjur/dsl2/executor/revoke'
+require 'conjur/dsl2/executor/permit'
+require 'conjur/dsl2/executor/deny'
+require 'conjur/dsl2/executor/retire'
+require 'conjur/dsl2/executor/update'
+
+module Conjur
+  module DSL2
+    module Executor
+      class << self
+        def class_for action
+          if action.is_a?(Conjur::DSL2::Types::Create)
+            class_name = action.record.class.name.split("::")[-1]
+            begin
+              Conjur::DSL2::Executor.const_get([ "Create", class_name ].join)
+            rescue NameError
+              Conjur::DSL2::Executor::CreateRecord
+            end
+          else
+            class_name = action.class.name.split("::")[-1]
+            Conjur::DSL2::Executor.const_get(class_name)
+          end
+        end
+      end
+    end
+        
+    class HTTPExecutor
+      def initialize api
         @api = api
-        @actions = actions
       end
       
-      def execute
+      def execute actions
         require 'net/https'
         uri = URI.parse(Conjur.configuration.appliance_url)
         @base_path = uri.path
         Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
           @http = http
-          @actions.each do |step|
+          actions.each do |step|
             invoke step
           end
         end
@@ -21,14 +55,7 @@ module Conjur
       protected
       
       def invoke step
-        method, path, parameters = step
-
-        def update_annotation_path
-          [ "authz", account, "annotations", record.resource_kind, scoped_id(record) ].join('/')
-        end
-
-        method = step['method'] || step['action']
-        send method, step['path'], step['parameters']
+        send step['method'], step['path'], step['parameters']
       end
       
       def create path, parameters

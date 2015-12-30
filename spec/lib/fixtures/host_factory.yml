@@ -1,0 +1,34 @@
+# Create a Host Factory
+
+---
+conjur: |
+  []
+
+policy: |
+  - !host-factory
+    id: frontend
+    layer: !layer frontend
+    role:  !group dev-admin
+
+description:
+  - Create host factory 'frontend'
+
+plan: |
+  ---
+  - !create
+    record: !host-factory
+      id: frontend
+      layer: !layer
+        id: frontend
+      role: !group
+        id: dev-admin
+
+execution: |
+  ---
+  - method: post
+    path: host_factories
+    parameters:
+      id: frontend
+      roleid: the-account:group:dev-admin
+      layers:
+      - frontend

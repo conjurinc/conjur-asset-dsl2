@@ -1,0 +1,19 @@
+---
+conjur: |
+  - !role
+    kind: group
+    id: secrets-managers
+
+
+policy: |
+  - !grant
+    member: !member
+      role: !group
+        id: secrets-managers
+    role: !group
+      id: secrets-users
+
+exception:
+  class: RuntimeError
+  message: "role not found: the-account:group:secrets-users"
+

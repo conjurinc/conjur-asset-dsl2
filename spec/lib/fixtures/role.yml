@@ -1,0 +1,26 @@
+# Create a role
+
+---
+conjur: |
+  []
+
+policy: |
+  - !role
+    id: cook
+    kind: job
+
+description:
+  - Create job role 'cook'
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: cook
+      kind: job
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/job/cook
+    parameters: {}

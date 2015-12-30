@@ -6,14 +6,13 @@
 - !deny
   privilege: [ read, execute ]
   resource: !variable baz
-  role: !member
-    role: !group developers
+  role: !group developers
 
 - !deny
   privilege: read
   resource: !variable db_password
-  role: !member
-    role: !group developers
+  role: !group
+    id: developers
 
 - !deny
   privilege: read

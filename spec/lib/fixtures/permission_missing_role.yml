@@ -1,0 +1,19 @@
+---
+conjur: |
+  - !variable db-password
+
+policy: |
+  - !permit
+    privilege:
+    - read
+    - execute
+    resource: !variable
+      id: db-password
+    role: !member
+      role: !group
+        id: developers
+
+exception:
+  class: RuntimeError
+  message: "role not found: the-account:group:developers"
+

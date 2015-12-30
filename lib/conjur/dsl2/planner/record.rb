@@ -2,139 +2,43 @@ require 'conjur/dsl2/planner/base'
 
 module Conjur
   module DSL2
-    module Planner
-      module ChangeOwnerAction
-        def change_owner
-          return unless resource? && record.owner
+    module Planner      
+      module ActsAsRecord
+        # Record objects sort before everything else
+        def <=> other
+          other.kind_of?(ActsAsRecord) ? 0 : -1
+        end
 
-          if resource.owner != scoped_roleid(record.owner)
-            action({
-              'service' => 'authz',
-              'type' => 'resource',
-              'method' => 'put',
-              'action' => 'change_owner',
-              'id' => scoped_resourceid(record),
-              'path' => resource_path,
-              'parameters' => { "owner" => scoped_roleid(record.owner) },
-              'description' => "Change owner of #{scoped_resourceid(record)} to #{scoped_roleid(record.owner)}"
-            })
+        def do_plan
+          if object.exists?
+            update_record
+          else
+            create_record
           end
         end
-      end
-      
-      module UpdateAnnotationsAction
-        def update_annotations
-          return unless resource?
-          
-          existing = resource.exists? ? resource.annotations : {}
-          (record.annotations||{}).keys.each do |attr|
-            existing_value = existing[attr]
-            new_value = record.annotations[attr]
-            if new_value != existing_value
-              action({
-                'service' => 'authz',
-                'type' => 'annotation',
-                'action' => 'update',
-                'id' => scoped_resourceid(record),
-                'path' => update_annotation_path,
-                'parameters' => { "name" => attr.to_s, "value" => new_value },
-                'description' => "Update '#{attr}' annotation on #{scoped_resourceid(record)}"
-              })
-            end
-          end
-        end
-        
-        def update_annotation_path
-          [ "authz", account, "annotations", record.resource_kind, record.id ].join('/')
+
+        def to_s
+          "<#{self.class.name} #{record.to_s}>"
         end
       end
       
       class Role < Base
-        def do_plan
-          if role.exists?
-            # TODO: change_owner
-          else
-            action({
-              'service' => 'authz',
-              'type' => 'role',
-              'action' => 'create',
-              'method' => 'put',
-              'path' => role_path,
-              'id' => roleid,
-              'parameters' => create_parameters,
-              'description' => "Create role #{roleid}"
-            })
-          end
-        end
+        include ActsAsRecord
         
-        def role?; true; end
-        def role_kind; record.role_kind; end
-        def role_id; record.id; end
-        def roleid; [ account, role_kind, scoped_id(role_id) ].join(':'); end
-          
-        def role
-          api.role(roleid)
-        end
-        
-        def role_path
-          [ "authz", account, "roles", role_kind, scoped_id(role_id) ].join('/')
-        end
-        
-        def create_parameters
-          {}.tap do |params|
-            if record.owner
-              params["acting_as"] = scoped_roleid(record.owner.roleid) 
-            elsif plan.ownerid
-              params["acting_as"] = plan.ownerid
-            end
-          end
-        end
+        alias object role
       end
       
       class Resource < Base
-        include ChangeOwnerAction
-        include UpdateAnnotationsAction
+        include ActsAsRecord
         
-        def do_plan
-          if resource.exists?
-            change_owner
-            update_annotations
-          else
-            action({
-              'service' => 'authz',
-              'type' => 'resource',
-              'action' => 'create',
-              'method' => 'put',
-              'id' => resourceid,
-              'path' => resource_path,
-              'parameters' => create_parameters,
-              'description' => "Create resource #{resourceid}"
-            })
-            update_annotations
-          end
-        end
+        alias object resource
+      end
+      
+      class Record < Base
+        include ActsAsRecord
         
-        def resource?; true; end
-        def resource_kind; record.resource_kind; end
-        def resource_id; record.id; end
-        def resourceid; [ account, resource_kind, scoped_id(resource_id) ].join(':'); end
-          
-        def resource
-          api.resource(resourceid)
-        end
-        
-        def resource_path
-          [ "authz", account, "resources", resource_kind, scoped_id(resource_id) ].join('/')
-        end
-        
-        def create_parameters
-          {}.tap do |params|
-            if record.owner
-              params["acting_as"] = scoped_roleid(record.owner) 
-            elsif plan.ownerid
-              params["acting_as"] = plan.ownerid
-            end
-          end
+        def object
+          @object ||= api.send(record.resource_kind, scoped_id(record))
         end
       end
       
@@ -143,118 +47,42 @@ module Conjur
 
       class Policy < Base
         def do_plan
-          Role.new(record, api).tap do |role|
+          role = record.role(default_account)
+          Role.new(role, api).tap do |role|
             role.plan = plan
             role.do_plan
           end
-          record.owner = Conjur::DSL2::Types::Role.new "policy", plan.scoped_id(record)
-          record.owner.account = record.account
-          Resource.new(record, api).tap do |resource|
+          plan.ownerid = role.roleid(account)
+          resource = record.resource(default_account)
+          Resource.new(resource, api).tap do |resource|
             resource.plan = plan
             resource.do_plan
           end
-          record.body.each do |record|
+
+          planners = record.body.map do |record|
+            Planner.planner_for(record, api)
+          end.sort
+
+          planners.each do |planner|
             ownerid = plan.ownerid
             begin
               plan.policy = self.record
-              plan.ownerid = plan.policy.roleid(account)
               
-              planner = Planner.planner_for(record, api)
+              # Set the ownerid to the namespace-scoped roleid of the policy
+              ownerid = plan.policy.roleid(account)
+              if plan.namespace
+                account, kind, id = ownerid.split(':', 3)
+                ownerid = [ account, kind, [ plan.namespace, id ].join("/") ].join(":")
+              end
+              ownerid = ownerid
+              plan.ownerid = ownerid
+
               planner.plan = plan
               planner.do_plan
             ensure
               plan.policy = nil
               plan.ownerid = ownerid
             end
-          end
-        end
-      end
-      
-      class Record < Base
-        include ChangeOwnerAction
-        include UpdateAnnotationsAction
-        
-        def do_plan
-          if object.exists?
-            change_owner
-            update_attributes
-          else
-            action({
-              'service' => 'directory',
-              'type' => record.resource_kind,
-              'action' => 'create',
-              'path' => create_path,
-              'parameters' => create_parameters,
-              'description' => "Create #{record.resource_kind} #{scoped_id(record)}"
-            })
-          end
-          update_annotations
-        end
-        
-        def resource?; record.resource?; end
-
-        def resource; api.resource([ account, record.resource_kind, scoped_id(record) ].join(":")); end
-          
-        def update_attributes
-          record.custom_attribute_names.each do |attr|
-            existing_value = object.attributes[attr]
-            new_value = record.send(attr)
-            if new_value && new_value != existing_value
-              raise "Cannot modify immutable attribute '#{record.resource_kind}.#{attr}'" if record.immutable_attribute_names.member?(attr)
-              action({ 
-                'service' => 'directory', 
-                'type' => record.resource_kind, 
-                'action' => 'update',
-                'path' => update_path,
-                'id' => scoped_id(record), 
-                'parameters' => { attr.to_s => new_value || "" },
-                'description' => "Update '#{attr}' on #{record.resource_kind} #{scoped_id(record)}"
-              })
-            end
-          end
-        end
-        
-        def create_parameters
-          {
-            "id" => scoped_id(record)
-          }.tap do |params|
-            custom_attrs = record.custom_attribute_names.inject({}) do |memo, attr|
-              value = record.send(attr)
-              memo[attr.to_s] = value if value
-              memo
-            end
-            params.merge! custom_attrs
-            if record.owner
-              params["ownerid"] = scoped_roleid(record.owner.roleid) 
-            elsif plan.ownerid
-              params["ownerid"] = plan.ownerid
-            end
-          end
-        end
-        
-        def create_path
-          [ kind_path ].join('/')
-        end
-
-        def update_path
-          require 'cgi'
-          [ kind_path, CGI.escape(scoped_id(record)) ].join('/')
-        end
-        
-        def kind_path
-          record.resource_kind.pluralize
-        end
-        
-        def object
-          @object ||= api.send(record.resource_kind, scoped_id(record))
-        end
-      end
-      
-      class Variable < Record
-        def create_parameters
-          super.tap do |params|
-            params['mime_type'] ||= 'text/plain'
-            params['kind'] ||= 'secret'
           end
         end
       end

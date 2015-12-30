@@ -6,7 +6,7 @@ module DSLWorld
   
   def load_policy text
     specify_cli_environment
-    step "I run `conjur policy load --namespace #{namespace} --syntax ruby` interactively"
+    step "I run `conjur policy2 load --namespace #{namespace} --syntax yaml` interactively"
     last_command_started.write(text)
     last_command_started.stdin.close
     step "the exit status should be 0"
@@ -15,7 +15,9 @@ module DSLWorld
   def last_json
     # Hack to get Aruba to populate stdout
     step "the output should contain \"\""
-    YAML.load(all_commands.map(&:stdout).join).to_json
+    YAML.load(all_commands.map(&:stdout).join).to_json.tap do |json|
+      $stderr.puts json if ENV['DEBUG']
+    end
   end
   
   def normalize_stdout
@@ -32,7 +34,7 @@ module DSLWorld
   end
   
   def namespace
-    @namespace ||= [ 'cucumber', $timestamp, (0..3).inject([]){|memo,entry| memo.push rand(255).to_s(16); memo}.join ].join('/')
+    @namespace ||= [ 'cucumber', 'dsl2', $timestamp, (0..3).inject([]){|memo,entry| memo.push rand(255).to_s(16); memo}.join ].join('/')
   end
   
   def inject_namespace text

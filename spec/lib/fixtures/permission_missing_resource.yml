@@ -1,0 +1,19 @@
+---
+conjur: |
+  - !group developers
+
+policy: |
+  - !permit
+    privilege:
+    - read
+    - execute
+    resource: !variable
+      id: db-password
+    role: !member
+      role: !group
+        id: developers
+
+exception:
+  class: RuntimeError
+  message: "resource not found: the-account:variable:db-password"
+

@@ -1,0 +1,43 @@
+# Update a group with attributes and annotations.
+# Perform within the context of a namespace.
+
+---
+conjur: |
+  - !group
+    id: dev/developers
+
+namespace: dev
+
+policy: |
+  - !group
+    annotations:
+      name: Developers
+    gidnumber: 1102
+    id: developers
+
+description:
+  - |
+    Update group 'dev/developers'
+      Set field 'gidnumber'
+      Set annotation 'name'
+
+plan: |
+  ---
+  - !update
+    record: !group
+      annotations:
+        name: Developers
+      gidnumber: 1102
+      id: dev/developers
+
+execution: |
+  ---
+  - method: put
+    path: groups/dev%2Fdevelopers
+    parameters:
+      gidnumber: 1102
+  - method: put
+    path: authz/the-account/annotations/group/dev/developers
+    parameters:
+      name: name
+      value: Developers

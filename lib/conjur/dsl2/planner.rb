@@ -9,13 +9,12 @@ module Conjur
       class << self
         def plan records, api, options = {}
           namespace = options[:namespace]
-          ownerid =   options[:ownerid]
-          Plan.new.tap do |p|
-            p.namespace = namespace if namespace
-            p.ownerid = ownerid if ownerid
-            records.map do |record|
-              planner = planner_for(record, api)
-              planner.plan = p
+          ownerid   = options[:ownerid]
+          Plan.new.tap do |plan|
+            plan.namespace = namespace if namespace
+            plan.ownerid = ownerid if ownerid
+            records.map{ |record| planner_for(record, api) }.sort.each do |planner|
+              planner.plan = plan
               begin
                 planner.do_plan
               ensure

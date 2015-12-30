@@ -3,29 +3,25 @@
   privilege: read
   resource: !variable
     id: foobar
-  role: !member
-    role: !group
-      id: developers
+  role: !group
+    id: developers
 - !deny
   privilege:
   - read
   - execute
   resource: !variable
     id: baz
-  role: !member
-    role: !group
-      id: developers
+  role: !group
+    id: developers
 - !deny
   privilege: read
   resource: !variable
     id: db_password
-  role: !member
-    role: !group
-      id: developers
+  role: !group
+    id: developers
 - !deny
   privilege: read
   resource: !variable
     id: mongo_password
-  role: !member
-    role: !group
-      id: developers
+  role: !group
+    id: developers

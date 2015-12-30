@@ -28,7 +28,6 @@ describe Conjur::DSL2::YAML::Loader do
   it_should_behave_like 'round-trip dsl', 'sequence'
   it_should_behave_like 'round-trip dsl', 'record'
   it_should_behave_like 'round-trip dsl', 'members'
-  it_should_behave_like 'round-trip dsl', 'owner'
   it_should_behave_like 'round-trip dsl', 'permit'
   it_should_behave_like 'round-trip dsl', 'permissions'
   it_should_behave_like 'round-trip dsl', 'deny'
@@ -42,5 +41,4 @@ describe Conjur::DSL2::YAML::Loader do
   it_should_behave_like 'error message', 'incorrect-type-for-field-2'
   it_should_behave_like 'error message', 'incorrect-type-for-array-field'
   it_should_behave_like 'error message', 'no-such-attribute'
-  it_should_behave_like 'error message', 'owner-not-a-role'
 end

@@ -76,6 +76,16 @@ module Conjur
           r.respond_to?(:resource?) && r.resource?
         end
         
+        # If it's a Record
+        def expect_record value
+          expect_type value, "Record", lambda{ value.is_a?(Record) }
+        end
+        
+        # If it's a Layer
+        def expect_layer value
+          expect_type value, "Layer", lambda{ value.is_a?(Layer) }
+        end
+        
         # If it looks like a resource.
         def expect_resource value
           expect_type value, "Resource", lambda{ test_resource value }
@@ -273,8 +283,18 @@ module Conjur
           false
         end
         
+        def id_attribute; 'id'; end
+        
         def custom_attribute_names
           [ ]
+        end
+        
+        def resource?
+          false
+        end
+        
+        def role?
+          false
         end
         
         class << self
@@ -342,7 +362,7 @@ module Conjur
       
       module ManagedRoleDSL
         def managed_role record, role_name
-          self.role = ManagedRole.new(record, role_name)
+          ManagedRole.new(record, role_name)
         end
       end
     end
