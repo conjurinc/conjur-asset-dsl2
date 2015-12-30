@@ -11,3 +11,4 @@ plan*.yml
 /pkg/
 /spec/reports/
 /tmp/
+/features/reports/
