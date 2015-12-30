@@ -29,7 +29,9 @@ Feature: Generating an execution plan from a policy file
     Given I load the policy "- !group ops"
     When I plan the policy as yaml with options "--as-group @namespace@/ops":
     """
-    - !variable db-password
+    ---
+    - !variable
+      id: db-password
     """
     Then the normalized JSON at "0/record/id" should be "db-password"
     Then the normalized JSON at "0/record/owner/kind" should be "group"
@@ -39,6 +41,7 @@ Feature: Generating an execution plan from a policy file
     Given I load the policy "- !group ops"
     When I plan the policy as yaml with options "--as-group @namespace@/ops":
     """
+    ---
     - !policy
       id: myapp
       body:

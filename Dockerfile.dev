@@ -14,5 +14,6 @@ ADD . .
 
 ENV CONJUR_AUTHN_LOGIN   admin
 ENV CONJUR_AUTHN_API_KEY secret
-ENV CONJUR_APPLIANCE_URL https://conjur/api
+ENV CONJUR_ACCOUNT cucumber
+ENV CONJUR_APPLIANCE_URL https://localhost/api
 ENV CONJUR_CERT_FILE     /opt/conjur/etc/ssl/ca.pem

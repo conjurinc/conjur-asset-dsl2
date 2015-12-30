@@ -24,6 +24,10 @@ function finish {
 	rm -f $cid_file
 	docker rm -f $cid
 }
+echo "waiting for conjur"
+wait_for_conjur
+echo "done!"
+
 trap finish EXIT
 
 docker exec $cid bash -c "bundle exec rake jenkins" || true

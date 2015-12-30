@@ -6,12 +6,26 @@ module DSLWorld
   
   def load_policy text
     specify_cli_environment
-    step "I run `conjur policy2 load --namespace #{namespace} --syntax yaml` interactively"
+    step "I run `bundle exec conjur policy2 load --namespace #{namespace} --syntax yaml` interactively"
     last_command_started.write(text)
     last_command_started.stdin.close
+
     step "the exit status should be 0"
   end
-  
+
+  # Drops the indentation of the first line shared indentation from the start of each line
+  def normalize_indentation text
+    lines = text.split("\n")
+    return text if lines.empty?
+
+    indent = if lines[0] =~ /^(\s+)(.+?)$/
+      $1.length
+    else
+      0
+    end
+    lines.map{|l| l[indent..-1]}.join "\n"
+  end
+
   def last_json
     # Hack to get Aruba to populate stdout
     step "the output should contain \"\""

@@ -14,6 +14,8 @@ When(/^I plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) do |format
   step "I run `bundle exec #{cmd}` interactively"
   last_command_started.write(text)
   last_command_started.stdin.close
+
   step "the exit status should be 0"
+
   $stderr.puts last_command_started.stderr unless last_command_started.stderr.blank?
 end
