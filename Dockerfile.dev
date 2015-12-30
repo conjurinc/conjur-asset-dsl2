@@ -1,0 +1,18 @@
+FROM registry.tld/conjur-appliance-cuke-master:4.6-stable
+
+WORKDIR /src/conjur-asset-dsl2
+
+RUN mkdir -p /src/conjur-asset-dsl2
+RUN mkdir -p /src/conjur-asset-dsl2/lib
+
+ADD Gemfile .
+ADD conjur-asset-dsl2.gemspec .
+ADD lib/conjur-asset-dsl2-version.rb ./lib
+ADD Gemfile.lock .
+RUN bundle
+ADD . .
+
+ENV CONJUR_AUTHN_LOGIN   admin
+ENV CONJUR_AUTHN_API_KEY secret
+ENV CONJUR_APPLIANCE_URL https://conjur/api
+ENV CONJUR_CERT_FILE     /opt/conjur/etc/ssl/ca.pem
