@@ -8,7 +8,6 @@ RUN mkdir -p /src/conjur-asset-dsl2/lib
 ADD Gemfile ./
 ADD conjur-asset-dsl2.gemspec ./
 ADD lib/conjur-asset-dsl2-version.rb ./lib/
-ADD Gemfile.lock ./
 RUN bundle
 ADD . .
 
