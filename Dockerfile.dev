@@ -4,6 +4,7 @@ WORKDIR /src/conjur-asset-dsl2
 
 RUN mkdir -p /src/conjur-asset-dsl2
 RUN mkdir -p /src/conjur-asset-dsl2/lib
+RUN mkdir -p /src/conjur-asset-dsl2/tmp
 
 ADD Gemfile ./
 ADD conjur-asset-dsl2.gemspec ./
