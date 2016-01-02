@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+mkdir -p tmp
+
 function wait_for_conjur {
 	docker pull registry.tld/wait-for-conjur
 	docker run -i --rm --link $cid:conjur registry.tld/wait-for-conjur
