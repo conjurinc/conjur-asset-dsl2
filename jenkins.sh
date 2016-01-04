@@ -18,7 +18,7 @@ docker build -t $PROJECT-dev -f Dockerfile.dev .
 docker run \
 	-d \
 	--cidfile=$cid_file \
-	-v $PWD:/src/conjur-asset-dsl2
+	-v $PWD:/src/conjur-asset-dsl2 \
 	$PROJECT-dev
 
 cid=$(cat $cid_file)
