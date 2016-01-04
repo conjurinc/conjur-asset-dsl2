@@ -18,6 +18,7 @@ docker build -t $PROJECT-dev -f Dockerfile.dev .
 docker run \
 	-d \
 	--cidfile=$cid_file \
+	-v $PWD:/src/conjur-asset-dsl2
 	$PROJECT-dev
 
 cid=$(cat $cid_file)
@@ -26,9 +27,9 @@ function finish {
 	rm -f $cid_file
 	docker rm -f $cid
 }
-echo "waiting for conjur"
+
 wait_for_conjur
-echo "done!"
+
 
 trap finish EXIT
 
