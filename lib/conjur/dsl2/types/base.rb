@@ -147,8 +147,7 @@ module Conjur
         # it must be an array of them.
         def expect_array kind, values
           # Hash gets converted to an array of key/value pairs by Array
-          is_hash = values.kind_of?(Hash)
-          values = [values] if is_hash
+          values = [values] if values.kind_of?(Hash)
 
           result = Array(values).map do |v|
             send "expect_#{kind}", v
