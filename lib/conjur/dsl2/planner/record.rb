@@ -54,6 +54,10 @@ module Conjur
           end
           plan.ownerid = role.roleid(account)
           resource = record.resource(default_account)
+          if record.annotations
+            resource.annotations = record.annotations
+          end
+
           Resource.new(resource, api).tap do |resource|
             resource.plan = plan
             resource.do_plan

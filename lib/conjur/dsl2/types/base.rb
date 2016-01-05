@@ -52,6 +52,7 @@ module Conjur
         # +converter+ if the +test_function+ fails, the converter is called to coerce the type. 
         # It should return +nil+ if its unable to do so.
         def expect_type value, type_name, test_function, converter = nil
+
           if test_function.is_a?(Class)
             cls = test_function
             test_function = lambda{ value.is_a?(cls) } 
@@ -145,9 +146,14 @@ module Conjur
         # +values+ can be an instance of +type+ (as determined by the type-checking methods), or
         # it must be an array of them.
         def expect_array kind, values
+          # Hash gets converted to an array of key/value pairs by Array
+          is_hash = values.kind_of?(Hash)
+          values = [values] if is_hash
+
           result = Array(values).map do |v|
             send "expect_#{kind}", v
           end
+
           values.is_a?(Array) ? result : result[0]
         end
       end

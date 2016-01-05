@@ -19,7 +19,7 @@ module Conjur
 
           # Check all roles / members involved
           (roles + members.map(&:role)).each do |role|
-            error("role not found: #{role.inspect}") unless role_exists?(role.roleid(account))
+            error("role not found: #{scoped_roleid(role)} in #{plan.roles_created.to_a}") unless role_exists?(role)
           end
 
           roles.each do |role|
