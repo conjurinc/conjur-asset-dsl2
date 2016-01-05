@@ -38,6 +38,7 @@ module Conjur
         include ActsAsRecord
         
         def object
+          error("missing id for #{record}") unless record && record.id
           @object ||= api.send(record.resource_kind, scoped_id(record))
         end
       end
@@ -73,6 +74,8 @@ module Conjur
           end.sort
 
           planners.each do |planner|
+            planner.trace("planning body element")
+
             ownerid = plan.ownerid
             begin
               plan.policy = self.record
@@ -87,7 +90,10 @@ module Conjur
               plan.ownerid = ownerid
 
               planner.plan = plan
+
+              planner.trace("planning...")
               planner.do_plan
+              planner.trace("done!")
             ensure
               plan.policy = nil
               plan.ownerid = ownerid

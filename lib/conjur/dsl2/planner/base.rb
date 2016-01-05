@@ -5,7 +5,8 @@ module Conjur
 
         attr_reader :record, :api
         attr_accessor :plan
-        
+
+
         def initialize record, api
           @record = record
           @api = api
@@ -99,6 +100,21 @@ module Conjur
           # For now raise it, we can think about trying to recover down the road
           raise message
         end
+
+        def trace message
+          if trace_enabled?
+            $stderr.puts "[trace #{record}] #{message}"
+          end
+        end
+
+        def trace_enabled?
+          ENV["DSL_PLANNER_TRACE"] || !!@trace_enabled
+        end
+
+        def trace_enabled= enabled
+          @trace_enabled = enabled
+        end
+
 
         def update_record
           update = Conjur::DSL2::Types::Update.new
