@@ -1,0 +1,45 @@
+# Create a policy with an annotation
+---
+conjur: |
+  []
+
+policy: |
+  - !policy
+    id: artifactory
+    annotations:
+      description: A policy for the artifactory service.
+    body: []
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: artifactory
+      kind: policy
+  - !create
+    record: !resource
+      annotations:
+        description: A policy for the artifactory service.
+      id: artifactory
+      kind: policy
+      owner: !role
+        id: artifactory
+        kind: policy
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/policy/artifactory
+    parameters: {}
+  - method: put
+    path: authz/the-account/resources/policy/artifactory
+    parameters:
+      acting_as: the-account:policy:artifactory
+  - method: put
+    path: authz/the-account/annotations/policy/artifactory
+    parameters:
+      name: description
+      value: A policy for the artifactory service.
+
+
+
