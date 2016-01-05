@@ -74,8 +74,6 @@ module Conjur
           end.sort
 
           planners.each do |planner|
-            planner.trace("planning body element")
-
             ownerid = plan.ownerid
             begin
               plan.policy = self.record
@@ -90,10 +88,9 @@ module Conjur
               plan.ownerid = ownerid
 
               planner.plan = plan
-
               planner.trace("planning...")
               planner.do_plan
-              planner.trace("done!")
+              planner.trace("ok!")
             ensure
               plan.policy = nil
               plan.ownerid = ownerid
