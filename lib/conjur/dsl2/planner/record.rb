@@ -52,6 +52,11 @@ module Conjur
             role.plan = plan
             role.do_plan
           end
+
+          if record.body.nil?
+            error('missing body element in policy')
+          end
+
           plan.ownerid = role.roleid(account)
           resource = record.resource(default_account)
           if record.annotations

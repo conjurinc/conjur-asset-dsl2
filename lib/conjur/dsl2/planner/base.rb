@@ -121,6 +121,7 @@ module Conjur
           
           if record.resource?
             existing = resource.exists? ? resource.annotations : {}
+            current = record.annotations.kind_of?(::Array) ? record.annotations[0] : record.annotations
             (record.annotations||{}).keys.each do |attr|
               existing_value = existing[attr]
               new_value = record.annotations[attr]
