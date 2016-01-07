@@ -15,6 +15,10 @@ module Conjur
       
       def scoped_id id
         id = id.id if id.respond_to?(:id)
+
+        # id is nil means it should have the same id as the policy
+        id = '' if id.nil?
+
         if id[0] == '/'
           id[1..-1]
         else
@@ -26,7 +30,7 @@ module Conjur
           if id.start_with?(tokens.join('/') + '/')
             id
           else
-            tokens.push id
+            tokens.push id unless id.empty?
             tokens.join('/')
           end
         end

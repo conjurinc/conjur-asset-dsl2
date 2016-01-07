@@ -38,7 +38,6 @@ module Conjur
         include ActsAsRecord
         
         def object
-          error("missing id for #{record}") unless record && record.id
           @object ||= api.send(record.resource_kind, scoped_id(record))
         end
       end
