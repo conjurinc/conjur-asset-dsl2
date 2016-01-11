@@ -1,0 +1,86 @@
+# A resource in a policy with a blank id will receive the same
+# id as the policy.
+
+---
+conjur: |
+  []
+
+policy: |
+    - !policy
+      id: artifactory
+      body:
+        - !layer
+          annotations:
+            description: Hosts in this layer can access service credentials
+        - !variable artifactory-credential
+        - !permit
+          privilege: execute
+          role: !layer
+          resource: !variable artifactory-credential
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: artifactory
+      kind: policy
+  - !create
+    record: !resource
+      id: artifactory
+      kind: policy
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !layer
+      annotations:
+        description: Hosts in this layer can access service credentials
+      id: artifactory
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !create
+    record: !variable
+      id: artifactory/artifactory-credential
+      owner: !role
+        id: artifactory
+        kind: policy
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: artifactory/artifactory-credential
+    role: !member
+      role: !layer
+        id: artifactory
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/policy/artifactory
+    parameters: {}
+  - method: put
+    path: authz/the-account/resources/policy/artifactory
+    parameters:
+      acting_as: the-account:policy:artifactory
+  - method: post
+    path: layers
+    parameters:
+      id: artifactory
+      ownerid: the-account:policy:artifactory
+  - method: put
+    path: authz/the-account/annotations/layer/artifactory
+    parameters:
+      name: description
+      value: Hosts in this layer can access service credentials
+  - method: post
+    path: variables
+    parameters:
+      id: artifactory/artifactory-credential
+      ownerid: the-account:policy:artifactory
+      mime_type: text/plain
+      kind: secret
+  - method: post
+    path: authz/the-account/resources/variable/artifactory/artifactory-credential?permit
+    parameters:
+      privilege: execute
+      role: the-account:layer:artifactory

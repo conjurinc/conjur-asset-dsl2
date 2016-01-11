@@ -18,14 +18,14 @@ module Conjur
             attribute :account, kind: :string, singular: true
             attribute :owner, kind: :role, singular: true, dsl_accessor: true
             
-            attribute :annotations, kind: :hash, type: OpenStruct, singular: true
+            attribute :annotations, kind: :hash, type: Hash, singular: true
             
             def description value
               annotation 'description', value
             end
             
             def annotation name, value
-              self.annotations ||= OpenStruct.new
+              self.annotations ||= {}
               self.annotations[name] = value
             end
           end

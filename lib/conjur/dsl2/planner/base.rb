@@ -5,7 +5,8 @@ module Conjur
 
         attr_reader :record, :api
         attr_accessor :plan
-        
+
+
         def initialize record, api
           @record = record
           @api = api
@@ -20,12 +21,14 @@ module Conjur
         end
         
         def scoped_roleid record
-          account, kind, id = record.roleid(default_account).split(':', 3)
+          record = record.roleid(default_account) unless record.kind_of?(String)
+          account, kind, id = record.split(':', 3)
           [ account, kind, scoped_id(id) ].join(":")
         end
 
         def scoped_resourceid record
-          account, kind, id = record.resourceid(default_account).split(':', 3)
+          record = record.resourceid(default_account) unless record.kind_of?(String)
+          account, kind, id = record.split(':', 3)
           [ account, kind, scoped_id(id) ].join(":")
         end
           
@@ -98,6 +101,21 @@ module Conjur
           raise message
         end
 
+        def trace message
+          if trace_enabled?
+            $stderr.puts "[trace #{record}] #{message}"
+          end
+        end
+
+        def trace_enabled?
+          ENV["DSL_PLANNER_TRACE"] || !!@trace_enabled
+        end
+
+        def trace_enabled= enabled
+          @trace_enabled = enabled
+        end
+
+
         def update_record
           update = Conjur::DSL2::Types::Update.new
           update.record = record
@@ -119,6 +137,7 @@ module Conjur
           
           if record.resource?
             existing = resource.exists? ? resource.annotations : {}
+            current = record.annotations.kind_of?(::Array) ? record.annotations[0] : record.annotations
             (record.annotations||{}).keys.each do |attr|
               existing_value = existing[attr]
               new_value = record.annotations[attr]
@@ -161,11 +180,13 @@ module Conjur
           
           if record.resource?
             existing = resource.exists? ? resource.annotations : {}
-            (record.annotations||{}).keys.each do |attr|
+            # And this is why we don't name a class Array.
+            current  = record.annotations.kind_of?(::Array) ? record.annotations[0] : record.annotations
+            (current||{}).keys.each do |attr|
               existing_value = existing[attr]
-              new_value = record.annotations[attr]
+              new_value = current[attr]
               if new_value == existing_value
-                record.annotations.delete attr
+               current.delete attr
               end
             end
           end
