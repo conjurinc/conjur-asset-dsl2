@@ -91,7 +91,7 @@ An example in which `alice` and the `ops` group are the only members of the `dev
   role: !group developers
   members:
     - !user alice
-    - 
+    - !member
       role: !group ops
       admin: true
   exclusive: true
