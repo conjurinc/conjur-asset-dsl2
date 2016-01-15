@@ -21,23 +21,42 @@ Also possible:
 * Revoke roles
 * Deny privileges 
 
+# Installation
+
+DSL2 is available as a conjur plugin (via rubygems).  You can install it with the following command:
+
+```ssh-session
+conjur plugin install conjur-asset-dsl2
+```
+
+Upon successful installation, running `conjur help` should show a toplevel `policy2` command.
+
+# Command Line Usage
+
+Conjur DSL2 accepts policies in the new YAML format, described below. 
+
+The `policy2` command has two subcommands, `load` and `import`.  The `load` command is used to load a policy file
+in one shot, or to "preview" the actions that would be taken if the policy were loaded (using the `--dry-run` option).
+
+For details on the usage of this command, run `conjur help policy2 load`.
+
+# Examples
+
+You can find many examples of the new YAML syntax in the 
+[Conjur enterprise example repo](https://github.com/conjurdemos/enterprise-example/tree/dsl2/policy).  Note that only 
+the YAML syntax is currently supported, not the ruby DSL.
+
+You can also find examples in the [test fixtures](https://github.com/conjurinc/conjur-asset-dsl2/tree/master/spec/lib/fixtures) 
+for this project.  These fixtures embed the policy in a yaml document that also describes the initial state of the 
+Conjur server, the expected plan, and the expected execution (or in the case of a fixture that is expected to fail, 
+the expected exception).
+
+
 # Functionality overview
 
 ## `policy`
 
 A `policy` definition creates a versioned policy role and resource. The policy role is the owner of all new records contained with in it.
-
-In Ruby, when a DSL is loaded as a policy, the policy record is already created an in scope. Policy fields such as `id`, `records`, `permissions` etc can be populated directly.
-
-```ruby
-policy "myapp/v1" do
-	body do
-		group "secrets-managers"
-	
-		layer "webserver"
-	end
-end
-```
 
 In YAML:
 
@@ -47,18 +66,6 @@ In YAML:
 ```
 
 ## Create and Update Records
-
-In Ruby, record create/update is enclosed in a `records` block. Each record is created by calling a function with the record `kind`, passing the record id as the argument. Attributes and annotations can be set in a block.
-
-
-```ruby
-user "alice"
-
-user "bob" do
-	uidnumber 1001
-	annotation "email", "bob@mycorp.com"
-end
-```
 
 Here's how to create two users in YAML:
 
@@ -75,18 +82,6 @@ The type of record that you want to create is indicated by the YAML tag. The id 
 `grant` is used to grant roles, which includes group membership.
 
 An example in which `alice` and the `ops` group are the only members of the `developers` group.
-
-```ruby
-grant do
-	role group("developers")
-	member user("alice")
-	member group("ops)", admin:true
-	exclusive true
-end
-```
-
-And in YAML:
-
 
 ```yaml
 - !grant
@@ -109,20 +104,6 @@ Note that when the `exclusive` feature is used, any existing role members that a
 
 Like `grant` is used to grant roles, `permit` is used to give permissions on a resource.
 
-```ruby
-permit %w(read execute) do
-	resource variable("db-password")
-	role group("developers")
-	role layer("app-server")
-end
-	
-permit "update" do
-	resource variable("db-password")
-	role group("developers")
-	exclusive: true
-end
-```
-
 ```yaml
 # developers group and the app-server layer are
 # the only roles which can read and execute the secret.
@@ -143,15 +124,6 @@ end
 
 Use `deny` to remove a privilege without affecting the other privileges:
 
-```ruby
-deny %w(read execute) do
-	resource variable("db-password")
-	role layer("app-server")
-end
-```
-
-In YAML:
-
 ```yaml
 - !deny
   resource: !variable dev/db-password
@@ -163,13 +135,6 @@ In YAML:
 
 Ownership of a record (or group of records) can be assigned using the `owner` field:
 
-```ruby
-variable "db_password" do
-	owner group("developers")
-end
-```
-
-In YAML:
 
 ```yaml
 - !variable
