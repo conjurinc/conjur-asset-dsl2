@@ -122,7 +122,7 @@ Like `grant` is used to grant roles, `permit` is used to give permissions on a r
   resource: !variable db-password
   privilege: update
   role: !group developers
-  exclusive: true
+  replace: true
 ```
 
 Use `deny` to remove a privilege without affecting the other privileges:
@@ -184,26 +184,19 @@ For many examples of sample policy files, see the [examples directory](https://g
 
 Please note that it's pretty easy to write policies which say contradictory things. For example, Policy A might use `!members` to control the members of the developers group. Another Policy B might use `!grant` to add a specific user to the developers group. When Policy B runs, it will add the user to the group. When Policy A runs, it will revoke the user. If B is run again, the user will be re-added. 
 
-So usually good ensure that the members of a role and the privileges on a resource are managed by one approach or the other, but not both.
+So it's usually good ensure that the members of a role and the privileges on a resource are managed by one approach or the other, but not both.
 
-## Installation
-
-Add the plugin to Conjur:
-
-```sh-session
-$ sudo -E conjur plugin install dsl2
-```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake rspec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+After cloning this repo, run `bundle install` to install dependencies, and `rspec` to run the specs.  Note that development 
+typically requires a properly configured Conjur appliance, although the specs should work without one.
 
 ## Todo
+ 
+ * Better error messages.
+ * More checks, for example, conflicts and permissions.
 
-* Planner : implement change of ownership for roles.
-* Planner : verify that all records referenced by permissions and grants will exist (either pre-existing, or will be created by the policy).
 
 ## Contributing
 
