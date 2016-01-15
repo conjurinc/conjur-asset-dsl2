@@ -196,7 +196,7 @@ typically requires a properly configured Conjur appliance, although the specs sh
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/conjur-asset-dsl2.
+Bug reports and pull requests are welcome on GitHub at https://github.com/conjurinc/conjur-asset-dsl2.
 
 
 ## License
