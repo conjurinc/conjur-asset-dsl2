@@ -26,7 +26,7 @@ Also possible:
 DSL2 is available as a conjur plugin (via rubygems).  You can install it with the following command:
 
 ```ssh-session
-conjur plugin install conjur-asset-dsl2
+conjur plugin install dsl2
 ```
 
 Upon successful installation, running `conjur help` should show a toplevel `policy2` command.
