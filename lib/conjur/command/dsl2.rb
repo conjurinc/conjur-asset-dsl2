@@ -156,20 +156,5 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         end
       end
     end
-    
-    policy.desc "Import policy statements from a policy plan (aka --dry-run)"
-    policy.arg_name "(statements-file | STDIN)"
-    policy.command :import do |c|
-      acting_as_option(c)
-      
-      c.action do |global_options,options,args|
-        Conjur.log = "stderr"
-  
-        filename = args.pop
-        script = script_from_filename filename
-        actions = YAML.load(script, filename)
-        execute api, actions, options
-      end
-    end
   end
 end
