@@ -40,6 +40,9 @@ in one shot, or to "preview" the actions that would be taken if the policy were 
 
 For details on the usage of this command, run `conjur help policy2 load`.
 
+The `conjur policy2 import` command can be used to execute a plan produced by the `conjur policy2 load --dry-run --format yaml`
+command.  
+
 # Examples
 
 You can find many examples of the new YAML syntax in the 
