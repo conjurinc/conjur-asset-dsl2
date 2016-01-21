@@ -131,16 +131,6 @@ command. Therefore, a policy can be loaded in three steps, if desired:
     DESC
     policy.arg_name "(policy-file | STDIN)"
     policy.command :load do |c|
-      
-      # Undefine options which are declared in the base (default) implementation.
-      # TODO: This code can be removed if and when dsl2 becomes the default.
-      %w(as-group as-role collection context c).each do |switch|
-        c.switches.delete switch.to_sym
-        c.flags.delete switch.to_sym
-        c.switches_declaration_order.delete_if{|s| s.name == switch.to_sym}
-        c.flags_declaration_order.delete_if{|s| s.name == switch.to_sym}
-      end
-
       acting_as_option(c)
 
       c.desc "Policy namespace (optional)"
