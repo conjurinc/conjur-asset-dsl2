@@ -5,7 +5,7 @@ module Conjur::DSL2::Executor
   class Permit < Base
     def execute
       parameters = { "privilege" => statement.privilege, "role" => statement.role.role.roleid(default_account) }
-      parameters['grant_option'] = admin unless statement.role.admin.nil?
+      parameters['grant_option'] = statement.role.admin unless statement.role.admin.nil?
       action({
         'method' => 'post',
         'path' => "#{resource_path(statement.resource)}?permit",
