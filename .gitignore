@@ -12,3 +12,4 @@ plan*.yml
 /spec/reports/
 /tmp/
 /features/reports/
+.idea
