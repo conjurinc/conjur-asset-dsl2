@@ -61,9 +61,11 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
     mod.const_get "Loader"
   end
   
-  def self.execute api, records
+  def self.execute api, records, options = {}
     actions = []
     records.each do |record|
+      executor_class = Conjur::DSL2::Executor.class_for(record)
+      puts "executor for #{record} is #{executor_class}"
       executor = Conjur::DSL2::Executor.class_for(record).new(record, actions, Conjur::Core::API.conjur_account)
       executor.execute
     end
@@ -167,7 +169,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
   
         filename = args.pop
         script = script_from_filename filename
-        actions = YAML.load(script, filename)
+        actions = Conjur::DSL2::YAML::Loader.load(script, filename)
         execute api, actions, options
       end
     end
