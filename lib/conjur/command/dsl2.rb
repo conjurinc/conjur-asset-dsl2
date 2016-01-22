@@ -65,7 +65,6 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
     actions = []
     records.each do |record|
       executor_class = Conjur::DSL2::Executor.class_for(record)
-      puts "executor for #{record} is #{executor_class}"
       executor = Conjur::DSL2::Executor.class_for(record).new(record, actions, Conjur::Core::API.conjur_account)
       executor.execute
     end
