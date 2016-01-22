@@ -1,0 +1,16 @@
+---
+conjur: |
+  - !group group1
+  - !variable admin-password
+
+policy: |
+  - !permit
+    resource: !variable admin-password
+    privilege:
+      - update
+      - execute
+    role:
+      - !member
+        admin: true
+        role: !group group1
+
