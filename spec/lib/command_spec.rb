@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'conjur/cli'
 require 'conjur/command/rspec/describe_command'
 DSL2_FIXTURE_FILE = "#{File.dirname(__FILE__)}/round-trip/yaml/org.yml"
-PLAN_FIXTURE_FILE = "#{File.dirname(__FILE__)}/import/plan.yml"
+PLAN_FIXTURE_FILE = "#{File.dirname(__FILE__)}/import/import.yml"
 
 describe Conjur::Command::DSL2 do
   let(:api) { double(:api) }
