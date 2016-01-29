@@ -1,0 +1,24 @@
+# Create a webservice
+
+---
+conjur: |
+  []
+
+policy: |
+  - !webservice
+    id: some-service
+
+description:
+  - Create webservice 'some-service'
+
+plan: |
+  ---
+  - !create
+    record: !webservice
+      id: some-service
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/resources/webservice/some-service
+    parameters: {}
