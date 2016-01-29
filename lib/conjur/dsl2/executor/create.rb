@@ -102,6 +102,11 @@ module Conjur::DSL2::Executor
     end
   end
 
+  class CreateWebservice < CreateResource
+    # This is needed so that a Webservice record will create a resource, rather
+    # than core asset.  It does not need any implementation.
+  end
+
   # Create a new Role with a PUT request to the role path.
   class CreateRole < Create
     include ActingAs

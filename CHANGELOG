@@ -1,5 +1,9 @@
 # 0.3.1
 
+ * Fix issue where webservices were being treated as core assets by the executor.
+
+# 0.3.1
+
  * Fix bug in executor for permissions
 
 # 0.3.0
