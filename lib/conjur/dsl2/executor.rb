@@ -36,8 +36,10 @@ module Conjur
     end
         
     class HTTPExecutor
+      # @param [Conjur::API] api
       def initialize api
         @api = api
+        @context = {}
       end
       
       def execute actions
@@ -50,6 +52,8 @@ module Conjur
             invoke step
           end
         end
+
+        @context
       end
       
       protected
@@ -92,6 +96,15 @@ module Conjur
           $stderr.puts "#{request.method.upcase} #{request.path} #{request.body} failed with error #{response.code}:"
           # $stderr.puts "Request failed with error #{response.code}:"
           $stderr.puts response.body
+        else
+          update_context_from_response response
+        end
+      end
+
+      def update_context_from_response response
+        response_json = JSON.parse(response.body)
+        unless response_json['api_key'].nil?
+          @context[response_json['roleid']] = response_json['api_key']
         end
       end
     end
