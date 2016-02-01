@@ -194,7 +194,13 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         filename = args.pop
         script = script_from_filename filename
         actions = Conjur::DSL2::YAML::Loader.load(script, filename)
-        execute api, actions, options
+        context = execute api, actions, options
+
+        if options[:context]
+          save_context_to_file context, options[:context]
+        else
+          puts context.to_json
+        end
       end
     end
   end
