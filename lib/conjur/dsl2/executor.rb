@@ -102,10 +102,13 @@ module Conjur
       end
 
       def update_context_from_response response
-        response_json = JSON.parse(response.body)
+        return if response.body.nil? or response.body.empty?
+        response_json = JSON.parse response.body
         unless response_json['api_key'].nil?
           @context[response_json['roleid']] = response_json['api_key']
         end
+      rescue JSON::ParserError
+        # empty
       end
     end
   end

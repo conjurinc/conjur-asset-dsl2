@@ -70,6 +70,22 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
     end
     Conjur::DSL2::HTTPExecutor.new(api).execute actions
   end
+
+
+  def self.save_context_to_file context, path
+    existing = if File.file?(path)
+      JSON.load(File.read(path))
+    else
+      {}
+    end
+
+    File.write(path, existing.merge(context).to_json)
+  rescue => ex
+    # It would suck to lose all your API keys by fat-fingering the filename -- write it to the stdout if
+    # anything goes wrong.
+    $stderr.puts "Error saving context to #{path}: #{ex}.  Context will be written to the stdout"
+    puts context.to_json
+  end
   
   desc "Load a DSL2 policy"
   command :policy2 do |policy|
@@ -129,14 +145,17 @@ command. Therefore, a policy can be loaded in three steps, if desired:
       c.flag [:namespace]
 
       c.desc "Syntax (ruby or YAML, will be auto-detected from file extension)"
-      c.flag [:"syntax"]
+      c.flag [:syntax]
       
       c.desc "Print the actions that would be performed"
       c.switch [:"dry-run"]
 
       c.desc "Output format of --dry-run mode (text, yaml)"
       c.default_value "yaml"
-      c.flag [:"format"]
+      c.flag [:format]
+
+      c.desc "File to store API keys for created roles (defaults to stdout)"
+      c.flag [:context]
 
       c.action do |global_options,options,args|
         Conjur.log = "stderr"
@@ -153,7 +172,13 @@ command. Therefore, a policy can be loaded in three steps, if desired:
             puts plan.actions.to_yaml
           end
         else
-          execute api, plan.actions
+          context = execute api, plan.actions
+
+          if options[:context]
+            save_context_to_file context, options[:context]
+          else
+            puts context.to_json
+          end
         end
       end
     end
