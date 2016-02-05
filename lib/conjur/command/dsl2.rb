@@ -159,6 +159,9 @@ command. Therefore, a policy can be loaded in three steps, if desired:
       c.desc "File to store API keys for created roles (defaults to stdout)"
       c.flag [:context]
 
+      c.desc "Don't save the context anywhere (including the stdout)"
+      c.switch [:'no-context']
+
       c.action do |global_options,options,args|
         Conjur.log = "stderr"
   
@@ -179,7 +182,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
           if options[:context]
             save_context_to_file context, options[:context]
           else
-            puts context.to_json
+            puts context.to_json unless options[:'no-context']
           end
         end
       end
@@ -201,7 +204,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         if options[:context]
           save_context_to_file context, options[:context]
         else
-          puts context.to_json
+          puts context.to_json unless options[:'no-context']
         end
       end
     end

@@ -29,8 +29,8 @@ module DSLWorld
   def last_json
     # Hack to get Aruba to populate stdout
     step "the output should contain \"\""
-    YAML.load(all_commands.map(&:stdout).join).to_json.tap do |json|
-      $stderr.puts json if ENV['DEBUG']
+    YAML.load(last_command_started.stdout).to_json.tap do |json|
+      $stderr.puts "last_json is #{json}" if ENV['DEBUG']
     end
   end
   
