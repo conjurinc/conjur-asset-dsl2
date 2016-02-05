@@ -73,6 +73,7 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
 
 
   def self.save_context_to_file context, path
+
     existing = if File.file?(path)
       JSON.load(File.read(path))
     else
@@ -84,6 +85,7 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
     # It would suck to lose all your API keys by fat-fingering the filename -- write it to the stdout if
     # anything goes wrong.
     $stderr.puts "Error saving context to #{path}: #{ex}.  Context will be written to the stdout"
+    $stderr.puts ex.backtrace.join("\n\t") if ENV['DEBUG']
     puts context.to_json
   end
   
