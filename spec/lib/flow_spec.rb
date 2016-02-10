@@ -65,7 +65,13 @@ describe "planning and execution" do
   
   fixtures_dir = File.expand_path("fixtures", File.dirname(__FILE__))
   Dir.chdir(fixtures_dir) do
-    Dir['*.yml'].each do |file_example_name|
+    files = if env = ENV['DSL2_FIXTURES']
+      env.split(',')
+    else
+      Dir['*.yml']
+    end
+
+    files.each do |file_example_name|
       describe file_example_name do
         let(:filename) { File.expand_path(file_example_name, fixtures_dir) }
         it_should_behave_like "verify plan"
