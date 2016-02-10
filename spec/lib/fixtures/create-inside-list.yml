@@ -1,0 +1,27 @@
+policy: |
+  - !group secret-users
+  - &variables
+    - !variable username
+    - !variable password
+  - !permit
+    role: !group secrets-users
+    privilege: [ read, execute ]
+    resource: *variables
+
+plan: |
+  ---
+  - !create
+    record: !group
+      id: secrets-users
+  - !create
+    record: !variable
+      id: username
+  - !create
+    record: !variable
+      id: password
+  - !permit
+    role: !group secrets-users
+    privilege: [ read, execute ]
+    resource:
+      - !variable username
+      - !variable password

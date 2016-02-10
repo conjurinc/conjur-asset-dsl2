@@ -3,14 +3,14 @@ include Conjur::DSL2
 
 describe "planning and execution" do
   let(:fixture) { YAML.load(File.read(filename), filename) }
-  let(:conjur_state){ Conjur::DSL2::YAML::Loader.load(fixture['conjur']) }
+  let(:conjur_state){ Conjur::DSL2::YAML::Loader.load(fixture['conjur'] || [].to_yaml) }
   let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
   let(:exception) { fixture['exception'] }
   let(:planner) { Planner.planner_for(policy[0], api) }
   let(:api) { MockAPI.new 'the-account', conjur_state }
   let(:plan_actions) do
     plan = Plan.new
-    plan.namespace = fixture['namespace']
+    plan.namespace = fixture['namespace'] if fixture['namespace']
     planner.plan = plan
     begin
       planner.do_plan
@@ -60,11 +60,11 @@ describe "planning and execution" do
   end
 
   shared_examples_for "verify execution" do
-    it("matches execution YAML") {
-      unless exception
+    it("matches execution YAML") do
+      if fixture['execution'] && !exception
         expect(execution_yaml).to eq(fixture['execution'])
       end
-    }
+    end
   end
   
   fixtures_dir = File.expand_path("fixtures", File.dirname(__FILE__))
