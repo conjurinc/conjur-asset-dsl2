@@ -1,49 +1,73 @@
 policy: |
-  - !group secrets-users
-  - &variables
-    - !variable username
-    - !variable password
-  - !permit
-    role: !group secrets-users
-    privilege: [ read, execute ]
-    resource: *variables
+  - !policy
+    id: test-policy
+    body:
+      - !group secrets-users
+      - &variables
+        - !variable username
+        - !variable password
+      - !permit
+        role: !group secrets-users
+        privilege: [ read, execute ]
+        resource: *variables
 
 plan: |
   ---
   - !create
+    record: !role
+      id: test-policy
+      kind: policy
+  - !create
+    record: !resource
+      id: test-policy
+      kind: policy
+      owner: !role
+        id: test-policy
+        kind: policy
+  - !create
     record: !group
-      id: secrets-users
+      id: test-policy/secrets-users
+      owner: !role
+        id: test-policy
+        kind: policy
   - !create
     record: !variable
-      id: username
+      id: test-policy/username
+      owner: !role
+        id: test-policy
+        kind: policy
   - !create
     record: !variable
-      id: password
+      id: test-policy/password
+      owner: !role
+        id: test-policy
+        kind: policy
   - !permit
     privilege: read
     resource: !variable
-      id: username
+      id: test-policy/username
     role: !member
       role: !group
-        id: secrets-users
+        id: test-policy/secrets-users
   - !permit
     privilege: execute
     resource: !variable
-      id: username
+      id: test-policy/username
     role: !member
       role: !group
-        id: secrets-users
+        id: test-policy/secrets-users
   - !permit
     privilege: read
     resource: !variable
-      id: password
+      id: test-policy/password
     role: !member
       role: !group
-        id: secrets-users
+        id: test-policy/secrets-users
   - !permit
     privilege: execute
     resource: !variable
-      id: password
+      id: test-policy/password
     role: !member
       role: !group
-        id: secrets-users
+        id: test-policy/secrets-users
+
