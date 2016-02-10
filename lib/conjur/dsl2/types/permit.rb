@@ -14,7 +14,7 @@ module Conjur
         end
         
         def to_s
-          "Permit #{role.role} to '#{privilege}' #{resource}#{role.admin ? ' with grant option' : ''}"
+          "Permit #{role.role} to [#{Array(privilege).join(', ')}] on #{Array(resource).join(', ')}#{role.admin ? ' with grant option' : ''}"
         end
       end
     end

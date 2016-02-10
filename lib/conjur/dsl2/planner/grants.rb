@@ -10,7 +10,6 @@ module Conjur
         # be granted every role. If the +replace+ option is set, then any existing
         # grant on a role that is *not* given should be revoked, except for role admins.
         def do_plan
-
           roles = Array(record.roles)
           members = Array(record.members)
           given_grants = Hash.new { |hash, key| hash[key] = [] }

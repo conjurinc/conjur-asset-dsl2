@@ -51,7 +51,7 @@ module Conjur
               (Set.new(requested) - Set.new(given)).each do |p|
                 role, admin = p
 
-                error("role not found: #{role}") unless role_exists?(role)
+                error(%Q(Role "#{role}" not found")) unless role_exists?(role)
 
                 permit = Conjur::DSL2::Types::Permit.new
                 permit.resource = resource_record target

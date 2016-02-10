@@ -2,15 +2,9 @@ module Conjur
   module DSL2
     module YAML
       class Handler < Psych::Handler
+        include Conjur::DSL2::Logger
+
         attr_accessor :parser, :filename, :result
-        
-        # Override the logger with this method.
-        cattr_accessor :logger
-        
-        require 'logger'
-        
-        self.logger = Logger.new(STDERR)
-        self.logger.level = Logger::INFO
         
         # An abstract Base handler. The handler will receive each document message within
         # its particular context (sequence, mapping, etc).

@@ -87,9 +87,9 @@ module Conjur
               plan.ownerid = ownerid
 
               planner.plan = plan
-              planner.trace("planning...")
+              planner.log { "Planning policy record #{record}" }
               planner.do_plan
-              planner.trace("ok!")
+              planner.log { "\tDone" }
             ensure
               plan.policy = nil
               plan.ownerid = ownerid

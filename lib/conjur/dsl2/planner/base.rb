@@ -2,10 +2,10 @@ module Conjur
   module DSL2
     module Planner
       class Base
+        include Conjur::DSL2::Logger
 
         attr_reader :record, :api
         attr_accessor :plan
-
 
         def initialize record, api
           @record = record
@@ -101,20 +101,11 @@ module Conjur
           raise message
         end
 
-        def trace message
-          if trace_enabled?
-            $stderr.puts "[trace #{record}] #{message}"
-          end
+        def log &block
+          logger.debug('conjur/dsl2/planner') {
+            yield
+          }
         end
-
-        def trace_enabled?
-          ENV["DSL_PLANNER_TRACE"] || !!@trace_enabled
-        end
-
-        def trace_enabled= enabled
-          @trace_enabled = enabled
-        end
-
 
         def update_record
           update = Conjur::DSL2::Types::Update.new
@@ -198,7 +189,6 @@ module Conjur
       end
       
       class Array < Base
-
         def do_plan
           planners = record.map do |item|
             Planner.planner_for(item, api)

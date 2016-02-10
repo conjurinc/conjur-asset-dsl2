@@ -4,6 +4,8 @@ module Conjur::DSL2
     # is an object from Conjur::DSL2::Types. Each execution action is
     # an HTTP method, a request path, and request parameters.
     class Base
+      include Conjur::DSL2::Logger
+      
       attr_reader :statement, :actions, :default_account
       
       def initialize statement, actions, default_account

@@ -1,5 +1,5 @@
 policy: |
-  - !group secret-users
+  - !group secrets-users
   - &variables
     - !variable username
     - !variable password
@@ -20,8 +20,30 @@ plan: |
     record: !variable
       id: password
   - !permit
-    role: !group secrets-users
-    privilege: [ read, execute ]
-    resource:
-      - !variable username
-      - !variable password
+    privilege: read
+    resource: !variable
+      id: username
+    role: !member
+      role: !group
+        id: secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: username
+    role: !member
+      role: !group
+        id: secrets-users
+  - !permit
+    privilege: read
+    resource: !variable
+      id: password
+    role: !member
+      role: !group
+        id: secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: password
+    role: !member
+      role: !group
+        id: secrets-users
