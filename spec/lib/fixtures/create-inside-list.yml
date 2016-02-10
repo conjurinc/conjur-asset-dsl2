@@ -25,12 +25,6 @@ plan: |
         id: test-policy
         kind: policy
   - !create
-    record: !group
-      id: test-policy/secrets-users
-      owner: !role
-        id: test-policy
-        kind: policy
-  - !create
     record: !variable
       id: test-policy/username
       owner: !role
@@ -39,6 +33,12 @@ plan: |
   - !create
     record: !variable
       id: test-policy/password
+      owner: !role
+        id: test-policy
+        kind: policy
+  - !create
+    record: !group
+      id: test-policy/secrets-users
       owner: !role
         id: test-policy
         kind: policy
