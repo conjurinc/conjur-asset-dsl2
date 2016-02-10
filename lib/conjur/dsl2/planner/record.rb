@@ -72,7 +72,10 @@ module Conjur
             Planner.planner_for(record, api)
           end.sort
 
+          log{ "Planing policy with body #{planners.map{|p| p.class.name}}" }
+
           planners.each do |planner|
+            planner.log{  "Planning #{planner}"}
             ownerid = plan.ownerid
             begin
               plan.policy = self.record
@@ -89,7 +92,7 @@ module Conjur
               planner.plan = plan
               planner.log { "Planning policy record #{record}" }
               planner.do_plan
-              planner.log { "\tDone" }
+              planner.log { "Done" }
             ensure
               plan.policy = nil
               plan.ownerid = ownerid

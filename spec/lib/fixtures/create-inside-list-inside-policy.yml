@@ -40,8 +40,8 @@ plan: |
         id: myapp
         kind: policy
   - !create
-    record: !variable
-      id: myapp/username
+    record: !group
+      id: myapp/secrets-managers
       owner: !role
         id: myapp
         kind: policy
@@ -51,6 +51,26 @@ plan: |
       owner: !role
         id: myapp
         kind: policy
+  - !create
+    record: !variable
+      id: myapp/username
+      owner: !role
+        id: myapp
+        kind: policy
+  - !permit
+    privilege: read
+    resource: !variable
+      id: myapp/password
+    role: !member
+      role: !group
+        id: myapp/secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: myapp/password
+    role: !member
+      role: !group
+        id: myapp/secrets-users
   - !permit
     privilege: read
     resource: !variable
@@ -66,16 +86,16 @@ plan: |
       role: !group
         id: myapp/secrets-users
   - !permit
-    privilege: read
+    privilege: update
     resource: !variable
-      id: myapp/password
+      id: myapp/username
     role: !member
       role: !group
-        id: myapp/secrets-users
+        id: myapp/secrets-managers
   - !permit
-    privilege: execute
+    privilege: update
     resource: !variable
       id: myapp/password
     role: !member
       role: !group
-        id: myapp/secrets-users
+        id: myapp/secrets-managers

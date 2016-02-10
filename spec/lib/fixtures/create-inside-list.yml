@@ -2,10 +2,10 @@ policy: |
   - !policy
     id: test-policy
     body:
-      - !group secrets-users
       - &variables
         - !variable username
         - !variable password
+      - !group secrets-users
       - !permit
         role: !group secrets-users
         privilege: [ read, execute ]
