@@ -10,13 +10,16 @@ module Conjur
         def plan records, api, options = {}
           namespace = options[:namespace]
           ownerid   = options[:ownerid]
-          Plan.new.tap do |plan|
+          plan = options[:plan] || Plan.new
+          plan.tap do |plan|
             plan.namespace = namespace if namespace
             plan.ownerid = ownerid if ownerid
-            records.map{ |record| planner_for(record, api) }.sort.each do |planner|
+            Array(records).map{ |record| planner_for(record, api) }.sort.each do |planner|
               planner.plan = plan
+              planner.log { %Q(Planning "#{planner.record} using #{planner.class}") }
               begin
                 planner.do_plan
+                planner.log { "\tFinished \"#{planner.record}\"" }
               ensure
                 planner.plan = nil
               end

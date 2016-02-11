@@ -14,7 +14,7 @@ module Conjur
             rescue
               handler.log { $!.message }
               handler.log { $!.backtrace.join("  \n") }
-              raise Invalid.new($!.message, filename, parser.mark)
+              raise Invalid.new($!.message || "(no message)", filename, parser.mark)
             end
             handler.result
           end

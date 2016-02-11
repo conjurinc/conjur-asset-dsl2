@@ -2,10 +2,10 @@ module Conjur
   module DSL2
     module Planner
       class Base
+        include Conjur::DSL2::Logger
 
         attr_reader :record, :api
         attr_accessor :plan
-
 
         def initialize record, api
           @record = record
@@ -80,7 +80,7 @@ module Conjur
         # Sort in canonical order -- basically, a `Record` or `Create` comes before everything
         # else.  So the base class's sort just places those before us, and anything else gets 0.
         def <=> other
-          other.kind_of?(Conjur::DSL2::Planner::ActsAsRecord) ? 1 : 0
+          (other.kind_of?(Conjur::DSL2::Planner::ActsAsRecord) or other.kind_of?(Conjur::DSL2::Planner::Array)) ? 1 : 0
         end
 
         def resource_exists? resource
@@ -101,20 +101,11 @@ module Conjur
           raise message
         end
 
-        def trace message
-          if trace_enabled?
-            $stderr.puts "[trace #{record}] #{message}"
-          end
+        def log &block
+          logger.debug('conjur/dsl2/planner') {
+            yield
+          }
         end
-
-        def trace_enabled?
-          ENV["DSL_PLANNER_TRACE"] || !!@trace_enabled
-        end
-
-        def trace_enabled= enabled
-          @trace_enabled = enabled
-        end
-
 
         def update_record
           update = Conjur::DSL2::Types::Update.new
@@ -198,8 +189,13 @@ module Conjur
       end
       
       class Array < Base
+        # Array sorts before everything because sanity.
+        def <=> other
+          -1
+        end
 
         def do_plan
+
           planners = record.map do |item|
             Planner.planner_for(item, api)
           end.sort

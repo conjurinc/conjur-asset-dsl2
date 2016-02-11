@@ -1,6 +1,12 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'conjur-asset-dsl2'
+require 'logger'
 
+if ENV['DEBUG']
+  Conjur::DSL2::YAML::Handler.logger.level = Logger::DEBUG 
+  Conjur::DSL2::Planner::Base.logger.level = Logger::DEBUG
+  Conjur::DSL2::Executor::Base.logger.level = Logger::DEBUG
+end
 
 shared_context "planner", planning: true do
   let(:api) { double(:api) }
