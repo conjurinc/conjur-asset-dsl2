@@ -80,7 +80,7 @@ module Conjur
         # Sort in canonical order -- basically, a `Record` or `Create` comes before everything
         # else.  So the base class's sort just places those before us, and anything else gets 0.
         def <=> other
-          other.kind_of?(Conjur::DSL2::Planner::ActsAsRecord) or other.kind_of?(Conjur::DSL2::Planner::Array) ? 1 : 0
+          (other.kind_of?(Conjur::DSL2::Planner::ActsAsRecord) or other.kind_of?(Conjur::DSL2::Planner::Array)) ? 1 : 0
         end
 
         def resource_exists? resource
