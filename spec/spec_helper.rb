@@ -217,6 +217,4 @@ class MockAPI
     return result if result
     list[id] = yield
   end
-
-
 end

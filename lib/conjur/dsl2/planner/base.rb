@@ -114,7 +114,7 @@ module Conjur
 
           changed = false
           record.custom_attribute_names.each do |attr|
-            existing_value = object.attributes[attr]
+            existing_value = object.attributes[attr.to_s]
             new_value = record.send(attr)
             if new_value
               if new_value == existing_value
