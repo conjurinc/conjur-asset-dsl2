@@ -7,7 +7,7 @@ module DSLWorld
   def load_policy text
     specify_cli_environment
     step "I run `bundle exec conjur policy2 load --namespace #{namespace} --syntax yaml` interactively"
-    last_command_started.write(text)
+    last_command_started.write(inject_namespace(text))
     last_command_started.stdin.close
 
     step "the exit status should be 0"
