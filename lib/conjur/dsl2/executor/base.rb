@@ -45,7 +45,10 @@ module Conjur::DSL2
       end
       
       def update_annotation_path
-        [ "authz", annotate_record.account || default_account, "annotations", annotate_record.resource_kind, annotate_record.id ].join('/')
+        [ "authz", annotate_record.account || default_account,
+            "annotations",
+            annotate_record.resource_kind,
+            CGI.escape(annotate_record.id) ].join('/')
       end
     end
   end
