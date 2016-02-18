@@ -37,7 +37,7 @@ execution: |
     parameters:
       gidnumber: 1102
   - method: put
-    path: authz/the-account/annotations/group/dev/developers
+    path: authz/the-account/annotations/group/dev%2Fdevelopers
     parameters:
       name: name
       value: Developers
