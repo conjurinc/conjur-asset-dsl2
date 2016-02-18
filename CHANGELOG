@@ -1,6 +1,10 @@
+# 0.4.4
+
+* Enable immutable attributes to be set when the value is unchanged.
+
 # 0.4.3
 
-* Fix a load error which can occur when using YAML lists inside of policies
+* Fix a load error which can occur when using YAML lists inside of policies.
 
 # 0.4.2
 
@@ -12,8 +16,8 @@
 
 # 0.3.1
 
-* Fix bug in executor for permissions
+* Fix bug in executor for permissions.
 
 # 0.3.0
  
-* Initial stable version
+* Initial stable version.
