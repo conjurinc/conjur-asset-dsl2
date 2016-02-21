@@ -52,7 +52,6 @@ module Conjur
         # +converter+ if the +test_function+ fails, the converter is called to coerce the type. 
         # It should return +nil+ if its unable to do so.
         def expect_type value, type_name, test_function, converter = nil
-
           if test_function.is_a?(Class)
             cls = test_function
             test_function = lambda{ value.is_a?(cls) } 
@@ -301,6 +300,18 @@ module Conjur
         
         def role?
           false
+        end
+        
+        # Gets all 'child' records.
+        def referenced_records
+          result = []
+          instance_variables.map do |var|
+            value = instance_variable_get var
+            Array(value).each do |val|
+              result.push value if value.is_a?(Conjur::DSL2::Types::Base)
+            end
+          end
+          result.flatten
         end
         
         class << self

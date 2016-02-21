@@ -1,0 +1,16 @@
+# Namespace is applied to the policy, and subsequently to the policy body.
+policy: |
+  - !policy
+    id: myapp
+    body:
+    - !host the-host
+
+namespace: dev
+
+expectation: |
+  ---
+  - !policy
+    body:
+    - !host
+      id: dev/myapp/the-host
+    id: dev/myapp

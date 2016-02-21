@@ -1,0 +1,7 @@
+policy: |
+  - !host the-host
+  
+expectation: |
+  ---
+  - !host
+    id: the-host

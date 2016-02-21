@@ -2,6 +2,8 @@ module DSLWorld
   
   def specify_cli_environment
     set_environment_variable "GLI_DEBUG", "true"
+    set_environment_variable "DEBUG", "true" if ENV['DEBUG']
+    set_environment_variable "RESTCLIENT_LOG", "stderr" if ENV['DEBUG']
   end
   
   def load_policy text

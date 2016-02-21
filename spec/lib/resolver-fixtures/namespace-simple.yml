@@ -1,0 +1,28 @@
+# Namespace prefixes records, unless they are absolute.
+# The namespace can be applied to 'owner' as well.
+policy: |
+  - !group the-owner
+  - !group "/root-owner"
+  - !host 
+    id: the-host
+    owner: !group the-owner
+  - !host 
+    id: /second-host
+    owner: !group /root-owner
+
+namespace: dev
+  
+expectation: |
+  ---
+  - !group
+    id: dev/the-owner
+  - !group
+    id: root-owner
+  - !host
+    id: dev/the-host
+    owner: !group
+      id: dev/the-owner
+  - !host
+    id: second-host
+    owner: !group
+      id: root-owner

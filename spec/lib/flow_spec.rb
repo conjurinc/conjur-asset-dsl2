@@ -63,7 +63,7 @@ describe "planning and execution" do
     end
   end
   
-  fixtures_dir = File.expand_path("fixtures", File.dirname(__FILE__))
+  fixtures_dir = File.expand_path("flow-fixtures", File.dirname(__FILE__))
   Dir.chdir(fixtures_dir) do
     files = if env = ENV['DSL2_FIXTURES']
       env.split(',')

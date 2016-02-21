@@ -90,7 +90,7 @@ module Conjur
 
         def role_exists? role
           role_id = role.kind_of?(String) ? role : scoped_roleid(role)
-          # I believe it's correct to assume manged roles exist?
+          # I believe it's correct to assume managed roles exist?
           return true if role_id.split(':',2).last.start_with?('@')
 
           plan.roles_created.include?(role_id) || api.role(role_id).exists?

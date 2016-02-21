@@ -34,7 +34,7 @@ module Conjur
         def initialize id = nil
           self.id = id if id
         end
-
+        
         def to_s
           "#{resource_kind.gsub('_', ' ')} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
         end

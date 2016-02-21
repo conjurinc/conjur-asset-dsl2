@@ -1,0 +1,57 @@
+conjur: |
+  []
+
+policy: |
+  - !policy
+    id: test
+    body:
+    - !group
+      id: a
+    - !layer
+      owner: !group a
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: test
+      kind: policy
+  - !create
+    record: !resource
+      id: test
+      kind: policy
+      owner: !role
+        id: test
+        kind: policy
+  - !create
+    record: !group
+      id: test/a
+      owner: !role
+        id: test
+        kind: policy
+  - !create
+    record: !layer
+      id: test
+      owner: !role
+        id: test/a
+        kind: group
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/policy/test
+    parameters: {}
+  - method: put
+    path: authz/the-account/resources/policy/test
+    parameters:
+      acting_as: the-account:policy:test
+  - method: post
+    path: groups
+    parameters:
+      id: test/a
+      ownerid: the-account:policy:test
+  - method: post
+    path: layers
+    parameters:
+      id: test
+      ownerid: the-account:group:test/a
