@@ -7,9 +7,8 @@ describe Resolver do
   let(:ownerid) { fixture['ownerid'] || "rspec:user:default-owner" }
   let(:namespace) { fixture['namespace'] }
   let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
-  let(:resolver) { Resolver.new ownerid, namespace }
   let(:resolve) {
-    resolver.resolve(policy)
+    Resolver.resolve(ownerid, namespace, policy)
   }
   subject { resolve.to_yaml }
   

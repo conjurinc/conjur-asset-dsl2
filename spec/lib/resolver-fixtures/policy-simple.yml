@@ -19,17 +19,16 @@ expectation: |
   - !group
     id: root-owner
   - !policy
-    body:
-    - !group
-      id: myapp/the-owner
-    - !host
-      id: myapp
-    - !host
-      id: myapp/the-host
-      owner: !group
-        id: myapp/the-owner
-    - !host
-      id: second-host
-      owner: !group
-        id: root-owner
     id: myapp
+  - !group
+    id: myapp/the-owner
+  - !host
+    id: myapp
+  - !host
+    id: myapp/the-host
+    owner: !group
+      id: myapp/the-owner
+  - !host
+    id: second-host
+    owner: !group
+      id: root-owner

@@ -10,7 +10,6 @@ namespace: dev
 expectation: |
   ---
   - !policy
-    body:
-    - !host
-      id: dev/myapp/the-host
     id: dev/myapp
+  - !host
+    id: dev/myapp/the-host

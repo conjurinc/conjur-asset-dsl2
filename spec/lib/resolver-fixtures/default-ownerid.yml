@@ -1,0 +1,33 @@
+# Global owner is applied to top-level records which don't have an owner specified.
+# This does not apply to policy records, which by default are owned by the policy role.
+policy: |
+  - !group the-group
+  - !layer
+    id: the-layer
+    owner: !group the-group
+  - !policy
+    id: myapp
+    body:
+    - !group the-group
+    - !layer
+      id: the-layer
+      owner: !group the-group
+
+owner: test:user:admin
+  
+expectation: |
+  ---
+  - !group
+    id: the-group
+  - !layer
+    id: the-layer
+    owner: !group
+      id: the-group
+  - !policy
+    id: myapp
+  - !group
+    id: myapp/the-group
+  - !layer
+    id: myapp/the-layer
+    owner: !group
+      id: myapp/the-group

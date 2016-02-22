@@ -66,7 +66,7 @@ module Conjur
       end
       
       module ActsAsRole
-        def roleid default_account
+        def roleid default_account = nil
           [ account || default_account, role_kind, id ].join(":")
         end
         

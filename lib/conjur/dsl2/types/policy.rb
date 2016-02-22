@@ -99,6 +99,10 @@ module Conjur
           Resource.new("#{self.account || default_account}:policy:#{id}", default_account: default_account)
         end
         
+        def referenced_records
+          super - [ @body ]
+        end
+        
         def body &block
           if block_given?
             singleton :body, lambda { Body.new }, &block
