@@ -273,9 +273,6 @@ module Conjur
         extend TypeChecking
         extend AttributeDefinition
         
-        # On creation, an owner can always be specified.
-        attr_accessor :owner
-        
         # Stores the mapping from attribute names to Ruby class names that will be constructed
         # to populate the attribute.
         inheritable_attr :yaml_fields

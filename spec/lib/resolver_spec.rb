@@ -4,11 +4,12 @@ include Conjur::DSL2
 
 describe Resolver do
   let(:fixture) { YAML.load(File.read(filename), filename) }
+  let(:account) { fixture['account'] || "the-account" }
   let(:ownerid) { fixture['ownerid'] || "rspec:user:default-owner" }
   let(:namespace) { fixture['namespace'] }
   let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
   let(:resolve) {
-    Resolver.resolve(ownerid, namespace, policy)
+    Resolver.resolve(account, ownerid, namespace, policy)
   }
   subject { resolve.to_yaml }
   

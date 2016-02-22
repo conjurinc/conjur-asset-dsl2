@@ -1,6 +1,7 @@
 # Namespace is applied to the policy, and subsequently to the policy body.
 policy: |
   - !policy
+    account: my-account
     id: myapp
     body:
     - !host the-host
@@ -10,7 +11,7 @@ namespace: dev
 expectation: |
   ---
   - !policy
-    account: the-account
+    account: my-account
     id: dev/myapp
     owner: !role
       account: rspec
@@ -20,6 +21,6 @@ expectation: |
     account: the-account
     id: dev/myapp/the-host
     owner: !role
-      account: the-account
+      account: my-account
       id: dev/myapp
       kind: policy

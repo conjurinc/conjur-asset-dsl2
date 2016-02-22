@@ -99,6 +99,7 @@ module Conjur
           Resource.new("#{self.account || default_account}:policy:#{id}", default_account: default_account)
         end
         
+        # The body if the Policy is excluded from the normal referenced records list.
         def referenced_records
           super - [ @body ]
         end

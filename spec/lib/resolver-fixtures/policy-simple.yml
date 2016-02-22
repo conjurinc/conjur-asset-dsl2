@@ -17,18 +17,42 @@ policy: |
 expectation: |
   ---
   - !group
+    account: the-account
     id: root-owner
+    owner: !role
+      account: rspec
+      id: default-owner
+      kind: user
   - !policy
+    account: the-account
     id: myapp
+    owner: !role
+      account: rspec
+      id: default-owner
+      kind: user
   - !group
+    account: the-account
     id: myapp/the-owner
+    owner: !role
+      account: the-account
+      id: myapp
+      kind: policy
   - !host
+    account: the-account
     id: myapp
+    owner: !role
+      account: the-account
+      id: myapp
+      kind: policy
   - !host
+    account: the-account
     id: myapp/the-host
     owner: !group
+      account: the-account
       id: myapp/the-owner
   - !host
+    account: the-account
     id: second-host
     owner: !group
+      account: the-account
       id: root-owner

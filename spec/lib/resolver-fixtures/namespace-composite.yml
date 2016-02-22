@@ -12,6 +12,8 @@ expectation: |
   - !grant
     member: !member
       role: !user
+        account: the-account
         id: alice
     role: !group
+      account: the-account
       id: dev/admin

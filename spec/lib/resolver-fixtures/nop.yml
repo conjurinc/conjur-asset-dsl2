@@ -4,4 +4,9 @@ policy: |
 expectation: |
   ---
   - !host
+    account: the-account
     id: the-host
+    owner: !role
+      account: rspec
+      id: default-owner
+      kind: user
