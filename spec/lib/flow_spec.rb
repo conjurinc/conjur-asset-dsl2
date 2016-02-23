@@ -8,7 +8,7 @@ describe "planning and execution" do
   let(:account) { 'the-account' }
   let(:ownerid) { "#{account}:user:default-owner" }
   let(:namespace) { fixture['namespace'] }
-  let(:records) { Conjur::DSL2::Resolver.resolve account, ownerid, namespace, policy }
+  let(:records) { Conjur::DSL2::Resolver.resolve policy, account, ownerid, namespace }
   let(:exception) { fixture['exception'] }
   let(:api) { MockAPI.new account, conjur_state }
   let(:plan_actions) do
