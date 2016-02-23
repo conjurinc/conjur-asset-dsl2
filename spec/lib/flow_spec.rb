@@ -68,8 +68,11 @@ describe "planning and execution" do
 
   shared_examples_for "verify execution" do
     it("matches execution YAML") do
-      if fixture['execution'] && !exception
+      if fixture['execution'] && !@exception
         expect(execution_yaml).to eq(fixture['execution'])
+      end
+      if @exception && fixture['execution']
+        raise %Q(Unexpected exception: #{@exception}\n#{@exception.backtrace.join "\n  "})
       end
     end
   end

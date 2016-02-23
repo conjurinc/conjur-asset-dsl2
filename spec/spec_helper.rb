@@ -43,7 +43,7 @@ module MockAsset
     @api = api
     @record = record
   end
-
+  
   def to_s
     record.to_s
   end
@@ -114,6 +114,16 @@ class MockRecord
       memo[key] = @record.send key
       memo
     end
+  end
+end
+
+class MockVariable < MockRecord
+  def kind
+    @record.kind || "secret"
+  end
+  
+  def mime_type
+    @record.mime_type || "text/plain"
   end
 end
 
@@ -205,7 +215,12 @@ class MockAPI
       record = @records.find do |r|
         r.is_a?(kind_class) && r.id == id
       end
-      MockRecord.new self, record
+      cls = begin
+        Object.const_get "Mock#{kind_class.simple_name}".classify
+      rescue NameError
+        MockRecord
+      end
+      cls.new self, record
     end
   end
 

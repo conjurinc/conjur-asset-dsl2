@@ -322,6 +322,8 @@ module Conjur
             self.name.demodulize
           end
           
+          alias simple_name short_name
+          
           def register_yaml_type simple_name
             ::YAML.add_tag "!#{simple_name}", self
           end
