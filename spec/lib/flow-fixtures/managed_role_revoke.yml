@@ -1,0 +1,37 @@
+# Revoke a managed role from a group. The role is only revoked if its already been granted.
+---
+conjur: |
+  - !group developers
+  - !layer app/frontend
+  - !role
+    id: layer/app/frontend/use_host
+    kind: "@"
+  - !grant
+    role: !role
+      id: layer/app/frontend/use_host
+      kind: "@"
+    member: !group developers
+
+policy: |
+  - !revoke
+    role: !managed-role
+      record: !layer app/frontend
+      role_name: use_host
+    member: !group developers
+
+plan: |
+  ---
+  - !revoke
+    member: !group
+      id: developers
+    role: !managed-role
+      record: !layer
+        id: app/frontend
+      role_name: use_host
+
+execution: |
+  ---
+  - method: delete
+    path: authz/the-account/roles/@/layer/app/frontend/use_host?members
+    parameters:
+      member: the-account:group:developers

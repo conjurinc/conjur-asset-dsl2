@@ -9,7 +9,10 @@ describe Resolver do
   let(:namespace) { fixture['namespace'] }
   let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
   let(:resolve) {
-    Resolver.resolve(account, ownerid, namespace, policy)
+    Resolver.resolve(policy, account, ownerid, namespace)
+  }
+  before {
+    allow(Conjur).to receive(:configuration).and_return double(:configuration, account: account)
   }
   subject { resolve.to_yaml }
   

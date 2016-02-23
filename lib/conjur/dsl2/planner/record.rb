@@ -4,11 +4,6 @@ module Conjur
   module DSL2
     module Planner      
       module ActsAsRecord
-        # Record objects sort before everything else
-        def <=> other
-          other.kind_of?(ActsAsRecord) ? 0 : -1
-        end
-
         def do_plan
           if object.exists?
             update_record
@@ -38,7 +33,8 @@ module Conjur
         include ActsAsRecord
         
         def object
-          @object ||= api.send(record.resource_kind, scoped_id(record))
+          raise "Cannot create a record in non-default account #{record.account}" unless record.account == Conjur.configuration.account
+          @object ||= api.send(record.resource_kind, record.id)
         end
       end
       
@@ -47,56 +43,26 @@ module Conjur
 
       class Policy < Base
         def do_plan
-          role = record.role(default_account)
-          Role.new(role, api).tap do |role|
+          unless record.body.nil?
+            error('Not expecting a body element in policy')
+          end
+          
+          # Create the role
+          Role.new(record.role, api).tap do |role|
             role.plan = plan
             role.do_plan
           end
 
-          if record.body.nil?
-            error('missing body element in policy')
+          # Copy the annotations
+          Hash(record.annotations).each do |k,v|
+            record.resource.annotations ||= {}
+            record.resource.annotations[k] = v
           end
 
-          plan.ownerid = role.roleid(account)
-          resource = record.resource(default_account)
-          if record.annotations
-            resource.annotations = record.annotations
-          end
-
-          Resource.new(resource, api).tap do |resource|
+          # Create the resource
+          Resource.new(record.resource, api).tap do |resource|
             resource.plan = plan
             resource.do_plan
-          end
-
-          planners = record.body.map do |record|
-            Planner.planner_for(record, api)
-          end.sort
-
-          log{ "Planing policy with body #{planners.map{|p| p.class.name}}" }
-
-          planners.each do |planner|
-            planner.log{  "Planning #{planner}"}
-            ownerid = plan.ownerid
-            begin
-              plan.policy = self.record
-              
-              # Set the ownerid to the namespace-scoped roleid of the policy
-              ownerid = plan.policy.roleid(account)
-              if plan.namespace
-                account, kind, id = ownerid.split(':', 3)
-                ownerid = [ account, kind, [ plan.namespace, id ].join("/") ].join(":")
-              end
-              ownerid = ownerid
-              plan.ownerid = ownerid
-
-              planner.plan = plan
-              planner.log { "Planning policy record #{record}" }
-              planner.do_plan
-              planner.log { "Done" }
-            ensure
-              plan.policy = nil
-              plan.ownerid = ownerid
-            end
           end
         end
       end

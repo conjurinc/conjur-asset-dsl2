@@ -32,9 +32,8 @@ plan: |
   - !create
     record: !layer
       id: test
-      owner: !role
+      owner: !group
         id: test/a
-        kind: group
 
 execution: |
   ---

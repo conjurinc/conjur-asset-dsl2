@@ -5,7 +5,7 @@ module Conjur::DSL2::Executor
       action({
         'method' => 'put',
         'path' => resource_path(statement.resource),
-        'parameters' => { "owner" => statement.owner.roleid(default_account) }
+        'parameters' => { "owner" => statement.owner.roleid }
       })
     end
   end

@@ -37,6 +37,7 @@ Feature: Generating an execution plan from a policy file
     Then the normalized JSON at "0/record/owner/kind" should be "group"
     Then the normalized JSON at "0/record/owner/id" should be "ops"
 
+	@announce-output
   Scenario: --as-group option sets the owner of the policy
     Given I load the policy "- !group ops"
     When I plan the policy as yaml with options "--as-group @namespace@/ops":

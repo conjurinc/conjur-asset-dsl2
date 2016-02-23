@@ -305,7 +305,7 @@ module Conjur
           instance_variables.map do |var|
             value = instance_variable_get var
             Array(value).each do |val|
-              result.push value if value.is_a?(Conjur::DSL2::Types::Base)
+              result.push val if val.is_a?(Conjur::DSL2::Types::Base)
             end
           end
           result.flatten

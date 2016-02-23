@@ -3,7 +3,16 @@ require 'conjur/dsl2/planner/base'
 module Conjur
   module DSL2
     module Planner
-      class Grant < Base
+      class RoleAction < Base
+        def verify_roles_available roles
+          # Check all roles / members involved
+          roles.each do |role|
+            error("role not found: #{role.roleid} in #{plan.roles_created.to_a}") unless role_exists?(role)
+          end
+        end
+      end
+      
+      class Grant < RoleAction
         # Plans a role grant.
         # 
         # The Grant record can list multiple roles and members. Each member should
@@ -16,30 +25,27 @@ module Conjur
           given_admins = Set.new
           requested_grants = Hash.new { |hash, key| hash[key] = [] }
 
-          # Check all roles / members involved
-          (roles + members.map(&:role)).each do |role|
-            error("role not found: #{scoped_roleid(role)} in #{plan.roles_created.to_a}") unless role_exists?(role)
-          end
+          verify_roles_available roles + members.map(&:role)
 
           roles.each do |role|
             grants = begin
-              api.role(scoped_roleid(role)).members
+              api.role(role.roleid).members
             rescue RestClient::ResourceNotFound
               []
             end
             
             grants.each do |grant|
               member_roleid = grant.member.roleid
-              given_grants[scoped_roleid(role)].push [ member_roleid, grant.admin_option ]
+              given_grants[role.roleid].push [ member_roleid, grant.admin_option ]
               given_admins << member_roleid if grant.admin_option
             end
             members.each do |member|
-              requested_grants[scoped_roleid(role)].push [ scoped_roleid(member.role), !!member.admin ]
+              requested_grants[role.roleid].push [ member.role.roleid, !!member.admin ]
             end
           end
           
           roles.each do |role|
-            roleid = scoped_roleid(role)
+            roleid = role.roleid
             given = given_grants[roleid]
             requested = requested_grants[roleid]
             
@@ -55,7 +61,7 @@ module Conjur
             if record.replace
               (Set.new(given) - Set.new(requested)).each do |p|
                 member, _ = p
-                member_roleid = role_record(member).roleid(account)
+                member_roleid = role_record(member).roleid
                 next if given_admins.member?(member_roleid)
                 revoke = Conjur::DSL2::Types::Revoke.new
                 revoke.role = role_record roleid
@@ -67,10 +73,33 @@ module Conjur
         end
       end
       
-      class Revoke < Base
+      class Revoke < RoleAction
         def do_plan
-          Array(record.roles).each do |role|
-            Array(record.members).each do |member|
+          roles = Array(record.roles)
+          members = Array(record.members)
+          given_grants = Hash.new { |hash, key| hash[key] = [] }
+
+          verify_roles_available roles + members
+
+          roles.each do |role|
+            grants = begin
+              api.role(role.roleid).members
+            rescue RestClient::ResourceNotFound
+              []
+            end
+            
+            grants.each do |grant|
+              member_roleid = grant.member.roleid
+              given_grants[role.roleid].push member_roleid
+            end
+          end
+          
+          roles.each do |role|
+            roleid = role.roleid
+            given = given_grants[roleid]
+            members.each do |member|
+              next unless given.member?(member.roleid)
+          
               revoke = Conjur::DSL2::Types::Revoke.new
               revoke.role = role
               revoke.member = member

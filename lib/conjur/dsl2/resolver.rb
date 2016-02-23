@@ -5,8 +5,8 @@ module Conjur
       
       class << self
         # Resolve records to the specified owner id and namespace.
-        def resolve account, ownerid, namespace, records
-          resolver_classes = [ IdResolver, AccountResolver, OwnerResolver, FlattenResolver ]
+        def resolve records, account, ownerid, namespace = nil
+          resolver_classes = [ AccountResolver, IdResolver, OwnerResolver, FlattenResolver ]
           resolver_classes.each do |cls|
             resolver = cls.new account, ownerid, namespace
             records = resolver.resolve records
@@ -49,6 +49,24 @@ module Conjur
       end
     end
     
+    # Updates all nil +account+ fields to the default account.
+    class AccountResolver < Resolver
+      def resolve records
+        traverse records, Set.new, method(:resolve_account), method(:on_resolve_policy)
+      end
+      
+      def resolve_account record, visited
+        if record.respond_to?(:account) && record.respond_to?(:account=) && record.account.nil?
+          record.account = @account
+        end
+        traverse record.referenced_records, visited, method(:resolve_account), method(:on_resolve_policy)
+      end
+      
+      def on_resolve_policy policy, visited
+        traverse policy.body, visited, method(:resolve_account), method(:on_resolve_policy)
+      end
+    end
+
     # Makes all ids absolute, by prepending the namespace (if any) and the enclosing policy (if any).
     class IdResolver < Resolver
       def resolve records
@@ -56,7 +74,7 @@ module Conjur
       end
       
       def resolve_id record, visited
-        if record.respond_to?(:id)
+        if record.respond_to?(:id) && record.respond_to?(:id=)
           id = record.id
           if id.blank?
             raise "#{record.to_s} has no id, and no namespace is available to populate it" unless namespace
@@ -80,24 +98,6 @@ module Conjur
       end
     end
     
-    # Updates all nil +account+ fields to the default account.
-    class AccountResolver < Resolver
-      def resolve records
-        traverse records, Set.new, method(:resolve_account), method(:on_resolve_policy)
-      end
-      
-      def resolve_account record, visited
-        if record.respond_to?(:account) && record.account.nil?
-          record.account = @account
-        end
-        traverse record.referenced_records, visited, method(:resolve_account), method(:on_resolve_policy)
-      end
-      
-      def on_resolve_policy policy, visited
-        traverse policy.body, visited, method(:resolve_account), method(:on_resolve_policy)
-      end
-    end
-    
     # Sets the owner field for any records which support it, and don't have an owner specified.
     # Within a policy, the default owner is the policy role. For global records, the 
     # default owner is the +ownerid+ specified in the constructor.
@@ -114,7 +114,7 @@ module Conjur
       
       def on_resolve_policy policy, visited
         saved_ownerid = @ownerid
-        @ownerid = [ policy.account || @account, "policy", policy.id ].join(":")
+        @ownerid = [ policy.account, "policy", policy.id ].join(":")
         traverse policy.body, visited, method(:resolve_owner), method(:on_resolve_policy)
       ensure
         @ownerid = saved_ownerid
@@ -126,19 +126,31 @@ module Conjur
       def resolve records
         @result = []
         traverse records, Set.new, method(:resolve_record), method(:on_resolve_policy)
+
+        # Sort record creation before anything else.
+        # Sort record creation in dependency order (if A owns B, then A will be created before B).
+        # Otherwise, preserve the existing order.
+
+        @stable_index = {}
+        @result.each_with_index do |obj, idx|
+          @stable_index[obj] = idx
+        end
+        @referenced_record_index = {}
+        @result.each_with_index do |obj, idx|
+          @referenced_record_index[obj] = obj.referenced_records.select{|r| r.respond_to?(:roleid)}.map(&:roleid)
+        end
         @result.flatten.sort do |a,b|
-          base_score = sort_score(a) - sort_score(b)
-          if base_score == 0
-            if b.referenced_records.member?(a)
-              -1
-            elsif a.referenced_records.member?(b)
-              1
+          score = sort_score(a) - sort_score(b)
+          if score == 0
+            if a.respond_to?(:roleid) && @referenced_record_index[b].member?(a.roleid)
+              score = -1
+            elsif b.respond_to?(:roleid) && @referenced_record_index[a].member?(b.roleid)
+              score = 1
             else
-              0
+              score = @stable_index[a] - @stable_index[b]
             end
-          else
-            base_score
           end
+          score
         end
       end
       
@@ -172,6 +184,32 @@ module Conjur
         body = policy.body
         policy.remove_instance_variable "@body"
         traverse body, visited, method(:resolve_record), method(:on_resolve_policy)
+      end
+    end
+    
+    # Unsets attributes that make for more verbose YAML output. This class is used to 
+    # compact YAML expectations in test cases. It expects pre-flattened input.
+    #
+    # +account+ attributes which match the provided account are set to nil.
+    # +owner+ attributes which match the provided ownerid are removed.
+    class CompactOutputResolver < Resolver
+      def resolve records
+        traverse records, Set.new, method(:resolve_owner)
+        traverse records, Set.new, method(:resolve_account)
+      end
+      
+      def resolve_account record, visited
+        if record.respond_to?(:account) && record.respond_to?(:account=) && record.account && record.account == self.account
+          record.remove_instance_variable :@account
+        end
+        traverse record.referenced_records, visited, method(:resolve_account)
+      end
+
+      def resolve_owner record, visited
+        if record.respond_to?(:owner) && record.respond_to?(:owner=) && record.owner && record.owner.roleid == self.ownerid
+          record.remove_instance_variable :@owner
+        end
+        traverse record.referenced_records, visited, method(:resolve_owner)
       end
     end
   end

@@ -54,13 +54,13 @@ plan: |
         kind: policy
   - !create
     record: !variable
-      id: artifactory/mysql/password
+      id: artifactory/mysql/username
       owner: !role
         id: artifactory
         kind: policy
   - !create
     record: !variable
-      id: artifactory/mysql/username
+      id: artifactory/mysql/password
       owner: !role
         id: artifactory
         kind: policy
@@ -114,14 +114,14 @@ execution: |
   - method: post
     path: variables
     parameters:
-      id: artifactory/mysql/password
+      id: artifactory/mysql/username
       ownerid: the-account:policy:artifactory
       mime_type: text/plain
       kind: secret
   - method: post
     path: variables
     parameters:
-      id: artifactory/mysql/username
+      id: artifactory/mysql/password
       ownerid: the-account:policy:artifactory
       mime_type: text/plain
       kind: secret

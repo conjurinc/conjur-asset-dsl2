@@ -65,7 +65,7 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
     actions = []
     records.each do |record|
       executor_class = Conjur::DSL2::Executor.class_for(record)
-      executor = Conjur::DSL2::Executor.class_for(record).new(record, actions, Conjur::Core::API.conjur_account)
+      executor = Conjur::DSL2::Executor.class_for(record).new(record, actions)
       executor.execute
     end
     Conjur::DSL2::HTTPExecutor.new(api).execute actions
@@ -157,7 +157,19 @@ command. Therefore, a policy can be loaded in three steps, if desired:
   
         filename = args.pop
         records = load filename, options[:syntax]
-        plan = Conjur::DSL2::Planner.plan(records, api, options.slice(:namespace, :ownerid))
+        
+        ownerid = options[:ownerid]
+        unless ownerid
+          user_kind, user_id = api.username.split('/', 2)
+          unless user_id
+            user_id = user_kind
+            user_kind = 'user'
+          end
+          ownerid = [ Conjur.configuration.account, user_kind, user_id ].join(":")
+        end
+        
+        records = Conjur::DSL2::Resolver.resolve(records, Conjur.configuration.account, ownerid, options[:namespace])
+        plan = Conjur::DSL2::Planner.plan(records, api)
 
         if options[:"dry-run"]
           case options[:"format"]

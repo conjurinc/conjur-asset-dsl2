@@ -91,17 +91,21 @@ module Conjur
         include ActsAsResource
         include ActsAsRole
         
-        def role default_account
-          Role.new("#{self.account || default_account}:policy:#{id}", default_account: default_account)
+        def role
+          raise "account is nil" unless account
+          @role ||= Role.new("#{account}:policy:#{id}")
         end
 
-        def resource default_account
-          Resource.new("#{self.account || default_account}:policy:#{id}", default_account: default_account)
+        def resource
+          raise "account is nil" unless account
+          @resource ||= Resource.new("#{account}:policy:#{id}").tap do |resource|
+            resource.owner = Role.new(role.roleid)
+          end
         end
         
-        # The body if the Policy is excluded from the normal referenced records list.
+        # Body is handled specially.
         def referenced_records
-          super - [ @body ]
+          super - Array(@body)
         end
         
         def body &block

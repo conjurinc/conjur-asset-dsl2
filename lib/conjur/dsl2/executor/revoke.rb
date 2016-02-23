@@ -4,7 +4,7 @@ module Conjur::DSL2::Executor
       action({
         'method' => 'delete',
         'path' => "#{role_path(statement.role)}?members",
-        'parameters' => { "member" => statement.member.roleid(default_account)}
+        'parameters' => { "member" => statement.member.roleid }
       })
     end
   end

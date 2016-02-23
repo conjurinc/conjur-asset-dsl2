@@ -1,0 +1,44 @@
+# In a single grant, grant a managed role and a regular role to a group.
+
+---
+conjur: |
+  - !group everyone
+  - !group developers
+  - !layer app/frontend
+
+policy: |
+  - !grant
+    role:
+    - !group everyone
+    - !managed-role
+      record: !layer app/frontend
+      role_name: use_host
+    member: !group developers
+
+plan: |
+  ---
+  - !grant
+    member: !member
+      role: !group
+        id: developers
+    role: !group
+      id: everyone
+  - !grant
+    member: !member
+      role: !group
+        id: developers
+    role: !managed-role
+      record: !layer
+        id: app/frontend
+      role_name: use_host
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/group/everyone?members
+    parameters:
+      member: the-account:group:developers
+  - method: put
+    path: authz/the-account/roles/@/layer/app/frontend/use_host?members
+    parameters:
+      member: the-account:group:developers

@@ -87,7 +87,7 @@ class MockResource
   end
 
   def owner
-    @record.owner || [@api.account, 'group', 'operations'].join(":")
+    @record.owner || ['the-account', 'user', 'default-owner'].join(":")
   end
 
   def annotations
@@ -167,8 +167,7 @@ class MockAPI
     return [] if role_record.nil?
     roleid = role_record.roleid(account)
     [].tap do |members|
-      @records.each do |record|
-        next unless record.kind_of?(Types::Grant)
+      @records.select{|r| r.kind_of?(Types::Grant)}.each do |record|
         Array(record.role).product(Array(record.member)).each do |role, member|
           next unless role.roleid(account) == roleid
           role_member = Conjur::Role.new(Conjur::Authz::API.host, {})[Conjur::API.parse_role_id(record.member.role.roleid(account)).join('/')]

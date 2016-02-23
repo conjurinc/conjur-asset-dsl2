@@ -1,0 +1,24 @@
+---
+conjur: |
+  - !group developers
+  - !layer app/frontend
+  - !role
+    id: layer/app/frontend/use_host
+    kind: "@"
+  - !grant
+    role: !role
+      id: layer/app/frontend/use_host
+      kind: "@"
+    member: !member
+      role: !group developers
+      admin: false
+
+policy: |
+  - !grant
+    role: !managed-role
+      record: !layer app/frontend
+      role_name: use_host
+    member: !group developers
+
+plan: |
+  --- []
