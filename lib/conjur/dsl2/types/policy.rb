@@ -93,7 +93,9 @@ module Conjur
         
         def role
           raise "account is nil" unless account
-          @role ||= Role.new("#{account}:policy:#{id}")
+          @role ||= Role.new("#{account}:policy:#{id}").tap do |role|
+            role.owner = Role.new(owner.roleid)
+          end
         end
 
         def resource

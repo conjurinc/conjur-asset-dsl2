@@ -9,7 +9,7 @@ end
 When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) do |try, format, options, text|
   options = inject_namespace(options) if options
   specify_cli_environment
-  cmd = "conjur policy2 load --namespace #{namespace} --no-context --dry-run --syntax yaml --format #{format} #{options}"
+  cmd = "bundle exec conjur policy2 load --namespace #{namespace} --no-context --dry-run --syntax yaml --format #{format} #{options}"
   if ENV['DEBUG']
     step %Q(I set the environment variable "DEBUG" to "true")
   end

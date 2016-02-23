@@ -10,7 +10,7 @@ if [ -z "$CONJUR_CONTAINER" ]; then
 	    docker pull $DOCKER_IMAGE
 	fi
 	
-	cid=$(docker run -d -e CONJUR_AUTHN_LOGIN=admin -e CONJUR_AUTHN_API_KEY=secret -v ${PWD}:/src/conjur-asset-dsl2 $DOCKER_IMAGE)
+	cid=$(docker run -d -v ${PWD}:/src/conjur-asset-dsl2 $DOCKER_IMAGE)
 	function finish {
     	if [ "$NOKILL" != "1" ]; then
 			docker rm -f ${cid}
