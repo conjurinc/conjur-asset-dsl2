@@ -69,6 +69,8 @@ module Conjur
 
     # Makes all ids absolute, by prepending the namespace (if any) and the enclosing policy (if any).
     class IdResolver < Resolver
+      SUBSTITUTIONS = { "$namespace" => :namespace }
+      
       def resolve records
         traverse records, Set.new, method(:resolve_id), method(:on_resolve_policy)
       end
@@ -78,12 +80,16 @@ module Conjur
           id = record.id
           if id.blank?
             raise "#{record.to_s} has no id, and no namespace is available to populate it" unless namespace
-            record.id = namespace
+            id = namespace
           elsif id[0] == '/'
-            record.id = id[1..-1]
+            id = id[1..-1]
           else
-            record.id = [ namespace, id ].compact.join('/')
+            id = [ namespace, id ].compact.join('/')
           end
+
+          substitute! id
+          
+          record.id = id
         end
         
         traverse record.referenced_records, visited, method(:resolve_id), method(:on_resolve_policy)
@@ -95,6 +101,15 @@ module Conjur
         traverse policy.body, visited, method(:resolve_id), method(:on_resolve_policy)
       ensure
         @namespace = saved_namespace
+      end
+      
+      protected
+      
+      def substitute! id
+        SUBSTITUTIONS.each do |k,v|
+          next unless value = send(v)
+          id.gsub! k, value
+        end
       end
     end
     

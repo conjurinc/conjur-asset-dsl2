@@ -1,18 +1,10 @@
 require 'conjur/dsl2/planner/base'
+require 'conjur/dsl2/planner/role_facts'
 
 module Conjur
   module DSL2
     module Planner
-      class RoleAction < Base
-        def verify_roles_available roles
-          # Check all roles / members involved
-          roles.each do |role|
-            error("role not found: #{role.roleid} in #{plan.roles_created.to_a}") unless role_exists?(role)
-          end
-        end
-      end
-      
-      class Grant < RoleAction
+      class Grant < Base
         # Plans a role grant.
         # 
         # The Grant record can list multiple roles and members. Each member should
@@ -73,7 +65,7 @@ module Conjur
         end
       end
       
-      class Revoke < RoleAction
+      class Revoke < Base
         def do_plan
           roles = Array(record.roles)
           members = Array(record.members)

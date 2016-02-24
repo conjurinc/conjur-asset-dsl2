@@ -1,0 +1,34 @@
+---
+conjur: |
+  - !variable db-password
+  - !group developers
+  - !permit
+    privilege: read
+    resource: !variable db-password
+    role: !group developers
+
+policy: |
+  - !deny
+    privilege:
+    - read
+    - execute
+    resource: !variable db-password
+    role: !group developers
+
+plan: |
+  ---
+  - !deny
+    privilege: read
+    resource: !variable
+      id: db-password
+    role: !member
+      role: !group
+        id: developers
+
+execution: |
+  ---
+  - method: post
+    path: authz/the-account/resources/variable/db-password?deny
+    parameters:
+      privilege: read
+      role: the-account:group:developers

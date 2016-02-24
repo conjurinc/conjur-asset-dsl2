@@ -72,6 +72,54 @@ module Conjur
           end
         end
       end
+      
+      # Plans a permission denial.
+      #
+      # A Deny statement is generated if the permission is currently held. Otherwise, its a nop.
+      class Deny < Base
+        def do_plan
+          resources = Array(record.resources)
+          privileges = Array(record.privilege)
+          given_permissions = Hash.new { |hash, key| hash[key] = [] }
+      
+          resources.each do |resource|
+            permissions = begin
+              JSON.parse(api.resource(resource.resourceid).get)['permissions'] 
+            rescue RestClient::ResourceNotFound
+              []
+            end
+      
+            permissions.each do |permission|
+              if privileges.member?(permission['privilege'])
+                given_permissions[[permission['privilege'], permission['resource']]].push permission['role']
+              end
+            end
+          end
+                      
+          resources.each do |resource|
+            error(%Q("Resource "#{resource}" not found in [#{plan.resources_created.to_a.sort.join(', ')}])) unless resource_exists?(resource)
+      
+            privileges.each do |privilege|
+
+              target = resource.resourceid
+              given = given_permissions[[privilege, target]]
+              privileges.each do |privilege|
+                Array(record.roles).each do |role|
+                  error(%Q(Role "#{role}" not found")) unless role_exists?(role)
+
+                  next unless given_permissions.member?([privilege, role.roleid])
+                  
+                  deny = Conjur::DSL2::Types::Deny.new
+                  deny.resource = resource_record resource.resourceid
+                  deny.privilege = privilege
+                  deny.role = role_record(role.roleid)
+                  action deny
+                end
+              end
+            end
+          end
+        end
+      end
     end
   end
 end

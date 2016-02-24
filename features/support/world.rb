@@ -6,9 +6,14 @@ module DSLWorld
     set_environment_variable "RESTCLIENT_LOG", "stderr" if ENV['DEBUG']
   end
   
-  def load_policy text
+  def load_policy text, options = nil
     specify_cli_environment
-    step "I run `bundle exec conjur policy2 load --namespace #{namespace} --syntax yaml` interactively"
+    command_options = if options
+      inject_namespace(options)
+    else
+      "--namespace #{namespace}"
+    end
+    step "I run `bundle exec conjur policy2 load --syntax yaml #{command_options}` interactively"
     last_command_started.write(inject_namespace(text))
     last_command_started.stdin.close
 
