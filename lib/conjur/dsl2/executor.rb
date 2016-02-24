@@ -36,6 +36,8 @@ module Conjur
     end
         
     class HTTPExecutor
+      attr_reader :api, :context
+      
       # @param [Conjur::API] api
       def initialize api
         @api = api
@@ -90,6 +92,7 @@ module Conjur
         # $stderr.puts "#{request.method.upcase} #{request.path} #{request.body}"
         require 'base64'
         request['Authorization'] = "Token token=\"#{Base64.strict_encode64 @api.token.to_json}\""
+        request['X-Conjur-Privilege'] = api.privilege if api.privilege
         response = @http.request request
         # $stderr.puts response.code
         if response.code.to_i >= 300
