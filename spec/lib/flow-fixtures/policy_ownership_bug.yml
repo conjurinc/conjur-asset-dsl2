@@ -1,0 +1,36 @@
+conjur: |
+  []
+
+policy: |
+  - !policy
+    id: my/test
+    body:
+    - !group
+      id: a
+    - !layer
+      owner: !group a
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: my/test
+      kind: policy
+  - !create
+    record: !resource
+      id: my/test
+      kind: policy
+      owner: !role
+        id: my/test
+        kind: policy
+  - !create
+    record: !group
+      id: my/test/a
+      owner: !role
+        id: my/test
+        kind: policy
+  - !create
+    record: !layer
+      id: my/test
+      owner: !group
+        id: my/test/a

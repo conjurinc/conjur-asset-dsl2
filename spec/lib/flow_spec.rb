@@ -5,11 +5,15 @@ describe "planning and execution" do
   let(:fixture) { YAML.load(File.read(filename), filename) }
   let(:conjur_state){ Conjur::DSL2::YAML::Loader.load(fixture['conjur'] || [].to_yaml) }
   let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
+  let(:account) { 'the-account' }
+  let(:ownerid) { "#{account}:user:default-owner" }
+  let(:namespace) { fixture['namespace'] }
+  let(:records) { Conjur::DSL2::Resolver.resolve policy, account, ownerid, namespace }
   let(:exception) { fixture['exception'] }
-  let(:api) { MockAPI.new 'the-account', conjur_state }
+  let(:api) { MockAPI.new account, conjur_state }
   let(:plan_actions) do
     begin
-      plan = Planner.plan policy, api, namespace: fixture['namespace']
+      plan = Planner.plan records, api
       plan.actions
     rescue
       @exception = $!
@@ -20,20 +24,27 @@ describe "planning and execution" do
   let(:execution_actions) do
     actions = []
     plan_actions.each do |statement|
-      executor = Executor.class_for(statement).new(statement, actions, 'the-account')
+      executor = Executor.class_for(statement).new(statement, actions)
       executor.execute
     end
     actions
   end
   let(:plan_yaml) do
-    plan_actions.to_yaml
+    Conjur::DSL2::CompactOutputResolver.new(account, ownerid, namespace).resolve(plan_actions).to_yaml
   end
   let(:execution_yaml) do
-    execution_actions.to_yaml
+    execution_actions.map do |action|
+      # Remove 'ownerid' entries which match the default, in order to compact the test case fixtures.
+      if parameters = action['parameters']
+        parameters.delete('ownerid') if parameters['ownerid'] == ownerid
+        parameters.delete('acting_as') if parameters['acting_as'] == ownerid
+      end
+      action
+    end.to_yaml
   end
   before do
     require 'conjur/api'
-    allow(Conjur).to receive(:configuration).and_return(double(:configuration, account: "the-account", authz_url: "https://conjur/api/authz"))
+    allow(Conjur).to receive(:configuration).and_return(double(:configuration, account: account, authz_url: "https://conjur/api/authz"))
   end
   
   shared_examples_for "verify plan" do
@@ -57,13 +68,16 @@ describe "planning and execution" do
 
   shared_examples_for "verify execution" do
     it("matches execution YAML") do
-      if fixture['execution'] && !exception
+      if fixture['execution'] && !@exception
         expect(execution_yaml).to eq(fixture['execution'])
+      end
+      if @exception && fixture['execution']
+        raise %Q(Unexpected exception: #{@exception}\n#{@exception.backtrace.join "\n  "})
       end
     end
   end
   
-  fixtures_dir = File.expand_path("fixtures", File.dirname(__FILE__))
+  fixtures_dir = File.expand_path("flow-fixtures", File.dirname(__FILE__))
   Dir.chdir(fixtures_dir) do
     files = if env = ENV['DSL2_FIXTURES']
       env.split(',')

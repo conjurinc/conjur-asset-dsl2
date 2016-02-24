@@ -1,0 +1,14 @@
+# What happens when records are mutually owned by each other?
+---
+conjur: |
+  []
+  
+policy: |
+  - !group
+    id: g1
+    owner: !group g2
+  - !group
+    id: g2
+    owner: !group g1
+
+exception: Dependency cycle encountered between group 'g1' and group 'g2'

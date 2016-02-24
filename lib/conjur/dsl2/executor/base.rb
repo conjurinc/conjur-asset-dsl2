@@ -6,12 +6,11 @@ module Conjur::DSL2
     class Base
       include Conjur::DSL2::Logger
       
-      attr_reader :statement, :actions, :default_account
+      attr_reader :statement, :actions
       
-      def initialize statement, actions, default_account
+      def initialize statement, actions
         @statement = statement
         @actions = actions
-        @default_account = default_account
       end
       
       def action obj
@@ -24,12 +23,12 @@ module Conjur::DSL2
       
       def resource_path record = nil
         record ||= self.statement
-        [ "authz", record.account || default_account, "resources", record.resource_kind, record.id ].join('/')
+        [ "authz", record.account, "resources", record.resource_kind, record.id ].join('/')
       end
 
       def role_path record = nil
         record ||= self.statement
-        [ "authz", record.account || default_account, "roles", record.role_kind, record.id ].join('/')
+        [ "authz", record.account, "roles", record.role_kind, record.id ].join('/')
       end
     end
     
@@ -45,7 +44,7 @@ module Conjur::DSL2
       end
       
       def update_annotation_path
-        [ "authz", annotate_record.account || default_account,
+        [ "authz", annotate_record.account,
             "annotations",
             annotate_record.resource_kind,
             CGI.escape(annotate_record.id) ].join('/')

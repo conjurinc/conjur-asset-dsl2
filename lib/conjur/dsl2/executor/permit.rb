@@ -4,7 +4,7 @@ module Conjur::DSL2::Executor
   # record.
   class Permit < Base
     def execute
-      parameters = { "privilege" => statement.privilege, "role" => statement.role.role.roleid(default_account) }
+      parameters = { "privilege" => statement.privilege, "role" => statement.role.role.roleid }
       parameters['grant_option'] = statement.role.admin unless statement.role.admin.nil?
       action({
         'method' => 'post',

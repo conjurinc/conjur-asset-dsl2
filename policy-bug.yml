@@ -1,0 +1,7 @@
+- !policy
+  id: test
+  body:
+    - !group
+      id: a
+    - !layer
+      owner: !group a

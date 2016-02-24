@@ -11,17 +11,14 @@ module Conjur
       # privilege on an existing resource that is *not* given should be denied.
       class Permit < Base
         def do_plan
-
           resources = Array(record.resources)
           privileges = Array(record.privilege)
           given_permissions = Hash.new { |hash, key| hash[key] = [] }
           requested_permissions = Hash.new { |hash, key| hash[key] = [] }
 
-
-
           resources.each do |resource|
             permissions = begin
-              JSON.parse(api.resource(scoped_resourceid(resource)).get)['permissions'] 
+              JSON.parse(api.resource(resource.resourceid).get)['permissions'] 
             rescue RestClient::ResourceNotFound
               []
             end
@@ -34,17 +31,17 @@ module Conjur
 
             privileges.each do |privilege|
               Array(record.roles).each do |role|
-                requested_permissions[[privilege, scoped_resourceid(resource)]].push [ scoped_roleid(role.role), !!role.admin ]
+                requested_permissions[[privilege, resource.resourceid]].push [ role.role.roleid, !!role.admin ]
               end
             end
           end
                       
           resources.each do |resource|
-            error("resource not found: #{resource}") unless resource_exists?(resource)
+            error(%Q("Resource "#{resource}" not found in [#{plan.resources_created.to_a.sort.join(', ')}])) unless resource_exists?(resource)
 
             privileges.each do |privilege|
 
-              target = scoped_resourceid(resource)
+              target = resource.resourceid
               given = given_permissions[[privilege, target]]
               requested = requested_permissions[[privilege, target]]
 

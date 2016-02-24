@@ -22,7 +22,12 @@ Feature: Generating an execution plan from a policy file
     ---
     - !create
       record: !variable
+        account: cucumber
         id: db-password
+        owner: !role
+          account: cucumber
+          id: admin
+          kind: user
     """
 
   Scenario: --as-group option sets the owner of top-level records

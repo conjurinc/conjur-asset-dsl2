@@ -6,7 +6,7 @@ module Conjur::DSL2::Executor
       action({
         'method' => 'post',
         'path' => "#{resource_path(statement.resource)}?deny",
-        'parameters' => { "privilege" => statement.privilege, "role" => statement.role.roleid(default_account) }
+        'parameters' => { "privilege" => statement.privilege, "role" => statement.role.roleid }
       })
     end
   end

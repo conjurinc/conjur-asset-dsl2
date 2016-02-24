@@ -43,7 +43,7 @@ module MockAsset
     @api = api
     @record = record
   end
-
+  
   def to_s
     record.to_s
   end
@@ -87,7 +87,7 @@ class MockResource
   end
 
   def owner
-    @record.owner || [@api.account, 'group', 'operations'].join(":")
+    @record.owner || ['the-account', 'user', 'default-owner'].join(":")
   end
 
   def annotations
@@ -114,6 +114,16 @@ class MockRecord
       memo[key] = @record.send key
       memo
     end
+  end
+end
+
+class MockVariable < MockRecord
+  def kind
+    @record.kind || "secret"
+  end
+  
+  def mime_type
+    @record.mime_type || "text/plain"
   end
 end
 
@@ -167,8 +177,7 @@ class MockAPI
     return [] if role_record.nil?
     roleid = role_record.roleid(account)
     [].tap do |members|
-      @records.each do |record|
-        next unless record.kind_of?(Types::Grant)
+      @records.select{|r| r.kind_of?(Types::Grant)}.each do |record|
         Array(record.role).product(Array(record.member)).each do |role, member|
           next unless role.roleid(account) == roleid
           role_member = Conjur::Role.new(Conjur::Authz::API.host, {})[Conjur::API.parse_role_id(record.member.role.roleid(account)).join('/')]
@@ -206,7 +215,12 @@ class MockAPI
       record = @records.find do |r|
         r.is_a?(kind_class) && r.id == id
       end
-      MockRecord.new self, record
+      cls = begin
+        Object.const_get "Mock#{kind_class.simple_name}".classify
+      rescue NameError
+        MockRecord
+      end
+      cls.new self, record
     end
   end
 

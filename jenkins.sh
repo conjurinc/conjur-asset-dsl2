@@ -1,36 +1,27 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
-mkdir -p tmp
+CONJUR_VERSION=${CONJUR_VERSION:-"4.6"}
+DOCKER_IMAGE=${DOCKER_IMAGE:-"registry.tld/conjur-appliance-cuke-master:$CONJUR_VERSION-stable"}
+NOKILL=${NOKILL:-"0"}
+PULL=${PULL:-"1"}
 
-function wait_for_conjur {
-	docker pull registry.tld/wait-for-conjur
-	docker run -i --rm --link $cid:conjur registry.tld/wait-for-conjur
-}
+if [ -z "$CONJUR_CONTAINER" ]; then
+	if [ "$PULL" == "1" ]; then
+	    docker pull $DOCKER_IMAGE
+	fi
+	
+	cid=$(docker run -d -v ${PWD}:/src/conjur-asset-dsl2 $DOCKER_IMAGE)
+	function finish {
+    	if [ "$NOKILL" != "1" ]; then
+			docker rm -f ${cid}
+		fi
+	}
+	trap finish EXIT
+	
+	>&2 echo "Container id:"
+	>&2 echo $cid
+else
+	cid=${CONJUR_CONTAINER}
+fi
 
-PROJECT=conjur-asset-dsl2
-BASE_IMAGE=registry.tld/conjur-appliance-cuke-master:4.6-stable
-docker pull $BASE_IMAGE
-
-cid_file=tmp/$PROJECT-dev.cid
-
-docker build -t $PROJECT-dev -f Dockerfile.dev . 
-
-docker run \
-	-d \
-	--cidfile=$cid_file \
-	-v $PWD:/src/conjur-asset-dsl2 \
-	$PROJECT-dev
-
-cid=$(cat $cid_file)
-
-function finish {
-	rm -f $cid_file
-	docker rm -f $cid
-}
-
-wait_for_conjur
-
-
-trap finish EXIT
-
-docker exec $cid bash -c "bundle exec rake jenkins" || true
+docker exec -i ${cid} /src/conjur-asset-dsl2/ci/test.sh

@@ -4,10 +4,6 @@ module Conjur::DSL2::Executor
     def record
       statement.record
     end
-    
-    def account
-      record.account || default_account
-    end
   end
 
   # Generic 'create' implementation which POSTs to a resources URL.
@@ -48,7 +44,7 @@ module Conjur::DSL2::Executor
           memo
         end
         params.merge! custom_attrs
-        params["ownerid"] = record.owner.roleid(record.owner.account || default_account) if record.owner
+        params["ownerid"] = record.owner.roleid if record.owner
       end
     end
   end
@@ -57,7 +53,7 @@ module Conjur::DSL2::Executor
   class CreateHostFactory < CreateRecord
     def create_parameters
       super.tap do |params|
-        params['roleid'] = record.role.roleid(default_account)
+        params['roleid'] = record.role.roleid
         params['layers'] =  Array(record.layers).map(&:id)
       end
     end
@@ -78,7 +74,7 @@ module Conjur::DSL2::Executor
   module ActingAs
     def acting_as_parameters
       {}.tap do |params|
-        params["acting_as"] = record.owner.roleid(default_account) if record.owner
+        params["acting_as"] = record.owner.roleid if record.owner
       end
     end
   end

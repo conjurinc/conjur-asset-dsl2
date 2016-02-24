@@ -9,8 +9,10 @@ end
 When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) do |try, format, options, text|
   options = inject_namespace(options) if options
   specify_cli_environment
-  cmd = "conjur policy2 load --namespace #{namespace} --no-context --dry-run --syntax yaml --format #{format} #{options}"
-  $stderr.puts cmd
+  cmd = "bundle exec conjur policy2 load --namespace #{namespace} --no-context --dry-run --syntax yaml --format #{format} #{options}"
+  if ENV['DEBUG']
+    step %Q(I set the environment variable "DEBUG" to "true")
+  end
   step "I run `bundle exec #{cmd}` interactively"
   last_command_started.write(inject_namespace(text))
   last_command_started.stdin.close

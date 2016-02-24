@@ -34,9 +34,9 @@ module Conjur
         def initialize id = nil
           self.id = id if id
         end
-
+        
         def to_s
-          "#{resource_kind.gsub('_', ' ')} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
+          "#{resource_kind.gsub('_', ' ')} '#{id}'#{account && account != Conjur.configuration.account ? ' in account \'' + account + '\'': ''}"
         end
         
         def resourceid default_account = nil
@@ -66,7 +66,7 @@ module Conjur
       end
       
       module ActsAsRole
-        def roleid default_account
+        def roleid default_account = nil
           [ account || default_account, role_kind, id ].join(":")
         end
         
@@ -100,7 +100,7 @@ module Conjur
         end
 
         def to_s
-          "#{kind} #{self.class.short_name.underscore} '#{id}'#{account ? ' in account \'' + account + '\'': ''}"
+          "#{kind} #{self.class.short_name.underscore} '#{id}'#{account && account != Conjur.configuration.account ? ' in account \'' + account + '\'': ''}"
         end
       end
       
@@ -209,13 +209,15 @@ module Conjur
         attribute :role_name, kind: :string, singular: true
         
         class << self
-          def build fullid, default_account
+          def build fullid
             account, kind, id = fullid.split(':', 3)
             raise "Expecting @ for kind, got #{kind}" unless kind == "@"
-            record_kind, record_id, role_name = id.split('/', 3)
+            id_tokens = id.split('/')
+            record_kind = id_tokens.shift
+            role_name = id_tokens.pop
             record = Conjur::DSL2::Types.const_get(record_kind.classify).new.tap do |record|
-              record.id = record_id
-              record.account = account unless account == default_account
+              record.id = id_tokens.join('/')
+              record.account = account
             end
             self.new record, role_name
           end

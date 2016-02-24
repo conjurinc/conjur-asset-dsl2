@@ -52,7 +52,6 @@ module Conjur
         # +converter+ if the +test_function+ fails, the converter is called to coerce the type. 
         # It should return +nil+ if its unable to do so.
         def expect_type value, type_name, test_function, converter = nil
-
           if test_function.is_a?(Class)
             cls = test_function
             test_function = lambda{ value.is_a?(cls) } 
@@ -274,9 +273,6 @@ module Conjur
         extend TypeChecking
         extend AttributeDefinition
         
-        # On creation, an owner can always be specified.
-        attr_accessor :owner
-        
         # Stores the mapping from attribute names to Ruby class names that will be constructed
         # to populate the attribute.
         inheritable_attr :yaml_fields
@@ -303,6 +299,18 @@ module Conjur
           false
         end
         
+        # Gets all 'child' records.
+        def referenced_records
+          result = []
+          instance_variables.map do |var|
+            value = instance_variable_get var
+            Array(value).each do |val|
+              result.push val if val.is_a?(Conjur::DSL2::Types::Base)
+            end
+          end
+          result.flatten
+        end
+        
         class << self
           # Hook to register the YAML type.
           def inherited cls
@@ -313,6 +321,8 @@ module Conjur
           def short_name
             self.name.demodulize
           end
+          
+          alias simple_name short_name
           
           def register_yaml_type simple_name
             ::YAML.add_tag "!#{simple_name}", self

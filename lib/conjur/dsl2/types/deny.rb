@@ -7,7 +7,7 @@ module Conjur
         attribute :resource, dsl_accessor: true
         
         include ResourceMemberDSL
-        
+
         def to_s
           "Deny #{role} to '#{privilege}' #{resource}"
         end
