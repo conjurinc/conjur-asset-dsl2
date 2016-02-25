@@ -58,13 +58,6 @@ plan: |
         id: myapp
         kind: policy
   - !permit
-    privilege: read
-    resource: !variable
-      id: myapp/password
-    role: !member
-      role: !group
-        id: myapp/secrets-users
-  - !permit
     privilege: execute
     resource: !variable
       id: myapp/password
@@ -72,14 +65,21 @@ plan: |
       role: !group
         id: myapp/secrets-users
   - !permit
-    privilege: read
+    privilege: execute
     resource: !variable
       id: myapp/username
     role: !member
       role: !group
         id: myapp/secrets-users
   - !permit
-    privilege: execute
+    privilege: read
+    resource: !variable
+      id: myapp/password
+    role: !member
+      role: !group
+        id: myapp/secrets-users
+  - !permit
+    privilege: read
     resource: !variable
       id: myapp/username
     role: !member

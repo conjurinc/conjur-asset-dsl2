@@ -8,6 +8,8 @@ if ENV['DEBUG']
   Conjur::DSL2::Executor::Base.logger.level = Logger::DEBUG
 end
 
+Conjur::DSL2::Planner::BaseFacts.sort = true
+
 shared_context "planner", planning: true do
   let(:api) { double(:api) }
   before do

@@ -65,9 +65,9 @@ plan: |
         id: artifactory
         kind: policy
   - !permit
-    privilege: read
+    privilege: execute
     resource: !variable
-      id: artifactory/mysql/username
+      id: artifactory/mysql/password
     role: !member
       role: !group
         id: artifactory/secrets-users
@@ -86,9 +86,9 @@ plan: |
       role: !group
         id: artifactory/secrets-users
   - !permit
-    privilege: execute
+    privilege: read
     resource: !variable
-      id: artifactory/mysql/password
+      id: artifactory/mysql/username
     role: !member
       role: !group
         id: artifactory/secrets-users
@@ -126,9 +126,9 @@ execution: |
       mime_type: text/plain
       kind: secret
   - method: post
-    path: authz/the-account/resources/variable/artifactory/mysql/username?permit
+    path: authz/the-account/resources/variable/artifactory/mysql/password?permit
     parameters:
-      privilege: read
+      privilege: execute
       role: the-account:group:artifactory/secrets-users
   - method: post
     path: authz/the-account/resources/variable/artifactory/mysql/username?permit
@@ -141,7 +141,7 @@ execution: |
       privilege: read
       role: the-account:group:artifactory/secrets-users
   - method: post
-    path: authz/the-account/resources/variable/artifactory/mysql/password?permit
+    path: authz/the-account/resources/variable/artifactory/mysql/username?permit
     parameters:
-      privilege: execute
+      privilege: read
       role: the-account:group:artifactory/secrets-users

@@ -21,9 +21,8 @@ plan: |
     privilege: read
     resource: !variable
       id: db-password
-    role: !member
-      role: !group
-        id: developers
+    role: !group
+      id: developers
 
 execution: |
   ---

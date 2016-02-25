@@ -19,26 +19,30 @@ plan: |
   ---
   - !grant
     member: !member
-      role: !group
-        id: developers
-    role: !group
-      id: everyone
-  - !grant
-    member: !member
+      admin: false
       role: !group
         id: developers
     role: !managed-role
       record: !layer
         id: app/frontend
       role_name: use_host
+  - !grant
+    member: !member
+      admin: false
+      role: !group
+        id: developers
+    role: !group
+      id: everyone
 
 execution: |
   ---
   - method: put
-    path: authz/the-account/roles/group/everyone?members
-    parameters:
-      member: the-account:group:developers
-  - method: put
     path: authz/the-account/roles/@/layer/app/frontend/use_host?members
     parameters:
       member: the-account:group:developers
+      admin_option: false
+  - method: put
+    path: authz/the-account/roles/group/everyone?members
+    parameters:
+      member: the-account:group:developers
+      admin_option: false

@@ -59,14 +59,14 @@ plan: |
         id: dev/artifactory
         kind: policy
   - !permit
-    privilege: read
+    privilege: execute
     resource: !variable
       id: dev/artifactory/mysql/username
     role: !member
       role: !group
         id: dev/artifactory/secrets-users
   - !permit
-    privilege: execute
+    privilege: read
     resource: !variable
       id: dev/artifactory/mysql/username
     role: !member
@@ -101,10 +101,10 @@ execution: |
   - method: post
     path: authz/the-account/resources/variable/dev/artifactory/mysql/username?permit
     parameters:
-      privilege: read
+      privilege: execute
       role: the-account:group:dev/artifactory/secrets-users
   - method: post
     path: authz/the-account/resources/variable/dev/artifactory/mysql/username?permit
     parameters:
-      privilege: execute
+      privilege: read
       role: the-account:group:dev/artifactory/secrets-users

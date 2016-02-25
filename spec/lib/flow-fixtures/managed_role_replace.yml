@@ -27,6 +27,7 @@ plan: |
   ---
   - !grant
     member: !member
+      admin: false
       role: !group
         id: developers
     role: !managed-role

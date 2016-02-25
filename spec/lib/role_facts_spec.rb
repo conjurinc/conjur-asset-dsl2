@@ -1,17 +1,14 @@
 require 'spec_helper'
-
-require 'conjur/dsl2/planner/role_facts'
+require 'conjur/dsl2/planner/facts'
 include Conjur::DSL2::Planner
 
 describe RoleFacts do
-  MockExistingGrant = Struct.new(:role, :member) do
-    MockRole = Struct.new(:roleid)
-    
-    def role
-      MockRole.new(self[:role].roleid)
-    end
+  MockExistingRole = Struct.new(:roleid) do
+  end
+  
+  MockExistingGrant = Struct.new(:member) do
     def member
-      MockRole.new(self[:member].role.roleid)
+      MockExistingRole.new(self[:member].role.roleid)
     end
     def admin_option
       !!self[:member].admin
@@ -29,7 +26,7 @@ describe RoleFacts do
       Conjur::DSL2::Resolver.resolve(existing_records, "the-account", "the-account:user:the-owner", nil).each do |grant|
         Array(grant.role).each do |role|
           Array(grant.member).each do |member|
-            facts.add_existing_grant MockExistingGrant.new(role, member)
+            facts.add_existing_grant MockExistingRole.new(role.roleid), MockExistingGrant.new(member)
           end
         end
       end

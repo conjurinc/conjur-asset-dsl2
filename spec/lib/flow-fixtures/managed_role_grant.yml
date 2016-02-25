@@ -14,6 +14,7 @@ plan: |
   ---
   - !grant
     member: !member
+      admin: false
       role: !group
         id: developers
     role: !managed-role
@@ -27,3 +28,4 @@ execution: |
     path: authz/the-account/roles/@/layer/app/frontend/use_host?members
     parameters:
       member: the-account:group:developers
+      admin_option: false

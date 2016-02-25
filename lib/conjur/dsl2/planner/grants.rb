@@ -1,5 +1,5 @@
 require 'conjur/dsl2/planner/base'
-require 'conjur/dsl2/planner/role_facts'
+require 'conjur/dsl2/planner/facts'
 
 module Conjur
   module DSL2
@@ -11,55 +11,34 @@ module Conjur
         # be granted every role. If the +replace+ option is set, then any existing
         # grant on a role that is *not* given should be revoked, except for role admins.
         def do_plan
-          roles = Array(record.roles)
-          members = Array(record.members)
-          given_grants = Hash.new { |hash, key| hash[key] = [] }
-          given_admins = Set.new
-          requested_grants = Hash.new { |hash, key| hash[key] = [] }
-
-          verify_roles_available roles + members.map(&:role)
-
-          roles.each do |role|
-            grants = begin
-              api.role(role.roleid).members
-            rescue RestClient::ResourceNotFound
-              []
-            end
-            
-            grants.each do |grant|
-              member_roleid = grant.member.roleid
-              given_grants[role.roleid].push [ member_roleid, grant.admin_option ]
-              given_admins << member_roleid if grant.admin_option
-            end
-            members.each do |member|
-              requested_grants[role.roleid].push [ member.role.roleid, !!member.admin ]
+          facts = RoleFacts.new self
+          
+          facts.add_requested_grant record
+          
+          Array(record.roles).each do |role|
+            facts.role_grants(role) do |grant|
+              facts.add_existing_grant role, grant
             end
           end
           
-          roles.each do |role|
-            roleid = role.roleid
-            given = given_grants[roleid]
-            requested = requested_grants[roleid]
-            
-            (Set.new(requested) - Set.new(given)).each do |p|
-              member, admin = p
-              grant = Conjur::DSL2::Types::Grant.new
-              grant.role = role_record roleid
-              grant.member = Conjur::DSL2::Types::Member.new role_record(member)
-              grant.member.admin = true if admin
-              action grant
-            end
+          facts.validate!
+          
+          facts.grants_to_apply.each do |grant|
+            roleid, memberid, admin = grant
+            grant = Conjur::DSL2::Types::Grant.new
+            grant.role = role_record roleid
+            grant.member = Conjur::DSL2::Types::Member.new role_record(memberid)
+            grant.member.admin = admin
+            action grant
+          end
 
-            if record.replace
-              (Set.new(given) - Set.new(requested)).each do |p|
-                member, _ = p
-                member_roleid = role_record(member).roleid
-                next if given_admins.member?(member_roleid)
-                revoke = Conjur::DSL2::Types::Revoke.new
-                revoke.role = role_record roleid
-                revoke.member = role_record(member)
-                action revoke
-              end
+          if record.replace
+            facts.grants_to_revoke.each do |grant|
+              roleid, memberid = grant
+              revoke = Conjur::DSL2::Types::Revoke.new
+              revoke.role = role_record roleid
+              revoke.member = role_record(memberid)
+              action revoke
             end
           end
         end
@@ -67,36 +46,32 @@ module Conjur
       
       class Revoke < Base
         def do_plan
-          roles = Array(record.roles)
-          members = Array(record.members)
-          given_grants = Hash.new { |hash, key| hash[key] = [] }
-
-          verify_roles_available roles + members
-
-          roles.each do |role|
-            grants = begin
-              api.role(role.roleid).members
-            rescue RestClient::ResourceNotFound
-              []
-            end
-            
-            grants.each do |grant|
-              member_roleid = grant.member.roleid
-              given_grants[role.roleid].push member_roleid
+          facts = RoleFacts.new self
+          
+          # Load all the role members as both requested and existing grants.
+          # Then revoke the Grant record, and see what's left.
+          Array(record.roles).each do |role|
+            facts.role_grants(role) do |grant|
+              grant_record = Types::Grant.new
+              grant_record.role = Types::Role.new(role.roleid)
+              grant_record.member = Types::Member.new Types::Role.new(grant.member.roleid)
+              grant_record.member.admin = grant.admin_option
+              facts.add_requested_grant grant_record
+              
+              facts.add_existing_grant role, grant
             end
           end
+
+          facts.remove_revoked_grant record
           
-          roles.each do |role|
-            roleid = role.roleid
-            given = given_grants[roleid]
-            members.each do |member|
-              next unless given.member?(member.roleid)
+          facts.validate!
           
-              revoke = Conjur::DSL2::Types::Revoke.new
-              revoke.role = role
-              revoke.member = member
-              action revoke
-            end
+          facts.grants_to_revoke.each do |grant|
+            roleid, memberid = grant
+            revoke = Conjur::DSL2::Types::Revoke.new
+            revoke.role = role_record roleid
+            revoke.member = role_record(memberid)
+            action revoke
           end
         end        
       end
