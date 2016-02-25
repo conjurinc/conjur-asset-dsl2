@@ -1,3 +1,8 @@
+# 0.6.0
+
+* Implement the !deny statement.
+* Eliminate un-necessary privilege and role revocations.
+
 # 0.5.0
 
 * Refactor how the policy statements are validated and normalized, fixing some bugs in the process.
