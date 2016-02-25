@@ -9,6 +9,9 @@ policy: |
   - !host 
     id: /second-host
     owner: !group /root-owner
+  - !host 
+    id: third-host
+    owner: !host /$namespace/second-host
 
 namespace: dev
   
@@ -40,3 +43,9 @@ expectation: |
     owner: !group
       account: the-account
       id: root-owner
+  - !host
+    account: the-account
+    id: dev/third-host
+    owner: !host
+      account: the-account
+      id: dev/second-host

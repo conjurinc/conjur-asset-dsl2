@@ -18,6 +18,7 @@ plan: |
   ---
   - !grant
     member: !member
+      admin: false
       role: !group
         id: secrets-managers
     role: !group
@@ -32,3 +33,4 @@ execution: |
     path: authz/the-account/roles/group/secrets-users?members
     parameters:
       member: the-account:group:secrets-managers
+      admin_option: false

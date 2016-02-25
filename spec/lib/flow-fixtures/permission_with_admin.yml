@@ -16,7 +16,7 @@ policy: |
 plan: |
   ---
   - !permit
-    privilege: update
+    privilege: execute
     resource: !variable
       id: admin-password
     role: !member
@@ -24,7 +24,7 @@ plan: |
       role: !group
         id: group1
   - !permit
-    privilege: execute
+    privilege: update
     resource: !variable
       id: admin-password
     role: !member
@@ -37,13 +37,13 @@ execution: |
   - method: post
     path: authz/the-account/resources/variable/admin-password?permit
     parameters:
-      privilege: update
+      privilege: execute
       role: the-account:group:group1
       grant_option: true
   - method: post
     path: authz/the-account/resources/variable/admin-password?permit
     parameters:
-      privilege: execute
+      privilege: update
       role: the-account:group:group1
       grant_option: true
 

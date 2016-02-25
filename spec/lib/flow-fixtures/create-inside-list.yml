@@ -43,9 +43,9 @@ plan: |
         id: test-policy
         kind: policy
   - !permit
-    privilege: read
+    privilege: execute
     resource: !variable
-      id: test-policy/username
+      id: test-policy/password
     role: !member
       role: !group
         id: test-policy/secrets-users
@@ -64,10 +64,9 @@ plan: |
       role: !group
         id: test-policy/secrets-users
   - !permit
-    privilege: execute
+    privilege: read
     resource: !variable
-      id: test-policy/password
+      id: test-policy/username
     role: !member
       role: !group
         id: test-policy/secrets-users
-

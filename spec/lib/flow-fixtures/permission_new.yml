@@ -17,14 +17,14 @@ policy: |
 plan: |
   ---
   - !permit
-    privilege: read
+    privilege: execute
     resource: !variable
       id: db-password
     role: !member
       role: !group
         id: developers
   - !permit
-    privilege: execute
+    privilege: read
     resource: !variable
       id: db-password
     role: !member
@@ -36,10 +36,10 @@ execution: |
   - method: post
     path: authz/the-account/resources/variable/db-password?permit
     parameters:
-      privilege: read
+      privilege: execute
       role: the-account:group:developers
   - method: post
     path: authz/the-account/resources/variable/db-password?permit
     parameters:
-      privilege: execute
+      privilege: read
       role: the-account:group:developers
