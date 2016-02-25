@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "ci_reporter_rspec"
   spec.add_development_dependency "aruba"
   spec.add_development_dependency 'io-grab'
+  spec.add_development_dependency 'simplecov'
 end
