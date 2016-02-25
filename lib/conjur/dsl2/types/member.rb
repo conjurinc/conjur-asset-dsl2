@@ -8,6 +8,10 @@ module Conjur
         
         attribute :role
         attribute :admin, kind: :boolean, singular: true
+        
+        def to_s
+          "#{role} #{admin ? 'with' : 'without'} admin option"
+        end
       end
     end
   end

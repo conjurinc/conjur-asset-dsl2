@@ -1,7 +1,5 @@
 Feature: $namespace token can be used to link policies within the same namespace.
 
-  @announce-command
-  @announce-output
   Scenario: Assign ownership of a record inside a policy
     Given I load the policy with options "--namespace dev/@namespace@":
     """
