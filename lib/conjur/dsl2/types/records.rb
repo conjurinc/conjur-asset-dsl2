@@ -195,6 +195,16 @@ module Conjur
         
         attribute :role, kind: :role, dsl_accessor: true, singular: true
         attribute :layer, kind: :layer, dsl_accessor: true
+        
+        alias role_accessor role
+        
+        def role *args
+          if args.empty?
+            role_accessor || self.owner
+          else
+            role_accessor(*args)
+          end
+        end
       end
       
       class ManagedRole < Base
