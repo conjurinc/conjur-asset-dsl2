@@ -45,11 +45,11 @@ module Conjur
         end
         
         def validate_role_exists! role
-          error("Role not found: #{role}") unless planner.role_exists?(role)
+          planner.error("Role not found: #{role}") unless planner.role_exists?(role)
         end
         
         def validate_resource_exists! resource
-          error("Resource not found: #{resource}") unless planner.resource_exists?(resource)
+          planner.error("Resource not found: #{resource}") unless planner.resource_exists?(resource)
         end
         
         protected
