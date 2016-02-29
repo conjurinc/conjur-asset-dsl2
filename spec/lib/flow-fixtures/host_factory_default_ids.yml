@@ -1,0 +1,40 @@
+# Create a Host Factory with the layer inheriting its id from the policy
+---
+conjur: |
+  []
+
+policy: |
+  - !policy 
+    id: test-hf
+    body:
+      - !layer
+      - !host-factory
+        layers: !layer
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: test-hf
+      kind: policy
+  - !create
+    record: !resource
+      id: test-hf
+      kind: policy
+      owner: !role
+        id: test-hf
+        kind: policy
+  - !create
+    record: !layer
+      id: test-hf
+      owner: !role
+        id: test-hf
+        kind: policy
+  - !create
+    record: !host-factory
+      id: test-hf
+      layer: !layer
+        id: test-hf
+      owner: !role
+        id: test-hf
+        kind: policy
