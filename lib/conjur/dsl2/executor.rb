@@ -66,7 +66,7 @@ module Conjur
       
       def create path, parameters
         request = Net::HTTP::Post.new [ @base_path, path ].join('/')
-        request.set_form_data parameters
+        request.set_form_data to_params(parameters)
         send_request request
       end
 
@@ -74,7 +74,7 @@ module Conjur
       
       def update path, parameters
         request = Net::HTTP::Put.new [ @base_path, path ].join('/')
-        request.set_form_data parameters
+        request.set_form_data to_params(parameters)
         send_request request
       end
       
@@ -82,7 +82,7 @@ module Conjur
       
       def delete path, parameters
         uri = URI.parse([ @base_path, path ].join('/'))
-        uri.query = [uri.query, parameters.map{|k,v| [ k, URI.escape(v) ].join('=')}.join("&")].compact.join('&') 
+        uri.query = [uri.query, parameters.to_query].compact.join('&') 
         request = Net::HTTP::Delete.new [ uri.path, '?', uri.query ].join
           
         send_request request
@@ -112,6 +112,18 @@ module Conjur
         end
       rescue JSON::ParserError
         # empty
+      end
+      
+      # Convert parameter keys to rails []-style keys
+      def to_params params
+        params.inject({}) do |memo,entry|
+          key, value = entry
+          if value.is_a?(Array)
+            key = "#{key}[]"
+          end
+          memo[key] = value
+          memo
+        end
       end
     end
   end
