@@ -1,3 +1,9 @@
+# 0.6.1
+
+* Properly format the Host Factory layers as they are submitted to the server.
+* Properly report role or resource missing errors.
+* Host Factory role defaults to its owner.
+
 # 0.6.0
 
 * Implement the !deny statement.

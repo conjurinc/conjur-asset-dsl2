@@ -8,7 +8,6 @@ end
 
 When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) do |try, format, options, text|
   options = inject_namespace(options) if options
-  specify_cli_environment
 
   command_options = if options
     inject_namespace(options)
