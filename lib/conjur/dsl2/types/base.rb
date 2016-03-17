@@ -169,6 +169,7 @@ module Conjur
         # not structured objects.
         def define_field attr, kind, type = nil, dsl_accessor = false
           register_yaml_field attr.to_s, type if type
+          register_field attr.to_s, kind if kind
           
           if dsl_accessor
             define_method attr do |*args|
@@ -249,6 +250,11 @@ module Conjur
         def yaml_field? name
           !!self.yaml_fields[name]
         end
+        
+        # Is there a semantic kind for a named field?
+        def field? name
+          !!self.fields[name]
+        end
                   
         protected
         
@@ -256,6 +262,12 @@ module Conjur
         def register_yaml_field field_name, type
           raise "YAML field #{field_name} already defined on #{self.name} as #{self.yaml_fields[field_name]}" if self.yaml_field?(field_name)
           self.yaml_fields[field_name] = type
+        end
+        
+        # +nodoc+
+        def register_field field_name, kind
+          raise "YAML field #{field_name} already defined on #{self.name} as #{self.fields[field_name]}" if self.field?(field_name)
+          self.fields[field_name] = kind
         end
       end
       
@@ -273,12 +285,21 @@ module Conjur
         extend TypeChecking
         extend AttributeDefinition
         
+        # Stores a Markdown description of the type.
+        inheritable_attr :description
+        
         # Stores the mapping from attribute names to Ruby class names that will be constructed
         # to populate the attribute.
         inheritable_attr :yaml_fields
+
+        # Stores the mapping from attribute names to semantic kind names.
+        inheritable_attr :fields
         
         # +nodoc+
         self.yaml_fields = {}
+
+        # +nodoc+
+        self.fields = {}
 
         # Things aren't roles by default
         def role?

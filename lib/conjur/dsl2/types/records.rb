@@ -141,6 +141,12 @@ module Conjur
         include ActsAsResource
         include ActsAsRole
         
+        self.description = %Q(
+        A Conjur user
+        
+        [link](http://example.com)
+        )
+        
         attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
         
         def id_attribute; 'login'; end
