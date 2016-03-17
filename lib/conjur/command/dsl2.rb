@@ -65,7 +65,7 @@ class Conjur::Command::DSL2 < Conjur::DSLCommand
     actions = []
     records.each do |record|
       executor_class = Conjur::DSL2::Executor.class_for(record)
-      executor = Conjur::DSL2::Executor.class_for(record).new(record, actions)
+      executor = executor_class.new(record, actions)
       executor.execute
     end
     Conjur::DSL2::HTTPExecutor.new(api).execute actions
