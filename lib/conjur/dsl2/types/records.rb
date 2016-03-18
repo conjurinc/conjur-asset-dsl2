@@ -141,11 +141,13 @@ module Conjur
         include ActsAsResource
         include ActsAsRole
         
-        self.description = %Q(
-        A Conjur user
-        
-        [link](http://example.com)
-        )
+        self.description = 'Create a Conjur user.'
+
+        self.example = %Q(
+!user robert
+  !annotations
+    movement: unpredictable
+)
         
         attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
         
@@ -161,7 +163,24 @@ module Conjur
         include ActsAsRole
         
         attribute :gidnumber, kind: :integer, singular: true, dsl_accessor: true
-        
+
+        self.description = 'Create a Conjur group.'
+
+        self.example = %Q(
+!user sysop
+!user db-admin
+
+!group ops
+  gidnumber: 110
+
+!grant
+  role: !group ops
+  members:
+    !user sysop
+    !member
+      role: !user db-admin
+      admin: true
+)
         def custom_attribute_names
           [ :gidnumber ]
         end
