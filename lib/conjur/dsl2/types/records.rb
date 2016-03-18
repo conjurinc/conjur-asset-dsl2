@@ -113,6 +113,13 @@ module Conjur
         attribute :account, kind: :string, singular: true
         attribute :owner, kind: :role, singular: true, dsl_accessor: true
 
+        self.description = 'A generic Conjur role.'
+        self.example = %(
+!role watchdog
+!role ears
+  owner: !role watchdog
+)
+        
         def roleid default_account = nil
           raise "account is required" unless account || default_account
           [ account || default_account, kind, id ].join(":")
@@ -131,6 +138,11 @@ module Conjur
         include ActsAsCompoundId
 
         attribute :kind, kind: :string, singular: true, dsl_accessor: true
+
+        self.description = 'A generic Conjur resource.'
+        self.example = %(
+!resource lib
+)
         
         def resource_kind
           kind
@@ -143,10 +155,12 @@ module Conjur
         
         self.description = 'Create a Conjur user.'
 
-        self.example = %Q(
+        self.example = %(
 !user robert
+  !uidnumber: 1208
   !annotations
-    movement: unpredictable
+    public: true
+    can_predict_movement: false
 )
         
         attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
@@ -166,7 +180,7 @@ module Conjur
 
         self.description = 'Create a Conjur group.'
 
-        self.example = %Q(
+        self.example = %(
 !user sysop
 !user db-admin
 
@@ -189,11 +203,15 @@ module Conjur
       class Host < Record
         include ActsAsResource
         include ActsAsRole
+
+        self.description = 'Creates a Host record and resource.'
       end
       
       class Layer < Record
         include ActsAsResource
         include ActsAsRole
+
+        self.description = 'Creates a Layer record and resource.'
       end
       
       class Variable < Record
@@ -201,6 +219,9 @@ module Conjur
         
         attribute :kind,      kind: :string, singular: true, dsl_accessor: true
         attribute :mime_type, kind: :string, singular: true, dsl_accessor: true
+
+        self.description = ''
+        
         
         def custom_attribute_names
           [ :kind, :mime_type ]
