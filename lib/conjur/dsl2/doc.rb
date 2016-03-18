@@ -3,7 +3,7 @@ module Conjur
     module Doc
       Attribute = Struct.new(:id, :kind)
 
-      Operation = Struct.new(:id, :super_id, :description, :attributes)
+      Operation = Struct.new(:id, :super_id, :description, :example, :attributes)
       
       class << self
         def list
@@ -26,13 +26,14 @@ module Conjur
             next if type == Conjur::DSL2::Ruby::Policy
 
             description = type.send(:description) rescue ""
+            example = type.send(:example) rescue ""
             attributes = type.fields.map do |id, kind|
               Attribute.new(id, kind)
             end
             unless attributes.empty?
               super_id = type.superclass.short_name rescue nil
               super_id = nil if super_id == "Base"
-              Operation.new(type.short_name, super_id, description, attributes)
+              Operation.new(type.short_name, super_id, description, example, attributes)
             end
           end.compact.sort{|a,b| a.id <=> b.id}
         end

@@ -287,6 +287,9 @@ module Conjur
         
         # Stores a Markdown description of the type.
         inheritable_attr :description
+
+        # Stores a YAML example for the type.
+        inheritable_attr :example
         
         # Stores the mapping from attribute names to Ruby class names that will be constructed
         # to populate the attribute.
