@@ -113,13 +113,15 @@ module Conjur
         attribute :account, kind: :string, singular: true
         attribute :owner, kind: :role, singular: true, dsl_accessor: true
 
-        self.description = 'A generic Conjur role.'
+        self.description = 'Create a custom role.'
         self.example = %(
-!role watchdog
-!role ears
-  owner: !role watchdog
+!user Beowulf
+
+!role tragic_end
+  kind: destiny
+  owner: !user Beowulf
 )
-        
+
         def roleid default_account = nil
           raise "account is required" unless account || default_account
           [ account || default_account, kind, id ].join(":")
@@ -139,11 +141,18 @@ module Conjur
 
         attribute :kind, kind: :string, singular: true, dsl_accessor: true
 
-        self.description = 'A generic Conjur resource.'
+        self.description = 'Create a custom resource.'
         self.example = %(
-!resource lib
+!user nobody
+
+!resource unicorn
+  kind: magical_beast
+  annotations:
+    has_deadly_horn: true
+    has_mercy: false
+  owner: !user nobody
 )
-        
+
         def resource_kind
           kind
         end
@@ -156,7 +165,7 @@ module Conjur
         self.description = %(
 Create a role representing a human user.
 
-More: [Users](/reference/services/directory/user)
+[eMore](/reference/services/directory/user) on Users.
 )
 
         self.example = %(
@@ -182,7 +191,11 @@ More: [Users](/reference/services/directory/user)
         
         attribute :gidnumber, kind: :integer, singular: true, dsl_accessor: true
 
-        self.description = 'Create a Conjur group.'
+        self.description = %(
+Create a Group record and resource.
+
+[More](/reference/services/directory/group) on Groups.
+)
 
         self.example = %(
 !user sysop
@@ -208,7 +221,11 @@ More: [Users](/reference/services/directory/user)
         include ActsAsResource
         include ActsAsRole
 
-        self.description = 'Create a Host record and resource.'
+        self.description = %(
+Create a Host record and resource.
+
+[More](/reference/services/directory/host) on Hosts.
+)
 
         self.example = %(
 !group CERN
@@ -225,7 +242,11 @@ More: [Users](/reference/services/directory/user)
         include ActsAsResource
         include ActsAsRole
 
-        self.description = 'Creates a Layer record and resource.'
+        self.description = %(
+Create a Layer record and resource.
+
+[More](/reference/services/directory/layer) on Layers.
+)
 
         self.example = %(
 !host ProteusIV
@@ -249,9 +270,18 @@ More: [Users](/reference/services/directory/user)
         attribute :kind,      kind: :string, singular: true, dsl_accessor: true
         attribute :mime_type, kind: :string, singular: true, dsl_accessor: true
 
-        self.description = ''
-        
-        
+        self.description = %(
+Create a Variable resource to hold a secret value.
+
+[More](https://developer.conjur.net/reference/services/directory/variable) on Variables.
+)
+
+        self.example = %(
+!variable spoiler
+  :kind utf-8
+  :mime-type x/json
+)
+
         def custom_attribute_names
           [ :kind, :mime_type ]
         end
@@ -263,13 +293,29 @@ More: [Users](/reference/services/directory/user)
       
       class Webservice < Record
         include ActsAsResource
+
+        self.description = %(
+Create a resource representing a web service endpoint.
+)
+
+        self.example = %(
+!group analysts
+!webservice xkeyscore
+  !annotations
+    description: API endpoint for surveillance apparatus
+
+!permit
+  role: !group analysts
+  privilege: read
+  resource: !webservice xkeyscore
+)
       end
       
       class HostFactory < Record
         include ActsAsResource
 
         self.description = %(
-Create a service for bootstrapping hosts into a layer.
+Create a host-factory service for bootstrapping hosts into a layer.
 
 [More](http://localhost:9292/reference/services/host_factory) on host factories.
 )

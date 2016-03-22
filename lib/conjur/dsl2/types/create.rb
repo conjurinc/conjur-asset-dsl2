@@ -3,7 +3,7 @@ module Conjur::DSL2::Types
     attribute :record
 
     self.description = %(
-Create a record.
+Create any type of record.
 )
 
     self.example = %(
