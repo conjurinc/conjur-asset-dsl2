@@ -153,7 +153,11 @@ module Conjur
         include ActsAsResource
         include ActsAsRole
         
-        self.description = 'Create a Conjur user.'
+        self.description = %(
+Create a role representing a human user.
+
+More: [Users](/reference/services/directory/user)
+)
 
         self.example = %(
 !user robert
@@ -204,7 +208,17 @@ module Conjur
         include ActsAsResource
         include ActsAsRole
 
-        self.description = 'Creates a Host record and resource.'
+        self.description = 'Create a Host record and resource.'
+
+        self.example = %(
+!group CERN
+
+!host httpd
+  annotations:
+    descripton: hypertext web server
+    started: 1990-12-25
+    owner: !group CERN
+)
       end
       
       class Layer < Record
@@ -212,6 +226,21 @@ module Conjur
         include ActsAsRole
 
         self.description = 'Creates a Layer record and resource.'
+
+        self.example = %(
+!host ProteusIV
+!host AM
+!host GLaDOS
+
+!layer bad_hosts
+
+!grant
+  role: !layer bad_hosts
+  members:
+    !host ProteusIV
+    !host AM
+    !host GLaDOS
+)
       end
       
       class Variable < Record
@@ -238,6 +267,21 @@ module Conjur
       
       class HostFactory < Record
         include ActsAsResource
+
+        self.description = %(
+Create a service for bootstrapping hosts into a layer.
+
+[More](http://localhost:9292/reference/services/host_factory) on host factories.
+)
+
+        self.example = %(
+!layer nest
+
+!host-factory
+  annotations:
+    description: Factory to create new bird hosts
+  layers: [ !layer nest ]
+)
         
         attribute :role, kind: :role, dsl_accessor: true, singular: true
         attribute :layer, kind: :layer, dsl_accessor: true
@@ -263,6 +307,43 @@ module Conjur
         
         attribute :record,    kind: :role,   singular: true
         attribute :role_name, kind: :string, singular: true
+
+        self.description = %(
+Some roles are created automatically. For historical reasons, these are called `managed-role`s.
+
+These roles are:
+
+* `use_host`, for allowing SSH access
+* `admin_host`, for allowing admin (root) login.
+* `observe`
+)
+
+        self.example = %(
+!user chef
+!user owner
+!group line-cooks
+!layer kitchen
+
+# no need to create MangedRoles; they are automatic.
+
+!grant
+  role: !managed-role
+    record: !layer kitchen
+    role_name: use_host
+  member: !group line-cooks
+
+!grant
+  role: !managed-role
+    record: !layer kitchen
+    role_name: admin_host
+  member: !user chef
+
+!grant
+  role: !managed-role
+    record: !layer kitchen
+    role_name: observe
+  member: !user owner
+)
         
         class << self
           def build fullid
