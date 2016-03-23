@@ -8,9 +8,13 @@ Create any type of record.
 
     self.example = %(
 !create
-  !group experiment
+  record: !user research
 !create
-  !group control
+  record: !group experiment
+!create
+  record: !role control
+    kind: experimental_control
+    owner: !user research
 )
         
     def to_s
