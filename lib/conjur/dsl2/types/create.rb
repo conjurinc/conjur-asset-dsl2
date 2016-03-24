@@ -7,14 +7,14 @@ Create any type of record.
 )
 
     self.example = %(
-!create
-  record: !user research
-!create
-  record: !group experiment
-!create
-  record: !role control
-    kind: experimental_control
-    owner: !user research
+- !create
+    record: !user research
+- !create
+    record: !group experiment
+- !create
+    record: !role control
+      kind: experimental_control
+      owner: !user research
 )
         
     def to_s

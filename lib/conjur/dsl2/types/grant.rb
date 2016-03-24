@@ -14,12 +14,12 @@ Grant one role to another. (compare: Revoke)
 )
 
     self.example = %(
-!user Link
-!user Navi
+- !user Link
+- !user Navi
 
-!grant
-  role: !user Navi
-  member: !user Link
+- !grant
+    role: !user Navi
+    member: !user Link
 )
 
     def to_s

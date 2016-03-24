@@ -6,12 +6,12 @@ Deny privileges on a resource.
 )
 
     self.example = %(
-!variable secret
-!user rando
-!deny
-  role: !user rando
-  privilege: read
-  resource: !variable secret
+- !variable secret
+- !user rando
+- !deny
+    role: !user rando
+    privilege: read
+    resource: !variable secret
 )
 
     attribute :role, kind: :role, dsl_accessor: true

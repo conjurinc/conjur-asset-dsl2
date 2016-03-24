@@ -14,13 +14,13 @@ Allow a role to have permissions on a resource. (compare: Deny)
 )
 
         self.example = %(
-!variable answer
-!user deep_thought
+- !variable answer
+- !user deep_thought
 
-!permit
-  role: !user deep_thought
-  privileges: [ read, execute, update ]
-  resource: !variable answer
+- !permit
+    role: !user deep_thought
+    privileges: [ read, execute, update ]
+    resource: !variable answer
 )
         
         include ResourceMemberDSL

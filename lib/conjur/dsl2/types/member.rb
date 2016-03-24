@@ -19,8 +19,8 @@ module Conjur::DSL2::Types
   members:
   - !user dee
   - !member dum
-       role: !user dum
-       admin: true
+      role: !user dum
+      admin: true
 )
 
     def to_s

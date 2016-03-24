@@ -98,16 +98,16 @@ Create a versioned policy.
 )
 
         self.example = %(
-!user operator
+- !user operator
 
-!policy example/v1
-  owner: !user operator
-  body:
-    !variable secret
-    !grant
-      role: !user operator
-      permissions: [ read, execute, update ]
-      resource: !variable secret
+- !policy example/v1
+    owner: !user operator
+    body:
+    - !variable secret
+    - !grant
+        role: !user operator
+        permissions: [ read, execute, update ]
+        resource: !variable secret
 )
         
         def role

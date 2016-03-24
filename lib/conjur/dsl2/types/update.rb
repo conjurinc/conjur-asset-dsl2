@@ -5,14 +5,14 @@ module Conjur::DSL2::Types
     self.description = 'Make changes to an existing record.'
 
     self.example = %(
-!user wizard
-  annotations:
-    color: gray
+- !user wizard
+    annotations:
+      color: gray
 
-!update
-  record: !user wizard
-  annotations:
-    color: white
+- !update
+    record: !user wizard
+      annotations:
+        color: white
 )
     
     def to_s

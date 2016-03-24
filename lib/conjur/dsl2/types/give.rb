@@ -10,12 +10,12 @@ Give a resource to a role. (compare: Grant)
 )
 
     self.example = %(
-!user Link
-!secret song-of-storms
+- !user Link
+- !secret song-of-storms
 
-!give
-  resource: !secret song-of-storms
-  owner: !user Link
+- !give
+    resource: !secret song-of-storms
+    owner: !user Link
 )
 
     def to_s

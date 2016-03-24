@@ -12,9 +12,9 @@ Remove a role grant. (contrast: Grant)
 )
 
         self.example = %(
-!revoke
-  role: !group soup_eaters
-  member: !user you
+- !revoke
+    role: !group soup_eaters
+    member: !user you
 )
 
         def to_s

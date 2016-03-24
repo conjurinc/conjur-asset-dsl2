@@ -10,8 +10,8 @@ maintaining references to it in the audit log.)
 )
 
         self.example = %(
-!retire
-  record: !user DoubleOhSeven
+- !retire
+    record: !user DoubleOhSeven
 )
 
         def to_s

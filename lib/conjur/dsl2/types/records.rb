@@ -115,11 +115,11 @@ module Conjur
 
         self.description = 'Create a custom role.'
         self.example = %(
-!user Beowulf
+- !user Beowulf
 
-!role tragic_end
-  kind: destiny
-  owner: !user Beowulf
+- !role tragic_end
+    kind: destiny
+    owner: !user Beowulf
 )
 
         def roleid default_account = nil
@@ -143,14 +143,14 @@ module Conjur
 
         self.description = 'Create a custom resource.'
         self.example = %(
-!user nobody
+- !user nobody
 
-!resource unicorn
-  kind: magical_beast
-  annotations:
-    has_deadly_horn: true
-    has_mercy: false
-  owner: !user nobody
+- !resource unicorn
+    kind: magical_beast
+    annotations:
+      has_deadly_horn: true
+      has_mercy: false
+    owner: !user nobody
 )
 
         def resource_kind
@@ -165,15 +165,15 @@ module Conjur
         self.description = %(
 Create a role representing a human user.
 
-[eMore](/reference/services/directory/user) on Users.
+[More](/reference/services/directory/user) on Users.
 )
 
         self.example = %(
-!user robert
-  !uidnumber: 1208
-  !annotations
-    public: true
-    can_predict_movement: false
+- !user robert
+    uidnumber: 1208
+    annotations:
+      public: true
+      can_predict_movement: false
 )
         
         attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
@@ -198,19 +198,19 @@ Create a Group record and resource.
 )
 
         self.example = %(
-!user sysop
-!user db-admin
+- !user sysop
+- !user db-admin
 
-!group ops
-  gidnumber: 110
+- !group ops
+    gidnumber: 110
 
-!grant
-  role: !group ops
-  members:
-    !user sysop
-    !member
-      role: !user db-admin
-      admin: true
+- !grant
+    role: !group ops
+    members:
+    - !user sysop
+    - !member
+        role: !user db-admin
+        admin: true
 )
         def custom_attribute_names
           [ :gidnumber ]
@@ -228,13 +228,13 @@ Create a Host record and resource.
 )
 
         self.example = %(
-!group CERN
+- !group CERN
 
-!host httpd
-  annotations:
-    descripton: hypertext web server
-    started: 1990-12-25
-    owner: !group CERN
+- !host httpd
+    annotations:
+      descripton: hypertext web server
+      started: 1990-12-25
+      owner: !group CERN
 )
       end
       
@@ -249,18 +249,18 @@ Create a Layer record and resource.
 )
 
         self.example = %(
-!host ProteusIV
-!host AM
-!host GLaDOS
+- !host ProteusIV
+- !host AM
+- !host GLaDOS
 
-!layer bad_hosts
+- !layer bad_hosts
 
-!grant
-  role: !layer bad_hosts
-  members:
-    !host ProteusIV
-    !host AM
-    !host GLaDOS
+- !grant
+    role: !layer bad_hosts
+    members:
+      - !host ProteusIV
+      - !host AM
+      - !host GLaDOS
 )
       end
       
@@ -277,9 +277,9 @@ Create a Variable resource to hold a secret value.
 )
 
         self.example = %(
-!variable spoiler
-  :kind utf-8
-  :mime-type x/json
+- !variable spoiler
+    kind: utf-8
+    mime-type: x/json
 )
 
         def custom_attribute_names
@@ -299,15 +299,15 @@ Create a resource representing a web service endpoint.
 )
 
         self.example = %(
-!group analysts
-!webservice xkeyscore
-  !annotations
-    description: API endpoint for surveillance apparatus
+- !group analysts
+- !webservice xkeyscore
+    annotations:
+      description: API endpoint for surveillance apparatus
 
-!permit
-  role: !group analysts
-  privilege: read
-  resource: !webservice xkeyscore
+- !permit
+    role: !group analysts
+    privilege: read
+    resource: !webservice xkeyscore
 )
       end
       
@@ -321,12 +321,12 @@ Create a host-factory service for bootstrapping hosts into a layer.
 )
 
         self.example = %(
-!layer nest
+- !layer nest
 
-!host-factory
-  annotations:
-    description: Factory to create new bird hosts
-  layers: [ !layer nest ]
+- !host-factory
+    annotations:
+      description: Factory to create new bird hosts
+    layers: [ !layer nest ]
 )
         
         attribute :role, kind: :role, dsl_accessor: true, singular: true
@@ -365,30 +365,30 @@ These roles are:
 )
 
         self.example = %(
-!user chef
-!user owner
-!group line-cooks
-!layer kitchen
+- !user chef
+- !user owner
+- !group line-cooks
+- !layer kitchen
 
 # no need to create MangedRoles; they are automatic.
 
-!grant
-  role: !managed-role
-    record: !layer kitchen
-    role_name: use_host
-  member: !group line-cooks
+- !grant
+    role: !managed-role
+      record: !layer kitchen
+      role_name: use_host
+    member: !group line-cooks
 
-!grant
-  role: !managed-role
-    record: !layer kitchen
-    role_name: admin_host
-  member: !user chef
+- !grant
+    role: !managed-role
+      record: !layer kitchen
+      role_name: admin_host
+    member: !user chef
 
-!grant
-  role: !managed-role
-    record: !layer kitchen
-    role_name: observe
-  member: !user owner
+- !grant
+    role: !managed-role
+      record: !layer kitchen
+      role_name: observe
+    member: !user owner
 )
         
         class << self
