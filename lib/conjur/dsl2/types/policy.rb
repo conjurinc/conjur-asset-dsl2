@@ -90,6 +90,25 @@ module Conjur
       class Policy < Record
         include ActsAsResource
         include ActsAsRole
+
+        self.description = %(
+Create a versioned policy.
+
+[See above](#example) for an example of a complete policy.
+)
+
+        self.example = %(
+!user operator
+
+!policy example/v1
+  owner: !user operator
+  body:
+    !variable secret
+    !grant
+      role: !user operator
+      permissions: [ read, execute, update ]
+      resource: !variable secret
+)
         
         def role
           raise "account is nil" unless account

@@ -1,6 +1,19 @@
 module Conjur::DSL2::Types
   class Update < Base
     attribute :record
+
+    self.description = 'Make changes to an existing record.'
+
+    self.example = %(
+!user wizard
+  annotations:
+    color: gray
+
+!update
+  record: !user wizard
+  annotations:
+    color: white
+)
     
     def to_s
       messages = [ "Update #{record}" ]

@@ -6,6 +6,22 @@ module Conjur
         attribute :privilege, kind: :string, dsl_accessor: true
         attribute :resource, dsl_accessor: true
         attribute :replace, kind: :boolean, singular: true, dsl_accessor: true
+
+        self.description = %(
+Allow a role to have permissions on a resource.
+
+[More](/key_concepts/rbac.html) on role-based access control in Conjur.
+)
+
+        self.example = %(
+!variable answer
+!user deep_thought
+
+!permit
+  role: !user deep_thought
+  privileges: [ read, execute, update ]
+  resource: !variable answer
+)
         
         include ResourceMemberDSL
         

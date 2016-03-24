@@ -113,6 +113,15 @@ module Conjur
         attribute :account, kind: :string, singular: true
         attribute :owner, kind: :role, singular: true, dsl_accessor: true
 
+        self.description = 'Create a custom role.'
+        self.example = %(
+!user Beowulf
+
+!role tragic_end
+  kind: destiny
+  owner: !user Beowulf
+)
+
         def roleid default_account = nil
           raise "account is required" unless account || default_account
           [ account || default_account, kind, id ].join(":")
@@ -131,7 +140,19 @@ module Conjur
         include ActsAsCompoundId
 
         attribute :kind, kind: :string, singular: true, dsl_accessor: true
-        
+
+        self.description = 'Create a custom resource.'
+        self.example = %(
+!user nobody
+
+!resource unicorn
+  kind: magical_beast
+  annotations:
+    has_deadly_horn: true
+    has_mercy: false
+  owner: !user nobody
+)
+
         def resource_kind
           kind
         end
@@ -140,6 +161,20 @@ module Conjur
       class User < Record
         include ActsAsResource
         include ActsAsRole
+        
+        self.description = %(
+Create a role representing a human user.
+
+[eMore](/reference/services/directory/user) on Users.
+)
+
+        self.example = %(
+!user robert
+  !uidnumber: 1208
+  !annotations
+    public: true
+    can_predict_movement: false
+)
         
         attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
         
@@ -155,7 +190,28 @@ module Conjur
         include ActsAsRole
         
         attribute :gidnumber, kind: :integer, singular: true, dsl_accessor: true
-        
+
+        self.description = %(
+Create a Group record and resource.
+
+[More](/reference/services/directory/group) on Groups.
+)
+
+        self.example = %(
+!user sysop
+!user db-admin
+
+!group ops
+  gidnumber: 110
+
+!grant
+  role: !group ops
+  members:
+    !user sysop
+    !member
+      role: !user db-admin
+      admin: true
+)
         def custom_attribute_names
           [ :gidnumber ]
         end
@@ -164,11 +220,48 @@ module Conjur
       class Host < Record
         include ActsAsResource
         include ActsAsRole
+
+        self.description = %(
+Create a Host record and resource.
+
+[More](/reference/services/directory/host) on Hosts.
+)
+
+        self.example = %(
+!group CERN
+
+!host httpd
+  annotations:
+    descripton: hypertext web server
+    started: 1990-12-25
+    owner: !group CERN
+)
       end
       
       class Layer < Record
         include ActsAsResource
         include ActsAsRole
+
+        self.description = %(
+Create a Layer record and resource.
+
+[More](/reference/services/directory/layer) on Layers.
+)
+
+        self.example = %(
+!host ProteusIV
+!host AM
+!host GLaDOS
+
+!layer bad_hosts
+
+!grant
+  role: !layer bad_hosts
+  members:
+    !host ProteusIV
+    !host AM
+    !host GLaDOS
+)
       end
       
       class Variable < Record
@@ -176,7 +269,19 @@ module Conjur
         
         attribute :kind,      kind: :string, singular: true, dsl_accessor: true
         attribute :mime_type, kind: :string, singular: true, dsl_accessor: true
-        
+
+        self.description = %(
+Create a Variable resource to hold a secret value.
+
+[More](https://developer.conjur.net/reference/services/directory/variable) on Variables.
+)
+
+        self.example = %(
+!variable spoiler
+  :kind utf-8
+  :mime-type x/json
+)
+
         def custom_attribute_names
           [ :kind, :mime_type ]
         end
@@ -188,10 +293,41 @@ module Conjur
       
       class Webservice < Record
         include ActsAsResource
+
+        self.description = %(
+Create a resource representing a web service endpoint.
+)
+
+        self.example = %(
+!group analysts
+!webservice xkeyscore
+  !annotations
+    description: API endpoint for surveillance apparatus
+
+!permit
+  role: !group analysts
+  privilege: read
+  resource: !webservice xkeyscore
+)
       end
       
       class HostFactory < Record
         include ActsAsResource
+
+        self.description = %(
+Create a host-factory service for bootstrapping hosts into a layer.
+
+[More](http://localhost:9292/reference/services/host_factory) on host factories.
+)
+
+        self.example = %(
+!layer nest
+
+!host-factory
+  annotations:
+    description: Factory to create new bird hosts
+  layers: [ !layer nest ]
+)
         
         attribute :role, kind: :role, dsl_accessor: true, singular: true
         attribute :layer, kind: :layer, dsl_accessor: true
@@ -217,6 +353,43 @@ module Conjur
         
         attribute :record,    kind: :role,   singular: true
         attribute :role_name, kind: :string, singular: true
+
+        self.description = %(
+Some roles are created automatically. For historical reasons, these are called `managed-role`s.
+
+These roles are:
+
+* `use_host`, for allowing SSH access
+* `admin_host`, for allowing admin (root) login.
+* `observe`
+)
+
+        self.example = %(
+!user chef
+!user owner
+!group line-cooks
+!layer kitchen
+
+# no need to create MangedRoles; they are automatic.
+
+!grant
+  role: !managed-role
+    record: !layer kitchen
+    role_name: use_host
+  member: !group line-cooks
+
+!grant
+  role: !managed-role
+    record: !layer kitchen
+    role_name: admin_host
+  member: !user chef
+
+!grant
+  role: !managed-role
+    record: !layer kitchen
+    role_name: observe
+  member: !user owner
+)
         
         class << self
           def build fullid
