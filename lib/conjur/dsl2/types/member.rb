@@ -7,7 +7,9 @@ module Conjur::DSL2::Types
     attribute :role
     attribute :admin, kind: :boolean, singular: true
 
-    self.description = 'Describe a member of a Role.'
+    self.description = %(
+Designate the members of a [Role](#reference/role) such as a [Group](#reference/group).
+)
 
     self.example = %(
 - !user dee

@@ -3,11 +3,17 @@ module Conjur::DSL2::Types
     attribute :record
 
     self.description = %(
-Create any type of record.
+Create a record of any type.
+
+A record can be a [Role](#reference/role) or a [Resource](#reference/resource).
+
+Creating records can be done explicitly using this node type, or
+implicitly. Examples of both are given immeditely below.
 )
 
     self.example = %(
-- !create
+- !user research # implicit record creation
+- !create        # explicit record creation
     record: !user research
 - !create
     record: !group experiment

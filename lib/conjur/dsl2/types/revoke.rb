@@ -6,9 +6,9 @@ module Conjur
         attribute :member, kind: :role, dsl_accessor: true
 
         self.description = %(
-Remove a role grant. (contrast: Grant)
+Remove a [Role](#reference/role) grant. (contrast: [Grant](#reference/grant))
 
-[More](/key_concepts/rbac.html) on role-based access control in Conjur.
+See also: [role-based access control guide](/key_concepts/rbac.html).
 )
 
         self.example = %(
