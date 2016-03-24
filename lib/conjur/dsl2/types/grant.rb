@@ -8,7 +8,7 @@ module Conjur::DSL2::Types
     include ManagedRoleDSL
 
     self.description = %(
-Grant one role to another. (compare: Give)
+Grant one role to another. (compare: Revoke)
 
 [More](/key_concepts/rbac.html) on role-based access control in Conjur.
 )

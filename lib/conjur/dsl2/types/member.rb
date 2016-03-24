@@ -7,20 +7,18 @@ module Conjur::DSL2::Types
     attribute :role
     attribute :admin, kind: :boolean, singular: true
 
-    self.description = 'Describe a member of a Group or Layer.'
+    self.description = 'Describe a member of a Role.'
 
     self.example = %(
-!user dee
-!user dum
-!group brothers
+- !user dee
+- !user dum
+- !group brothers
 
-!grant
+- !grant
   role: !group brothers
   members:
-    !member
-       role: !user dee
-       admin: false
-    !user dum
+  - !user dee
+  - !member dum
        role: !user dum
        admin: true
 )
