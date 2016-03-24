@@ -4,7 +4,8 @@ module Conjur::DSL2::Types
     attribute :owner, kind: :role
 
     self.description = %(
-Give a resource to a role. (compare: Grant)
+Give ownership of a resource to a [Role](#reference/role).
+(compare: [Grant](#reference/grant))
 
 [More](/key_concepts/rbac.html) on role-based access control in Conjur.
 )

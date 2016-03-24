@@ -2,7 +2,8 @@ module Conjur::DSL2::Types
   class Deny < Base
 
     self.description = %(
-Deny privileges on a resource.
+Deny privileges on a [Resource](#reference/resource). (compare:
+[Revoke](#reference/revoke) for [Roles](#reference/role))
 )
 
     self.example = %(

@@ -8,7 +8,12 @@ module Conjur
         attribute :replace, kind: :boolean, singular: true, dsl_accessor: true
 
         self.description = %(
-Allow a role to have permissions on a resource. (compare: Deny)
+Give permissions on a [Resource](#reference/resource) to a [Role](#reference/role). (contrast: [Deny](#reference/deny))
+
+The permissions are:
+1. read (see the resource)
+2. execute (use the resource)
+3. update (make changes to the resource)
 
 [More](/key_concepts/rbac.html) on role-based access control in Conjur.
 )
