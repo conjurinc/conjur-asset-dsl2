@@ -8,7 +8,18 @@ Create a record of any type.
 A record can be a [Role](#reference/role) or a [Resource](#reference/resource).
 
 Creating records can be done explicitly using this node type, or
-implicitly. Examples of both are given immeditely below.
+implicitly with subtly different behavior. Examples of both are given
+immeditely below.
+
+When using the implicit notation, as most of our examples do, the
+behavior is to "create or update" the record. By contrast, when using
+an explicit `create` type, the type must be created or the policy will
+fail.
+
+This implies that, when using `create` in a policy, successful
+application guarantees that the created record did not exist
+previously.
+
 )
 
     self.example = %(
@@ -22,11 +33,11 @@ implicitly. Examples of both are given immeditely below.
       kind: experimental_control
       owner: !user research
 )
-        
+
     def to_s
-      messages = [ "Create #{record}" ]
+      messages = ["Create #{record}"]
       if record.resource?
-        (record.annotations||{}).each do |k,v|
+        (record.annotations || {}).each do |k, _|
           messages.push "  Set annotation '#{k}'"
         end
       end
