@@ -1,6 +1,6 @@
 require 'spec_helper'
-require 'conjur/dsl2/planner/facts'
-include Conjur::DSL2::Planner
+require 'conjur/policy/planner/facts'
+include Conjur::Policy::Planner
 
 describe RoleFacts do
   MockExistingRole = Struct.new(:roleid) do
@@ -19,18 +19,18 @@ describe RoleFacts do
   let(:fixture) {
     YAML.load(File.read(filename), filename)
   }
-  let(:existing_records) { Conjur::DSL2::YAML::Loader.load(fixture['existing']) }
-  let(:requested_records) { Conjur::DSL2::YAML::Loader.load(fixture['requested']) }
+  let(:existing_records) { Conjur::Policy::YAML::Loader.load(fixture['existing']) }
+  let(:requested_records) { Conjur::Policy::YAML::Loader.load(fixture['requested']) }
   let(:role_facts) {
     RoleFacts.new(planner).tap do |facts|
-      Conjur::DSL2::Resolver.resolve(existing_records, "the-account", "the-account:user:the-owner", nil).each do |grant|
+      Conjur::Policy::Resolver.resolve(existing_records, "the-account", "the-account:user:the-owner", nil).each do |grant|
         Array(grant.role).each do |role|
           Array(grant.member).each do |member|
             facts.add_existing_grant MockExistingRole.new(role.roleid), MockExistingGrant.new(member)
           end
         end
       end
-      Conjur::DSL2::Resolver.resolve(requested_records, "the-account", "the-account:user:the-owner", nil).each do |grant|
+      Conjur::Policy::Resolver.resolve(requested_records, "the-account", "the-account:user:the-owner", nil).each do |grant|
         facts.add_requested_grant grant
       end
     end
@@ -69,7 +69,7 @@ describe RoleFacts do
 
   fixtures_dir = File.expand_path("role-facts-fixtures", File.dirname(__FILE__))
   Dir.chdir(fixtures_dir) do
-    files = if env = ENV['DSL2_FIXTURES']
+    files = if env = ENV['POLICY_FIXTURES']
       env.split(',')
     else
       Dir['*.yml']

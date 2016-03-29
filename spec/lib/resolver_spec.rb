@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-include Conjur::DSL2
+include Conjur::Policy
 
 describe Resolver do
   let(:fixture) { YAML.load(File.read(filename), filename) }
   let(:account) { fixture['account'] || "the-account" }
   let(:ownerid) { fixture['ownerid'] || "rspec:user:default-owner" }
   let(:namespace) { fixture['namespace'] }
-  let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
+  let(:policy) { Conjur::Policy::YAML::Loader.load(fixture['policy']) }
   let(:resolve) {
     Resolver.resolve(policy, account, ownerid, namespace)
   }
@@ -24,7 +24,7 @@ describe Resolver do
     
   fixtures_dir = File.expand_path("resolver-fixtures", File.dirname(__FILE__))
   Dir.chdir(fixtures_dir) do
-    files = if env = ENV['DSL2_FIXTURES']
+    files = if env = ENV['POLICY_FIXTURES']
       env.split(',')
     else
       Dir['*.yml']
