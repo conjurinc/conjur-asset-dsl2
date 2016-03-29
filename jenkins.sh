@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-CONJUR_VERSION=${CONJUR_VERSION:-"4.6"}
+CONJUR_VERSION=${CONJUR_VERSION:-"5.0"}
 DOCKER_IMAGE=${DOCKER_IMAGE:-"registry.tld/conjur-appliance-cuke-master:$CONJUR_VERSION-stable"}
 NOKILL=${NOKILL:-"0"}
 PULL=${PULL:-"1"}
@@ -10,7 +10,7 @@ if [ -z "$CONJUR_CONTAINER" ]; then
 	    docker pull $DOCKER_IMAGE
 	fi
 	
-	cid=$(docker run -d -v ${PWD}:/src/conjur-asset-dsl2 $DOCKER_IMAGE)
+	cid=$(docker run --privileged -d -v ${PWD}:/src/conjur-asset-policy $DOCKER_IMAGE)
 	function finish {
     	if [ "$NOKILL" != "1" ]; then
 			docker rm -f ${cid}
@@ -24,4 +24,4 @@ else
 	cid=${CONJUR_CONTAINER}
 fi
 
-docker exec -i ${cid} /src/conjur-asset-dsl2/ci/test.sh
+docker exec -i ${cid} /src/conjur-asset-policy/ci/test.sh

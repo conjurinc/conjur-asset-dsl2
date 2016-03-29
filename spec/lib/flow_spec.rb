@@ -1,14 +1,14 @@
 require 'spec_helper'
-include Conjur::DSL2
+include Conjur::Policy
 
 describe "planning and execution" do
   let(:fixture) { YAML.load(File.read(filename), filename) }
-  let(:conjur_state){ Conjur::DSL2::YAML::Loader.load(fixture['conjur'] || [].to_yaml) }
-  let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
+  let(:conjur_state){ Conjur::Policy::YAML::Loader.load(fixture['conjur'] || [].to_yaml) }
+  let(:policy) { Conjur::Policy::YAML::Loader.load(fixture['policy']) }
   let(:account) { 'the-account' }
   let(:ownerid) { "#{account}:user:default-owner" }
   let(:namespace) { fixture['namespace'] }
-  let(:records) { Conjur::DSL2::Resolver.resolve policy, account, ownerid, namespace }
+  let(:records) { Conjur::Policy::Resolver.resolve policy, account, ownerid, namespace }
   let(:exception) { fixture['exception'] }
   let(:api) { MockAPI.new account, conjur_state }
   let(:plan_actions) do
@@ -30,7 +30,7 @@ describe "planning and execution" do
     actions
   end
   let(:plan_yaml) do
-    Conjur::DSL2::CompactOutputResolver.new(account, ownerid, namespace).resolve(plan_actions).to_yaml
+    Conjur::Policy::CompactOutputResolver.new(account, ownerid, namespace).resolve(plan_actions).to_yaml
   end
   let(:execution_yaml) do
     execution_actions.map do |action|
@@ -79,7 +79,7 @@ describe "planning and execution" do
   
   fixtures_dir = File.expand_path("flow-fixtures", File.dirname(__FILE__))
   Dir.chdir(fixtures_dir) do
-    files = if env = ENV['DSL2_FIXTURES']
+    files = if env = ENV['POLICY_FIXTURES']
       env.split(',')
     else
       Dir['*.yml']

@@ -20,12 +20,12 @@ policy: |
     id: policy1
     body:
       - &plist1
-        - !variable 
-          id: var1
-          owner: !group pgroup1
-        - !variable 
+        - !variable
           id: var2
           owner: !group /group21
+        - !variable
+          id: var1
+          owner: !group pgroup1
       - &plist2
         - !group pgroup1
 

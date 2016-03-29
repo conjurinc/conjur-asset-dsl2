@@ -6,7 +6,7 @@ module DSLWorld
     else
       "--namespace #{namespace}"
     end
-    step "I run `bundle exec conjur policy2 load --syntax yaml #{command_options}` interactively"
+    step "I run `bundle exec conjur policy load --syntax yaml #{command_options}` interactively"
     last_command_started.write(inject_namespace(text))
     last_command_started.stdin.close
 

@@ -5,16 +5,16 @@ SimpleCov.start do
 end
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'conjur-asset-dsl2'
+require 'conjur-asset-policy'
 require 'logger'
 
 if ENV['DEBUG']
-  Conjur::DSL2::YAML::Handler.logger.level = Logger::DEBUG 
-  Conjur::DSL2::Planner::Base.logger.level = Logger::DEBUG
-  Conjur::DSL2::Executor::Base.logger.level = Logger::DEBUG
+  Conjur::Policy::YAML::Handler.logger.level = Logger::DEBUG 
+  Conjur::Policy::Planner::Base.logger.level = Logger::DEBUG
+  Conjur::Policy::Executor::Base.logger.level = Logger::DEBUG
 end
 
-Conjur::DSL2::Planner::BaseFacts.sort = true
+Conjur::Policy::Planner::BaseFacts.sort = true
 
 shared_context "planner", planning: true do
   let(:api) { double(:api) }
@@ -22,7 +22,7 @@ shared_context "planner", planning: true do
     require 'conjur/api'
     allow(Conjur).to receive(:configuration).and_return(double(:configuration, account: "the-account"))
   end
-  let(:records) { Conjur::DSL2::YAML::Loader.load_file(filename) }
+  let(:records) { Conjur::Policy::YAML::Loader.load_file(filename) }
 
   let(:plan_actions) do
     plan = Plan.new
