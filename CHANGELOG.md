@@ -1,3 +1,8 @@
+# 0.7.0
+
+* Renamed plugin from 'dsl2' to 'policy'
+* Added 'retire' subcommand
+
 # 0.6.1
 
 * Properly format the Host Factory layers as they are submitted to the server.
