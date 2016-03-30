@@ -1,3 +1,7 @@
+# 0.7.1
+
+* Fix botched gem release.
+
 # 0.7.0
 
 * Renamed plugin from 'dsl2' to 'policy'
