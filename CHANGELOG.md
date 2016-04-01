@@ -1,3 +1,8 @@
+# 0.8.0
+
+* **Breaking change** Removed `--syntax` flag from `policy load`. Only YML is supported going forwards.
+* `policy load` writes changes to be made to stderr before making them.
+
 # 0.7.1
 
 * Fix botched gem release.
