@@ -14,8 +14,8 @@ When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) 
   else
     "--namespace #{namespace}"
   end
-  
-  cmd = "bundle exec conjur policy load --no-context --dry-run --syntax yaml --format #{format} #{command_options}"
+
+  cmd = "bundle exec conjur policy load --no-context --dry-run --format #{format} #{command_options}"
   if ENV['DEBUG']
     step %Q(I set the environment variable "DEBUG" to "true")
   end

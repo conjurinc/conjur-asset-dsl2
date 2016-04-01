@@ -1,12 +1,12 @@
 module DSLWorld
-  
+
   def load_policy text, options = nil
     command_options = if options
       inject_namespace(options)
     else
       "--namespace #{namespace}"
     end
-    step "I run `bundle exec conjur policy load --syntax yaml #{command_options}` interactively"
+    step "I run `bundle exec conjur policy load #{command_options}` interactively"
     last_command_started.write(inject_namespace(text))
     last_command_started.stdin.close
 
@@ -33,7 +33,7 @@ module DSLWorld
       $stderr.puts "last_json is #{json}" if ENV['DEBUG']
     end
   end
-  
+
   def normalize_stdout
     all_commands.each do |cmd|
       if cmd.instance_variable_get("@context").nil?
@@ -46,19 +46,19 @@ module DSLWorld
       end
     end
   end
-  
+
   def namespace
     @namespace
   end
-  
+
   def inject_namespace text
     text.gsub "@namespace@", namespace
   end
-  
+
   def strip_namespace text
     return "" if text.nil?
     text.gsub "#{namespace}/", ""
-  end  
+  end
 end
 
 require 'rspec/mocks'

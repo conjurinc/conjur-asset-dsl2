@@ -21,9 +21,9 @@
 require 'conjur-asset-policy'
 
 class Conjur::Command::Policy < Conjur::DSLCommand
-  def self.load filename, syntax
+  def self.load filename
     script = script_from_filename filename
-    loader(filename, syntax).load script, filename
+    loader.load script, filename
   end
 
   def self.script_from_filename filename
@@ -45,19 +45,8 @@ class Conjur::Command::Policy < Conjur::DSLCommand
     end
   end
 
-  def self.loader filename, syntax
-    if syntax.nil? && filename
-      filename =~ /\.([^.]+)$/
-      syntax = $1
-    end
-    raise "No syntax provided or detected" unless syntax
-    syntax = case syntax
-    when 'yaml', 'yml'
-      'YAML'
-    when 'rb', 'ruby'
-      'Ruby'
-    end
-    mod = Conjur::Policy.const_get syntax
+  def self.loader
+    mod = Conjur::Policy.const_get 'YAML'
     mod.const_get "Loader"
   end
 
@@ -153,7 +142,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         Conjur.log = "stderr"
 
         filename = args.pop
-        records = load filename, 'yaml'
+        records = load filename
 
         ownerid = options[:ownerid]
         unless ownerid
