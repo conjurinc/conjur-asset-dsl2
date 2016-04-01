@@ -136,9 +136,6 @@ command. Therefore, a policy can be loaded in three steps, if desired:
       c.desc "Policy namespace (optional)"
       c.flag [:namespace]
 
-      c.desc "Syntax (ruby or YAML, will be auto-detected from file extension)"
-      c.flag [:syntax]
-
       c.desc "Print the actions that would be performed"
       c.switch [:"dry-run"]
 
@@ -156,7 +153,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         Conjur.log = "stderr"
 
         filename = args.pop
-        records = load filename, options[:syntax]
+        records = load filename, 'yaml'
 
         ownerid = options[:ownerid]
         unless ownerid
@@ -179,6 +176,7 @@ command. Therefore, a policy can be loaded in three steps, if desired:
             puts plan.actions.to_yaml
           end
         else
+          $stderr.puts plan.actions.map(&:to_s)
           context = execute api, plan.actions
 
           if options[:context]
