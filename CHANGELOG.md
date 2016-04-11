@@ -1,3 +1,8 @@
+# 0.8.1
+
+* Report an error if the same kind of record with the same id is declared more than once.
+* Report an error if a cycle is detected in the record/ownership dependency graph.
+
 # 0.8.0
 
 * **Breaking change** Removed `--syntax` flag from `policy load`. Only YML is supported going forwards.

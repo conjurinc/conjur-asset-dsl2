@@ -6,7 +6,7 @@ module Conjur
       class << self
         # Resolve records to the specified owner id and namespace.
         def resolve records, account, ownerid, namespace = nil
-          resolver_classes = [ AccountResolver, IdResolver, OwnerResolver, FlattenResolver ]
+          resolver_classes = [ AccountResolver, IdResolver, OwnerResolver, FlattenResolver, DuplicateResolver ]
           resolver_classes.each do |cls|
             resolver = cls.new account, ownerid, namespace
             records = resolver.resolve records
@@ -79,7 +79,7 @@ module Conjur
         if record.respond_to?(:id) && record.respond_to?(:id=)
           id = record.id
           if id.blank?
-            raise "#{record.to_s} has no id, and no namespace is available to populate it" unless namespace
+            raise "#{record.class.simple_name} has no id" unless namespace
             id = namespace
           elsif id[0] == '/'
             id = id[1..-1]
@@ -157,7 +157,10 @@ module Conjur
         @result.flatten.sort do |a,b|
           score = sort_score(a) - sort_score(b)
           if score == 0
-            if a.respond_to?(:roleid) && @referenced_record_index[b].member?(a.roleid)
+            if a.respond_to?(:roleid) && @referenced_record_index[b].member?(a.roleid) &&
+              b.respond_to?(:roleid) && @referenced_record_index[a].member?(b.roleid)
+              raise "Dependency cycle encountered between #{a} and #{b}"
+            elsif a.respond_to?(:roleid) && @referenced_record_index[b].member?(a.roleid)
               score = -1
             elsif b.respond_to?(:roleid) && @referenced_record_index[a].member?(b.roleid)
               score = 1
@@ -170,15 +173,6 @@ module Conjur
       end
       
       protected
-      
-      # Select things uniquely by class and id, in this resolver.
-      def id_of record
-        if record.respond_to?(:id)
-          [ record.id, record.class.name ].join("@")
-        else
-          super
-        end
-      end
       
       # Sort "Create" and "Record" objects to the front.
       def sort_score record
@@ -199,6 +193,18 @@ module Conjur
         body = policy.body
         policy.remove_instance_variable "@body"
         traverse body, visited, method(:resolve_record), method(:on_resolve_policy)
+      end
+    end
+    
+    # Raises an exception if the same record is declared more than once.
+    class DuplicateResolver < Resolver
+      def resolve records
+        seen = Set.new
+        Array(records).flatten.each do |record|
+          if record.respond_to?(:id) && !seen.add?([ record.class.short_name, record.id ])
+            raise "#{record} is declared more than once"
+          end
+        end
       end
     end
     

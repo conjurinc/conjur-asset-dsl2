@@ -11,4 +11,5 @@ policy: |
     id: g2
     owner: !group g1
 
-exception: Dependency cycle encountered between group 'g1' and group 'g2'
+exception:
+  message: Dependency cycle encountered between group 'g1' and group 'g2'

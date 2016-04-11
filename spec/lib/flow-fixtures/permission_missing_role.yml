@@ -15,5 +15,5 @@ policy: |
 
 exception:
   class: RuntimeError
-  message: "role not found: the-account:group:developers"
+  message: "Role not found: the-account:group:developers"
 

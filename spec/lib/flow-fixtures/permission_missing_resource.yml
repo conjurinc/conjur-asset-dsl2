@@ -15,5 +15,5 @@ policy: |
 
 exception:
   class: RuntimeError
-  message: "resource not found: the-account:variable:db-password"
+  message: "Resource not found: the-account:variable:db-password"
 

@@ -15,5 +15,5 @@ policy: |
 
 exception:
   class: RuntimeError
-  message: "role not found: the-account:group:secrets-users"
+  message: "Role not found: the-account:group:secrets-users"
 

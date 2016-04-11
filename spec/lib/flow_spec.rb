@@ -17,7 +17,7 @@ describe "planning and execution" do
       plan.actions
     rescue
       @exception = $!
-      puts "EXCEPTION: #{$!}\n#{$@.join "\n\t"}"
+      puts "EXCEPTION: #{$!}\n#{$@.join "\n\t"}" unless exception
       []
     end
   end
@@ -48,10 +48,16 @@ describe "planning and execution" do
   end
   
   shared_examples_for "verify plan" do
+    before {
+      plan_actions
+    }
     it("matches plan exception") {
       if @exception
-        expect(@exception.class.name).to eq(exception['class'])
+        expect(exception).to be
+        expect(@exception.class.name).to eq(exception['class'] || 'RuntimeError')
         expect(@exception.message).to eq(exception['message'])
+      elsif exception
+        raise "Expected an exception, but no exception occurred"
       end
     }
     it("matches plan YAML") {

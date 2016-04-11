@@ -1,14 +1,13 @@
 # Given a host without an id, it should raise an error message
 ---
-conjur:
-  ---
+conjur: |
   []
 
-policy:
+policy: |
   - !host
     annotations:
       description: I should have an id, right?
 
 exception:
-  type: RuntimeError
-  message: missing id for
+  class: RuntimeError
+  message: Host has no id
