@@ -1,3 +1,7 @@
+# 0.8.2
+
+* When user is created with a namespace, form an id that looks like an email address with the namespace as the domain.
+
 # 0.8.1
 
 * Report an error if the same kind of record with the same id is declared more than once.

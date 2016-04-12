@@ -1,0 +1,16 @@
+# User namespace becomes user@foo
+
+---
+conjur: |
+  []
+
+namespace: conjur.net
+
+policy: |
+  - !user kevin
+  
+plan: |
+  ---
+  - !create
+    record: !user
+      id: kevin@conjur.net
