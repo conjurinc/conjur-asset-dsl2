@@ -84,7 +84,11 @@ module Conjur
           elsif id[0] == '/'
             id = id[1..-1]
           else
-            id = [ namespace, id ].compact.join('/')
+            if record.respond_to?(:resource_kind) && record.resource_kind == "user"
+              id = [ id, namespace ].compact.join('@')
+            else
+              id = [ namespace, id ].compact.join('/')
+            end
           end
 
           substitute! id

@@ -164,6 +164,10 @@ class MockAPI
     end
   end
 
+  def user id
+    find_or_create_record Types::User, id
+  end
+  
   def group id
     find_or_create_record Types::Group, id
   end
