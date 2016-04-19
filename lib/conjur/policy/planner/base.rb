@@ -90,6 +90,8 @@ module Conjur
         end
 
         def update_record
+          log { "Updating #{record}" }
+          
           update = Conjur::Policy::Types::Update.new
           update.record = record
 
@@ -106,6 +108,7 @@ module Conjur
                 record.send "#{attr}=", nil
               else
                 raise "Cannot modify immutable attribute '#{record.resource_kind}.#{attr}'" if record.immutable_attribute_names.member?(attr)
+                log { "Attribute #{attr} will be updated" }
                 changed = true
               end
             end
@@ -120,24 +123,33 @@ module Conjur
               if new_value == existing_value
                 record.annotations.delete attr
               else
+                log { "Annotation #{attr} will be updated" }
                 changed = true
               end
             end
             
+            log { "Record owner is #{record.owner.inspect} (#{record.owner.roleid})" }
+            log { "Resource owner is #{resource.owner.inspect}" }
             if record.owner && resource.owner != record.owner.roleid
+              log { "Resource owner will be changed to #{record.owner.roleid}" }
+
               give = Conjur::Policy::Types::Give.new
               give.resource = Conjur::Policy::Types::Resource.new(record.resourceid)
               give.owner = Conjur::Policy::Types::Role.new(record.owner.roleid)
               action give
-              
-              if record.role?
-                grant = Conjur::Policy::Types::Grant.new
-                grant.role = Conjur::Policy::Types::Role.new(record.roleid)
-                grant.member = Conjur::Policy::Types::Member.new
-                grant.member.role = Conjur::Policy::Types::Role.new(record.owner.roleid)
-                grant.member.admin = true
-                action grant
-              end
+            end
+          end
+
+          if record.role?
+            unless api.role(record.owner.roleid).can_admin_role?(role)
+              log { "Role will be granted to #{record.owner.roleid} with admin option" }
+  
+              grant = Conjur::Policy::Types::Grant.new
+              grant.role = Conjur::Policy::Types::Role.new(record.roleid)
+              grant.member = Conjur::Policy::Types::Member.new
+              grant.member.role = Conjur::Policy::Types::Role.new(record.owner.roleid)
+              grant.member.admin = true
+              action grant
             end
           end
           
@@ -145,6 +157,8 @@ module Conjur
         end
         
         def create_record
+          log { "Creating #{record}" }
+
           create = Conjur::Policy::Types::Create.new
           create.record = record
           

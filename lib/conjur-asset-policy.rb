@@ -12,6 +12,9 @@ module Conjur
 end
   
 require 'rest-client'
+
+require 'conjur/api/patches/role'
+
 require 'conjur/policy/logger'
 require 'conjur/policy/invalid'
 require 'conjur/policy/types/base'
