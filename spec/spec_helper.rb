@@ -102,7 +102,7 @@ class MockResource
   end
 
   def owner
-    @record.owner || api.role("the-account:user:default-owner").record
+    @record.owner.roleid || api.role("the-account:user:default-owner").record.roleid
   end
 
   def annotations

@@ -128,8 +128,8 @@ module Conjur
               end
             end
             
-            log { "Record owner is #{record.owner.inspect} (#{record.owner.roleid})" }
-            log { "Resource owner is #{resource.owner.inspect}" }
+            log { "Record owner is #{record.owner.roleid}" }
+            log { "Resource owner is #{resource.owner}" }
             if record.owner && resource.owner != record.owner.roleid
               log { "Resource owner will be changed to #{record.owner.roleid}" }
 
