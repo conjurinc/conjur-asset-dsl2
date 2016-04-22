@@ -8,6 +8,12 @@ module Conjur
         self.description = %(
 Remove a [Role](#reference/role) grant. (contrast: [Grant](#reference/grant))
 
+Some `revoke` operations have additional semantics beyond the role revocation:
+        
+* When a Layer is revoked from a Host, the automatic roles on the Layer are denied their
+    privileges on the Host. Specifically, the `observe` role is denied `read` privilege,
+    `use_host` is denied `execute`, and `admin_host` is denied `update`.
+
 See also: [role-based access control guide](/key_concepts/rbac.html).
 )
 

@@ -26,6 +26,13 @@ revoked from each other. For example, when a Group is granted to a User,
 the User gains all the privileges of the Group. (Note: "Adding" a User to 
 a Group is just another way to say that the Group role is granted to the User).
 
+Some `grant` operations have additional semantics beyond the role grant:
+    
+* When a Layer is granted to a Host, the automatic roles on the Layer are granted
+    privileges on the Host. Specifically, the `observe` role is given `read` privilege,
+    `use_host` is given `execute`, and `admin_host` is given `update`. The `admin`
+    option is ignored.
+
 [More](/key_concepts/rbac.html) on role-based access control in Conjur.
     
 See also: [Permit](#reference/permit) for [Resources](#reference/resource)
