@@ -400,9 +400,9 @@ module Conjur
         end
       end
       
-      module ManagedRoleDSL
-        def managed_role record, role_name
-          ManagedRole.new(record, role_name)
+      module AutomaticRoleDSL
+        def automatic_role record, role_name
+          AutomaticRole.new(record, role_name)
         end
       end
     end

@@ -1,3 +1,7 @@
+# 0.9.0
+
+* Rename `!managed-role` to `!automatic-role`, while maintaining backwards compatibility.
+
 # 0.8.3
 
 * When re-loading a policy, properly apply `--as-group` and `--as-role` by changing the ownership of top-level records as needed.

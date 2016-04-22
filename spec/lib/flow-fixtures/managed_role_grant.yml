@@ -17,7 +17,7 @@ plan: |
       admin: false
       role: !group
         id: developers
-    role: !managed-role
+    role: !automatic-role
       record: !layer
         id: app/frontend
       role_name: use_host

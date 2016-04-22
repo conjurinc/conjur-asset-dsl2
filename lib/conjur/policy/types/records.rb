@@ -425,7 +425,7 @@ See also: [Host Factory](/reference/services/host_factory) in our service refere
         end
       end
       
-      class ManagedRole < Base
+      class AutomaticRole < Base
         include ActsAsRole
         
         def initialize record = nil, role_name = nil
@@ -437,7 +437,8 @@ See also: [Host Factory](/reference/services/host_factory) in our service refere
         attribute :role_name, kind: :string, singular: true
 
         self.description = %(
-Some [Roles](#reference/role) are created automatically. For historical reasons, these are given the type `managed-role`.
+Some [Roles](#reference/role) are created automatically. These are accessed by using the `automatic-role`
+type, which identifies the containing record (e.g. a Layer), and the name of the automatic role (e.g. `use_host`).
 
 These roles are:
 
@@ -455,19 +456,19 @@ These roles are:
 # no need to create MangedRoles; they are automatic.
 
 - !grant
-    role: !managed-role
+    role: !automatic-role
       record: !layer kitchen
       role_name: use_host
     member: !group line-cooks
 
 - !grant
-    role: !managed-role
+    role: !automatic-role
       record: !layer kitchen
       role_name: admin_host
     member: !user chef
 
 - !grant
-    role: !managed-role
+    role: !automatic-role
       record: !layer kitchen
       role_name: observe
     member: !user owner

@@ -4,7 +4,7 @@
   - !member
     role: !group
       id: developers
-  role: !managed-role
+  role: !automatic-role
     record: !layer
       id: dev/mysql
     role_name: use_host

@@ -24,7 +24,7 @@ module Conjur
         def role_record fullid
           account, kind, id = fullid.split(':', 3)
           if kind == '@'
-            Conjur::Policy::Types::ManagedRole.build fullid
+            Conjur::Policy::Types::AutomaticRole.build fullid
           else
             if record_class = record_type(kind)
               record_class.new.tap do |record|

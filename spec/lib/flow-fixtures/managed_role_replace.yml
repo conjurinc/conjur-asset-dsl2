@@ -18,7 +18,7 @@ conjur: |
 policy: |
   - !grant
     replace: true
-    role: !managed-role
+    role: !automatic-role
       record: !layer app/frontend
       role_name: use_host
     member: !group developers
@@ -30,14 +30,14 @@ plan: |
       admin: false
       role: !group
         id: developers
-    role: !managed-role
+    role: !automatic-role
       record: !layer
         id: app/frontend
       role_name: use_host
   - !revoke
     member: !group
       id: operations
-    role: !managed-role
+    role: !automatic-role
       record: !layer
         id: app/frontend
       role_name: use_host

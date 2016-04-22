@@ -5,7 +5,7 @@ module Conjur::Policy::Types
     attribute :replace, kind: :boolean, singular: true, dsl_accessor: true
 
     include RoleMemberDSL
-    include ManagedRoleDSL
+    include AutomaticRoleDSL
 
     self.description = %(
 Grant one [Role](#reference/role) to another.

@@ -7,7 +7,7 @@ grant do
 end
 
 grant do
-  role managed_role(layer("webservice"), "use_host")
+  role automatic_role(layer("webservice"), "use_host")
   member group("developers")
   replace true
 end
