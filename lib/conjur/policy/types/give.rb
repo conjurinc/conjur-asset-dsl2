@@ -5,7 +5,9 @@ module Conjur::Policy::Types
 
     self.description = %(
 Give ownership of a resource to a [Role](#reference/role).
-(compare: [Grant](#reference/grant))
+    
+When the owner role performs a permission check on an owned resource, the
+result is always `true`.
 
 [More](/key_concepts/rbac.html) on role-based access control in Conjur.
 )

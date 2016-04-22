@@ -2,8 +2,13 @@ module Conjur::Policy::Types
   class Deny < Base
 
     self.description = %(
-Deny privileges on a [Resource](#reference/resource). (compare:
-[Revoke](#reference/revoke) for [Roles](#reference/role))
+Deny privilege(s) on a [Resource](#reference/resource) to a role.
+Once a privilege is denied, permission checks performed by the role
+will return `false`.
+
+If the role does not hold the privilege, this statement is a nop.
+
+See also: [Revoke](#reference/revoke) for [Roles](#reference/role)
 )
 
     self.example = %(

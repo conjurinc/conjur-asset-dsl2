@@ -3,9 +3,12 @@ module Conjur::Policy::Types
     attribute :record
 
     self.description = %(
-Make changes to an existing record's attributes.
+Make explicit changes to an existing record's attributes and/or annotations.
 
-For example, you can change annotations on a [Resource](#reference/resource), the `uidnumber` of a [User](#reference/user), etc.
+For example, you can change annotations on a [Resource](#reference/resource), or the `uidnumber` of a [User](#reference/user).
+    
+Generally, Update is not used explicitly. Instead, an update is performed by the create-or-replace behavior of
+statements such as User, Group, Host, Layer, etc.
 )
 
     self.example = %(

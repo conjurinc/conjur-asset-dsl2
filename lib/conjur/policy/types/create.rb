@@ -8,7 +8,11 @@ Create a record of any type.
 A record can be a [Role](#reference/role) or a [Resource](#reference/resource).
 
 Creating records can be done explicitly using this node type, or
-implicitly. Examples of both are given immeditely below.
+implicitly. Examples of both are given immediately below.
+    
+When a record is created explicitly, it's an error if the record already exists.
+When a record is created implicitly, the record will be found-or-created, and its
+state (owner, fields and annotations) will be updated to match the policy declaration.
 )
 
     self.example = %(

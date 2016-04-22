@@ -115,23 +115,26 @@ module Conjur
         attribute :owner, kind: :role, singular: true, dsl_accessor: true
 
         self.description = %(
-Create a custom role.
+Create a custom role. 
 
-From our [role-based access control guide](/key_concepts/rbac.html):
+The purpose of a role is to have privileges and to initiate
+transactions.
 
-> The purpose of a role is to have privileges and to initiate
-> transactions.
-> 
-> A role may represent a person, a group, a non-human user (“robot”)
-> such as a virtual machine or process, or a group of other roles.
-> 
-> In addition to having privileges, a role can be granted to another
-> role.
-> 
-> When a role is granted, the receiving role gains all the privileges
-> of the granted role. In addition, it gains all the roles which are
-> held by the granted role; role grants are fully inherited.
+A role may represent a person, a group, a non-human user (“robot”)
+such as a virtual machine or process, or a group of other roles.
 
+In addition to having privileges, a role can be granted to another
+role.
+
+When a role is granted, the receiving role gains all the privileges
+of the granted role. In addition, it gains all the roles which are
+held by the granted role; role grants are fully inherited.
+        
+Typically, roles are not defined directly.
+Rather, records that behave as roles, such as Users, Groups,
+Hosts and Layers are used instead.
+
+See also: [role-based access control guide](/key_concepts/rbac.html)
 )
 
         self.example = %(
@@ -164,22 +167,23 @@ From our [role-based access control guide](/key_concepts/rbac.html):
         self.description = %(
 Create a custom Resource.
 
-From our [role-based access control guide](/key_concepts/rbac.html):
+Resources are the entities on which permissions are defined. A
+resource id is an arbitrary, unique string which identifies the
+protected asset.
 
-> Resources are the entities on which permissions are defined. A
-> resource id is an arbitrary, unique string which identifies the
-> protected asset.
-> 
-> Examples: database password, virtual machine or
-> server (for SSH access management), web service endpoint
+Examples: database password, virtual machine or
+server (for SSH access management), web service endpoint
 
-From our [CLI reference](/cli#annotating-resources):
+Any Conjur resource can be annotated with a key-value pair. This
+makes organization and discovery easier since annotations can be
+searched on and are shown in the Conjur UI. Automation workflows
+like rotation and expiration are based on annotations.
 
-> Any Conjur resource can be annotated with a key-value pair. This
-  makes organization and discovery easier since annotations can be
-  searched on and are shown in the Conjur UI. Automation workflows
-  like rotation and expiration are based on annotations.
+Typically, resources are not defined directly.
+Rather, records that behave as resources, such as Users, Groups,
+Hosts, Layers, Variables and Webservices are used instead.
 
+See also: [role-based access control guide](/key_concepts/rbac.html)
 )
 
         self.example = %(
@@ -203,9 +207,8 @@ From our [CLI reference](/cli#annotating-resources):
         include ActsAsRole
         
         self.description = %(
-Create a [Role](#reference/role) representing a human user. (For virtual machines, scripts, and other infrastructure, [Host](#reference/host) is a more appropriate role.)
-
-See also: [Users](/reference/services/directory/user) in our service reference.
+Create a [Role](#reference/role) representing a human user. 
+(For virtual machines, scripts, and other infrastructure, [Host](#reference/host) is used instead.)
 )
 
         self.example = %(
@@ -234,21 +237,17 @@ See also: [Users](/reference/services/directory/user) in our service reference.
         self.description = %(
 Create a Group record.
 
-From our [CLI reference](/cli#users-groups):
-
-> Users are organized into groups in Conjur. Every user other than
-  'admin' should be in a group. When a user becomes a member of a
-  group they inherit the group's privileges. You can delegate members
-  of the group to be admins. This means that they can add and remove
-  other members of the group. The owner of a group is automatically an
-  admin.
-
-See also: [User](#reference/user) type, [Groups](/reference/services/directory/group) in our service reference.
+Users are organized into groups in Conjur. Every user other than
+'admin' should be in a group. When a user becomes a member of a
+group they inherit the group's privileges. You can delegate members
+of the group to be admins. This means that they can add and remove
+other members of the group. The owner of a group is automatically an
+admin.
 )
 
         self.example = %(
-- !user sysop
-- !user db-admin
+- !user alice
+- !user bob
 
 - !group ops
     gidnumber: 110
@@ -256,9 +255,9 @@ See also: [User](#reference/user) type, [Groups](/reference/services/directory/g
 - !grant
     role: !group ops
     members:
-    - !user sysop
+    - !user alice
     - !member
-        role: !user db-admin
+        role: !user bob
         admin: true
 )
         def custom_attribute_names
@@ -271,9 +270,13 @@ See also: [User](#reference/user) type, [Groups](/reference/services/directory/g
         include ActsAsRole
 
         self.description = %(
-Create a Host record and resource.
-
-See also: [Layer](#reference/layer) type, [machine identity](/key_concepts/machine_identity.html), [Host](/reference/services/directory/host) in our service reference.
+Create a Host record.
+        
+A Host is an identity which represents a machine or code; for example, a 
+Server, VM, job or container.
+        
+Hosts can be long-lasting, and managed through the Conjur host factory, or 
+ephemeral, and managed through Conjur oAuth (aka authn-tv).
 )
 
         self.example = %(
@@ -294,15 +297,11 @@ See also: [Layer](#reference/layer) type, [machine identity](/key_concepts/machi
         self.description = %(
 Create a Layer record.
 
-From our [CLI reference](/cli#hosts-layers):
-
-> Host are organized into layers in Conjur. Hosts can be added and
-  removed from layers, and map logically to your infrastructure. A
-  host can be a single machine, but it could also be an application or
-  Docker container - where several different applications are running
-  on the same machine or VM.
-
-See also: [Host](#reference/host) type, [Layers](/reference/services/directory/layer) in our service reference.
+Host are organized into layers in Conjur. Hosts can be added and
+removed from layers, and map logically to your infrastructure. A
+host can be a single machine, but it could also be an application or
+Docker container - where several different applications are running
+on the same machine or VM.
 )
 
         self.example = %(
@@ -310,10 +309,10 @@ See also: [Host](#reference/host) type, [Layers](/reference/services/directory/l
 - !host AM
 - !host GLaDOS
 
-- !layer bad_hosts
+- !layer evil-hosts
 
 - !grant
-    role: !layer bad_hosts
+    role: !layer evil-hosts
     members:
       - !host ProteusIV
       - !host AM
@@ -330,19 +329,15 @@ See also: [Host](#reference/host) type, [Layers](/reference/services/directory/l
         self.description = %(
 Create a Variable resource to hold a secret value.
 
-From our [CLI reference](/cli#variables):
+Variables are containers for secrets in Conjur. They can hold any
+ascii-armored value. You can annotate resources and also assign them a kind, a
+signifier as to what type of value they hold. Variable values are
+versioned and assigning a value during variable creation is
+optional. When fetching a value, the latest version is returned by
+default.
 
-> Variables are containers for secrets in Conjur. They can hold any
-> value. You can annotate resources and also assign them a kind, a
-> signifier as to what type of value they hold. Variable values are
-> versioned and assigning a value during variable creation is
-> optional. When fetching a value, the latest version is returned by
-> default.
-> 
-> Variables are resources; you assign roles privileges to them as
-> desired.
-
-See also: [Variables](https://developer.conjur.net/reference/services/directory/variable) in the service reference.
+Variables are resources; you assign roles privileges to them as
+desired.
 )
 
         self.example = %(
@@ -366,18 +361,15 @@ See also: [Variables](https://developer.conjur.net/reference/services/directory/
         self.description = %(
 Create a [Resource](#reference/resource) representing a web service endpoint.
 
-From our [role-based access control guide](/key_concepts/rbac.html):
+Web services endpoints are represented in Conjur as a webservice
+resource. Permission grants are straightforward: an input
+HTTP request path is mapped to a webservice resource. The HTTP
+method is mapped to an RBAC privilege. A permission check is
+performed, according to the following transaction:
 
-> Web services endpoints are represented in Conjur as a webservice
-> resource. Permission grants are pretty straightforward: an input
-> HTTP request path is mapped to a webservice resource. The HTTP
-> method is mapped to an RBAC privilege. A permission check is
-> performed, according to the following transaction:
-> 
-> * `role` incoming role on the HTTP request
-> * `privilege` read, update, or delete according to HTTP verb
-> * `resource` web service resource id
-
+* `role` incoming role on the HTTP (typically, Conjur access token on the request Authorization header)
+* `privilege` read, update, or delete according to HTTP verb
+* `resource` web service resource id
 )
 
         self.example = %(
@@ -397,9 +389,8 @@ From our [role-based access control guide](/key_concepts/rbac.html):
         include ActsAsResource
 
         self.description = %(
-Create a host-factory service for bootstrapping [Hosts](#reference/host) into a [Layer](#reference/layer).
-
-See also: [Host Factory](/reference/services/host_factory) in our service reference.
+Create a host-factory service for automatically creating [Hosts](#reference/host) 
+and enrolling them into one or more [Layer](#reference/layer)s.
 )
 
         self.example = %(
@@ -437,14 +428,16 @@ See also: [Host Factory](/reference/services/host_factory) in our service refere
         attribute :role_name, kind: :string, singular: true
 
         self.description = %(
-Some [Roles](#reference/role) are created automatically. These are accessed by using the `automatic-role`
+Some [Roles](#reference/role) are created automatically by a containing record. 
+        
+These roles are accessed by using the `automatic-role`
 type, which identifies the containing record (e.g. a Layer), and the name of the automatic role (e.g. `use_host`).
 
-These roles are:
+The automatic roles of a Layer are:
 
-* `use_host`, for allowing SSH access
-* `admin_host`, for allowing admin (root) login.
-* `observe`
+* `use_host`, for allowing SSH access to each host as the `users` primary group.
+* `admin_host`, for allowing SSH access to each host as the `conjurers` primary group.
+* `observe`, for `read` privileges on the hosts.
 )
 
         self.example = %(
@@ -453,7 +446,7 @@ These roles are:
 - !group line-cooks
 - !layer kitchen
 
-# no need to create MangedRoles; they are automatic.
+# There's no need to create automatic roles explicitly
 
 - !grant
     role: !automatic-role

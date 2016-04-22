@@ -92,23 +92,43 @@ module Conjur
         include ActsAsRole
 
         self.description = %(
-Create a versioned policy.
+Create a policy. A policy is composed of the following:
+        
+* **id** A unique id, which can be prefixed by a `namespace`.
+* **body** A set of records such as variables, groups and layers which are "owned" by the policy.
+        
+Under the hood, a Policy is actually a role *and* a resource.
+The role is a role whose kind is "policy", and it has the specified `id`. By default
+the policy role is granted, with `admin` option, to the `--as-group` or `--as-role` option which is specified
+when the policy is loaded. The policy resource is a resource whose kind is "policy", and
+whose owner is the policy role.
+        
+All the records declared in the `body` of the policy are also owned by the policy role
+by default. As a result, the role specified by `--as-group` or `--as-role` has full
+ownership and management of everything defined in the policy.
+
+Policies should be self-contained; they should not generally make any reference to 
+records from outside the policy. This way, the policy can be loaded with different
+`--as-group`, `--as-role`, and `--namespace` options to serve different functions in the workflow.
+For example, if a policy is loaded into the `dev` namespace with `--as-group dev-admin`, 
+then a "dev" version of the policy is created with full management assigned to the `dev-admin` group.
 
 [See above](#example) for an example of a complete policy.
 )
 
         self.example = %(
-- !user operator
-
 - !policy
     id: example/v1
-    owner: !user operator
     body:
-    - !variable secret
+    - &secrets
+      - !variable secret
+        
+    - !layer
+        
     - !grant
-        role: !user operator
-        permissions: [ read, execute, update ]
-        resource: !variable secret
+        role: !layer
+        permissions: [ read, execute ]
+        resources: *secrets
 )
 
         def role
