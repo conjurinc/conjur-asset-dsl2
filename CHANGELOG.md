@@ -1,3 +1,8 @@
+# 0.10.0
+
+* Granting a layer to a host also gives permissions to the layer managed roles.
+* Revoking a layer from a host also revokes permissions from the layer managed roles.
+
 # 0.9.0
 
 * Rename `!managed-role` to `!automatic-role`, while maintaining backwards compatibility.

@@ -1,0 +1,26 @@
+---
+conjur: |
+  - !layer frontend
+  - !host host-01.app
+  - !grant
+    role: !layer frontend
+    member: !host host-01.app
+
+policy: |
+  - !revoke
+    role: !layer frontend
+    member: !host host-01.app
+
+plan: |
+  ---
+  - !revoke
+    member: !host
+      id: host-01.app
+    role: !layer
+      id: frontend
+
+execution: |
+  ---
+  - method: delete
+    path: layers/frontend/hosts/the-account%3Ahost%3Ahost-01.app
+    parameters: {}
