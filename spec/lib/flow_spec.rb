@@ -3,10 +3,11 @@ include Conjur::Policy
 
 describe "planning and execution" do
   let(:fixture) { YAML.load(File.read(filename), filename) }
-  let(:conjur_state){ Conjur::Policy::YAML::Loader.load(fixture['conjur'] || [].to_yaml) }
+  let(:conjur_policy) { Conjur::Policy::YAML::Loader.load(fixture['conjur'] || [].to_yaml) }
+  let(:conjur_state){ Conjur::Policy::Resolver.resolve conjur_policy, account, ownerid, nil }
   let(:policy) { Conjur::Policy::YAML::Loader.load(fixture['policy']) }
   let(:account) { 'the-account' }
-  let(:ownerid) { "#{account}:user:default-owner" }
+  let(:ownerid) { fixture['owner'] || "#{account}:user:default-owner" }
   let(:namespace) { fixture['namespace'] }
   let(:records) { Conjur::Policy::Resolver.resolve policy, account, ownerid, namespace }
   let(:exception) { fixture['exception'] }

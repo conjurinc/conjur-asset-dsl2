@@ -3,6 +3,7 @@ conjur: |
   - !role
     id: cook
     kind: job
+    owner: !user default-owner
 
 policy: |
   - !role

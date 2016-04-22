@@ -1,3 +1,7 @@
+# 0.8.3
+
+* When re-loading a policy, properly apply `--as-group` and `--as-role` by changing the ownership of top-level records as needed.
+
 # 0.8.2
 
 * When user is created with a namespace, form an id that looks like an email address with the namespace as the domain.

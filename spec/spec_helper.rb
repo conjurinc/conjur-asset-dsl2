@@ -55,7 +55,7 @@ module MockAsset
   def to_s
     record.to_s
   end
-
+  
   def get
     raise RestClient::ResourceNotFound unless exists?
     attributes.to_json
@@ -65,18 +65,26 @@ end
 class MockRole
   include MockAsset
 
-  def role?;
-    true;
+  def role?
+    true
   end
 
   def exists?
     !!@record
   end
+  
+  # Note: Does not perform any role expansion. Just checks for equivalence, or if I am 
+  # the owner of the role record.
+  def can_admin_role? role
+    return false unless exists?
+    
+    self.record.roleid == role.record.roleid || self.record.roleid == role.record.owner.roleid
+  end
 
   def members
     api.role_members(record)
   end
-
+  
   def attributes
     {}
   end
@@ -84,7 +92,6 @@ end
 
 class MockResource
   include MockAsset
-
 
   def exists?
     !!@record
@@ -95,7 +102,7 @@ class MockResource
   end
 
   def owner
-    @record.owner || ['the-account', 'user', 'default-owner'].join(":")
+    @record.owner.roleid || api.role("the-account:user:default-owner").record.roleid
   end
 
   def annotations
@@ -141,7 +148,7 @@ class MockAPI
   def initialize account, records
     @account = account
     @records = records
-    @roles_by_id = {}
+    @roles_by_id = { 'the-account:user:default-owner' => MockRole.new(self, Types::User.new('default-owner').tap{|u| u.account = 'the-account'}) }
     @resources_by_id = {}
     @records_by_id = {}
   end
@@ -155,6 +162,10 @@ class MockAPI
     end
   end
 
+  def roles
+    @roles_by_id.values
+  end
+  
   def role id
     find_or_create @roles_by_id, id do
       role = @records.find do |r|
