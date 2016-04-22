@@ -1,0 +1,26 @@
+---
+conjur: |
+  - !layer frontend
+  - !host host-01.app
+
+policy: |
+  - !grant
+    role: !layer frontend
+    member: !host host-01.app
+
+plan: |
+  ---
+  - !grant
+    member: !member
+      admin: false
+      role: !host
+        id: host-01.app
+    role: !layer
+      id: frontend
+
+execution: |
+  ---
+  - method: post
+    path: layers/frontend/hosts
+    parameters:
+      hostid: the-account:host:host-01.app

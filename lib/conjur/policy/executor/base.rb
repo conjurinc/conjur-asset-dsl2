@@ -1,10 +1,13 @@
 module Conjur::Policy
   module Executor
+    require 'conjur/escape'
+    
     # Builds a list of execution actions for a statement. The statement
     # is an object from Conjur::Policy::Types. Each execution action is
     # an HTTP method, a request path, and request parameters.
     class Base
       include Conjur::Policy::Logger
+      include Conjur::Escape
       
       attr_reader :statement, :actions
       
