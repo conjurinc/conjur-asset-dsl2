@@ -45,8 +45,6 @@ module Conjur::Policy::Executor
     def execute
       super
 
-      p record
-      
       if record.public_keys
         (Array(record.public_keys) - user.public_keys).each do |key|
           action({
