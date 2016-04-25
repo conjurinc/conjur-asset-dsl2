@@ -1,3 +1,7 @@
+# 0.11.0
+
+* Enable management of user public keys.
+
 # 0.10.0
 
 * Granting a layer to a host also gives permissions to the layer managed roles.

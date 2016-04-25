@@ -38,13 +38,37 @@ module Conjur::Policy::Executor
       {
         record.id_attribute => record.id
       }.tap do |params|
-        custom_attrs = record.custom_attribute_names.inject({}) do |memo, attr|
+        custom_attrs = attribute_names.inject({}) do |memo, attr|
           value = record.send(attr)
           memo[attr.to_s] = value if value
           memo
         end
         params.merge! custom_attrs
         params["ownerid"] = record.owner.roleid if record.owner
+      end
+    end
+    
+    def attribute_names
+      record.custom_attribute_names
+    end
+  end
+  
+  # Sync the user's public keys using the Pubkeys service. POSTing the 
+  # public keys to the User service won't have any effect.
+  class CreateUser < CreateRecord
+    include PublicKeys
+    
+    def execute
+      super
+      
+      p record
+      
+      record.public_keys.each do |key|
+        action({
+          'method' => 'post',
+          'path' => public_key_path,
+          'parameters' => key
+        })
       end
     end
   end

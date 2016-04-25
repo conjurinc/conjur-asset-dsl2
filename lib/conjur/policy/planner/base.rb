@@ -158,7 +158,7 @@ module Conjur
         
         def create_record
           log { "Creating #{record}" }
-
+            
           create = Conjur::Policy::Types::Create.new
           create.record = record
           
