@@ -33,11 +33,11 @@ plan: |
 execution: |
   ---
   - method: put
-    path: groups/dev%2Fdevelopers
+    path: groups/dev/developers
     parameters:
       gidnumber: 1102
   - method: put
-    path: authz/the-account/annotations/group/dev%2Fdevelopers
+    path: authz/the-account/annotations/group/dev/developers
     parameters:
       name: name
       value: Developers

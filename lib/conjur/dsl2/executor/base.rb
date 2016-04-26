@@ -1,3 +1,4 @@
+require 'conjur/escape'
 module Conjur::DSL2
   module Executor
     # Builds a list of execution actions for a statement. The statement
@@ -5,7 +6,8 @@ module Conjur::DSL2
     # an HTTP method, a request path, and request parameters.
     class Base
       include Conjur::DSL2::Logger
-      
+      include Conjur::Escape
+
       attr_reader :statement, :actions, :default_account
       
       def initialize statement, actions, default_account
@@ -48,7 +50,7 @@ module Conjur::DSL2
         [ "authz", annotate_record.account || default_account,
             "annotations",
             annotate_record.resource_kind,
-            CGI.escape(annotate_record.id) ].join('/')
+            path_escape(annotate_record.id) ].join('/')
       end
     end
   end
