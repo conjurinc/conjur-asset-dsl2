@@ -22,34 +22,13 @@ module Conjur
         end
         
         def role_record fullid
-          account, kind, id = fullid.split(':', 3)
-          if kind == '@'
-            Conjur::Policy::Types::AutomaticRole.build fullid
-          else
-            if record_class = record_type(kind)
-              record_class.new.tap do |record|
-                record.account = account
-                unless record.is_a?(Conjur::Policy::Types::Variable)
-                  record.kind = kind if record.respond_to?(:kind=)
-                end
-                record.id = id
-              end
-            else
-              Conjur::Policy::Types::Role.new(fullid)
-            end
-          end
+          detect_record fullid, Conjur::Policy::Types::Role
         end
         
-        def record_type kind
-          begin
-            Conjur::Policy::Types.const_get(kind.classify)
-          rescue NameError
-            nil
-          end
+        def resource_record fullid
+          detect_record fullid, Conjur::Policy::Types::Resource
         end
-        
-        alias resource_record role_record
-        
+
         def resource
           api.resource(record.resourceid)
         end
@@ -178,6 +157,36 @@ module Conjur
           plan.roles_created.add(record.roleid) if record.role?
           plan.resources_created.add(record.resourceid) if record.resource?
           action create
+        end
+        
+        protected
+        
+        def detect_record fullid, raw_type
+          account, kind, id = fullid.split(':', 3)
+          if kind == '@'
+            Conjur::Policy::Types::AutomaticRole.build fullid
+          else
+            if record_class = record_type(kind, raw_type)
+              record_class.new.tap do |record|
+                record.account = account
+                unless record.is_a?(Conjur::Policy::Types::Variable)
+                  record.kind = kind if record.respond_to?(:kind=)
+                end
+                record.id = id
+              end
+            else
+              Conjur::Policy::Types::Role.new(fullid)
+            end
+          end
+        end
+        
+        def record_type kind, raw_type
+          return raw_type if kind == '!'
+          begin
+            Conjur::Policy::Types.const_get(kind.classify)
+          rescue NameError
+            nil
+          end
         end
       end
     end
