@@ -15,6 +15,7 @@ require 'conjur/dsl2/executor/deny'
 require 'conjur/dsl2/executor/retire'
 require 'conjur/dsl2/executor/update'
 
+require 'conjur/escape'
 module Conjur
   module DSL2
     module Executor
@@ -36,6 +37,8 @@ module Conjur
     end
         
     class HTTPExecutor
+      include Conjur::Escape
+
       # @param [Conjur::API] api
       def initialize api
         @api = api
@@ -79,7 +82,9 @@ module Conjur
       alias put update
       
       def delete path, parameters
-        uri = URI.parse([ @base_path, path ].join('/'))
+        # Subtle: we have to escape the path here to avoid raising an
+        # exception if the path contains illegal url characters.
+        uri = URI.parse([ @base_path, fully_escape(path) ].join('/'))
         uri.query = [uri.query, parameters.map{|k,v| [ k, URI.escape(v) ].join('=')}.join("&")].compact.join('&') 
         request = Net::HTTP::Delete.new [ uri.path, '?', uri.query ].join
           

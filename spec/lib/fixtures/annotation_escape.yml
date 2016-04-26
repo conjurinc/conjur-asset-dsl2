@@ -11,12 +11,14 @@ plan: |
     record: !group
       annotations:
         this-guy: sucks
-      id: blec/url-ahole%20
+      id: blech/url-ahole%20
 
 execution: |
   ---
-  - method: put
-    path: groups/blech/url-ahole%2520
+  - method: post
+    path: groups
+    parameters:
+      id: blech/url-ahole%20
   - method: put
     path: authz/the-account/annotations/group/blech/url-ahole%2520
     parameters:

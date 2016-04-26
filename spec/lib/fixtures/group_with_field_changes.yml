@@ -33,7 +33,7 @@ plan: |
 execution: |
   ---
   - method: put
-    path: groups/dev/developers
+    path: groups/dev%2Fdevelopers
     parameters:
       gidnumber: 1102
   - method: put

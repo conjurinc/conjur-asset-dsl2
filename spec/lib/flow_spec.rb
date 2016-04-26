@@ -6,7 +6,9 @@ describe "planning and execution" do
   let(:conjur_state){ Conjur::DSL2::YAML::Loader.load(fixture['conjur'] || [].to_yaml) }
   let(:policy) { Conjur::DSL2::YAML::Loader.load(fixture['policy']) }
   let(:exception) { fixture['exception'] }
-  let(:api) { MockAPI.new 'the-account', conjur_state }
+  let(:api) {
+    MockAPI.new('the-account', conjur_state)
+  }
   let(:plan_actions) do
     begin
       plan = Planner.plan policy, api, namespace: fixture['namespace']
