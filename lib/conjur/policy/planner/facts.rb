@@ -121,7 +121,13 @@ module Conjur
         # Each permission is yielded to the block.
         def resource_permissions resource, privileges, &block
           permissions = begin
-            JSON.parse(api.resource(resource.resourceid).get)['permissions'] 
+            resource = JSON.parse(api.resource(resource.resourceid).get)
+            # Malformed resource ids can be interpreted as a resource search
+            if resource.is_a?(Array)
+              []
+            else 
+              resource['permissions']
+            end
           rescue RestClient::ResourceNotFound
             if api.resource(resource.resourceid).exists?
               $stderr.puts "WARNING: Unable to fetch permissions of resource #{resource.resourceid}. Use 'elevate' mode, or at least 'reveal' mode, for policy management."

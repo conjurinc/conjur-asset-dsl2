@@ -1,7 +1,7 @@
 module Conjur::Policy::Executor
   class Grant < Base
     def execute
-      if statement.role.is_a?(Types::Layer) && statement.member.role.is_a?(Types::Host)
+      if statement.role.is_a?(Conjur::Policy::Types::Layer) && statement.member.role.is_a?(Conjur::Policy::Types::Host)
         add_host_to_layer
       else
         grant_role_to_member

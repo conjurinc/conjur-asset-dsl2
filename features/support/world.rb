@@ -1,12 +1,13 @@
 module DSLWorld
 
-  def load_policy text, options = nil
+  def load_policy text, options = nil, privilege = nil
+    elevate = false
     command_options = if options
       inject_namespace(options)
     else
       "--namespace #{namespace}"
     end
-    step "I run `bundle exec conjur policy load #{command_options}` interactively"
+    step "I run `bundle exec conjur #{privilege ? privilege : ''} policy load #{command_options}` interactively"
     last_command_started.write(inject_namespace(text))
     last_command_started.stdin.close
 
@@ -49,6 +50,10 @@ module DSLWorld
 
   def namespace
     @namespace
+  end
+  
+  def user_namespace
+    namespace.gsub('/', '-')
   end
 
   def inject_namespace text

@@ -8,6 +8,7 @@ cd /src/conjur-asset-policy
 bundle
 
 export CONJUR_AUTHN_LOGIN=admin
-export CONJUR_AUTHN_API_KEY=secret
+
+ruby -ryaml -e "conf = YAML.load(File.read('/etc/conjur.conf')); conf['plugins'] = [ 'policy', 'authn-local' ]; File.write('/etc/conjur.conf', YAML.dump(conf))"
 
 bundle exec rake jenkins || true
