@@ -1,16 +1,24 @@
-When(/^I load the policy "([^"]*)"$/) do |text|
-  load_policy text
+When(/^I load the policy "([^"]*)(?: with options "(.*?)")?"$/) do |text, options|
+  load_policy text, options
 end
 
-When(/^I load the policy:$/) do |text|
-  load_policy text
+When(/^I load the policy(?: with options "(.*?)")?(?: with "(.*)" privilege)?:$/) do |options, privilege, text|
+  load_policy text, options, privilege
 end
 
 When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) do |try, format, options, text|
   options = inject_namespace(options) if options
-  specify_cli_environment
-  cmd = "conjur policy2 load --namespace #{namespace} --no-context --dry-run --syntax yaml --format #{format} #{options}"
-  $stderr.puts cmd
+
+  command_options = if options
+    inject_namespace(options)
+  else
+    "--namespace #{namespace}"
+  end
+
+  cmd = "conjur policy load --no-context --dry-run --format #{format} #{command_options}"
+  if ENV['DEBUG']
+    step %Q(I set the environment variable "DEBUG" to "true")
+  end
   step "I run `bundle exec #{cmd}` interactively"
   last_command_started.write(inject_namespace(text))
   last_command_started.stdin.close

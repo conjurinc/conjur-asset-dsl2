@@ -1,0 +1,50 @@
+conjur: |
+  - !group group1
+  - !variable admin-password
+
+policy: |
+  - !permit
+    resource: !variable admin-password
+    privilege:
+      - update
+      - execute
+    role:
+      - !member
+        admin: true
+        role: !group group1
+
+plan: |
+  ---
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: admin-password
+    role: !member
+      admin: true
+      role: !group
+        id: group1
+  - !permit
+    privilege: update
+    resource: !variable
+      id: admin-password
+    role: !member
+      admin: true
+      role: !group
+        id: group1
+
+execution: |
+  ---
+  - method: post
+    path: authz/the-account/resources/variable/admin-password?permit
+    parameters:
+      privilege: execute
+      role: the-account:group:group1
+      grant_option: true
+  - method: post
+    path: authz/the-account/resources/variable/admin-password?permit
+    parameters:
+      privilege: update
+      role: the-account:group:group1
+      grant_option: true
+
+

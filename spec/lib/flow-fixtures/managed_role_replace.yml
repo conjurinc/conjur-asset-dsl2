@@ -1,0 +1,43 @@
+# Test the 'replace' option on role grants with managed roles.
+---
+conjur: |
+  - !group developers
+  - !group operations
+  - !layer app/frontend
+  - !role
+    id: layer/app/frontend/use_host
+    kind: "@"
+  - !grant
+    role: !role
+      id: layer/app/frontend/use_host
+      kind: "@"
+    member: !member
+      role: !group operations
+      admin: false
+
+policy: |
+  - !grant
+    replace: true
+    role: !automatic-role
+      record: !layer app/frontend
+      role_name: use_host
+    member: !group developers
+
+plan: |
+  ---
+  - !grant
+    member: !member
+      admin: false
+      role: !group
+        id: developers
+    role: !automatic-role
+      record: !layer
+        id: app/frontend
+      role_name: use_host
+  - !revoke
+    member: !group
+      id: operations
+    role: !automatic-role
+      record: !layer
+        id: app/frontend
+      role_name: use_host

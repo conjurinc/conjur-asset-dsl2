@@ -1,0 +1,36 @@
+conjur: |
+  - !group
+    id: security_admin
+    owner: !user admin
+  - !group
+    id: ops
+    owner: !group security_admin
+  - !role
+    kind: policy
+    id: test
+    owner: !group security_admin
+  - !resource
+    kind: policy
+    id: test
+    owner: !role
+      kind: policy
+      id: test
+
+owner: the-account:group:ops
+
+policy: |
+  - !policy
+    id: test
+    body: []
+
+plan: |
+  ---
+  - !grant
+    member: !member
+      admin: true
+      role: !role
+        id: ops
+        kind: group
+    role: !role
+      id: test
+      kind: policy

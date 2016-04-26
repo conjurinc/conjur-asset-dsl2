@@ -1,0 +1,68 @@
+# Test very odd nestings of record lists.
+# Groups should be created before any record that uses them as owner.
+# Lists should be fully flattened and sorted.
+---
+conjur: |
+  []
+  
+policy: |
+  - &list1
+    - &list12
+      - !variable 
+        id: var12
+        owner: !group group21
+
+  - &list2
+    - &list21
+      - !group group21
+
+  - !policy
+    id: policy1
+    body:
+      - &plist1
+        - !variable
+          id: var2
+          owner: !group /group21
+        - !variable
+          id: var1
+          owner: !group pgroup1
+      - &plist2
+        - !group pgroup1
+
+plan: |
+  ---
+  - !create
+    record: !group
+      id: group21
+  - !create
+    record: !variable
+      id: var12
+      owner: !group
+        id: group21
+  - !create
+    record: !role
+      id: policy1
+      kind: policy
+  - !create
+    record: !resource
+      id: policy1
+      kind: policy
+      owner: !role
+        id: policy1
+        kind: policy
+  - !create
+    record: !variable
+      id: policy1/var2
+      owner: !group
+        id: group21
+  - !create
+    record: !group
+      id: policy1/pgroup1
+      owner: !role
+        id: policy1
+        kind: policy
+  - !create
+    record: !variable
+      id: policy1/var1
+      owner: !group
+        id: policy1/pgroup1

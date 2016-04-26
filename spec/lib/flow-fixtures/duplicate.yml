@@ -1,0 +1,16 @@
+# Create a duplicate record
+
+---
+conjur: |
+  []
+
+policy: |
+  - !group
+    id: developers
+
+  - !group
+    id: developers
+
+exception:
+  class: RuntimeError
+  message: group 'developers' is declared more than once

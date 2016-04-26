@@ -1,0 +1,72 @@
+policy: |
+  - !policy
+    id: test-policy
+    body:
+      - &variables
+        - !variable username
+        - !variable password
+      - !group secrets-users
+      - !permit
+        role: !group secrets-users
+        privilege: [ read, execute ]
+        resource: *variables
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: test-policy
+      kind: policy
+  - !create
+    record: !resource
+      id: test-policy
+      kind: policy
+      owner: !role
+        id: test-policy
+        kind: policy
+  - !create
+    record: !variable
+      id: test-policy/username
+      owner: !role
+        id: test-policy
+        kind: policy
+  - !create
+    record: !variable
+      id: test-policy/password
+      owner: !role
+        id: test-policy
+        kind: policy
+  - !create
+    record: !group
+      id: test-policy/secrets-users
+      owner: !role
+        id: test-policy
+        kind: policy
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: test-policy/password
+    role: !member
+      role: !group
+        id: test-policy/secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: test-policy/username
+    role: !member
+      role: !group
+        id: test-policy/secrets-users
+  - !permit
+    privilege: read
+    resource: !variable
+      id: test-policy/password
+    role: !member
+      role: !group
+        id: test-policy/secrets-users
+  - !permit
+    privilege: read
+    resource: !variable
+      id: test-policy/username
+    role: !member
+      role: !group
+        id: test-policy/secrets-users

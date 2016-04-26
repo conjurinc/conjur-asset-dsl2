@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'conjur/dsl2/yaml/loader'
+require 'conjur/policy/yaml/loader'
 
-describe Conjur::DSL2::YAML::Loader do
+describe Conjur::Policy::YAML::Loader do
   shared_examples_for "round-trip dsl" do |example|
     let(:filename) { "spec/lib/round-trip/yaml/#{example}.yml" }
     it "#{example}.yml" do
-      expect(Conjur::DSL2::YAML::Loader.load_file(filename).to_yaml).to eq(File.read("spec/lib/round-trip/yaml/#{example}.expected.yml"))
+      expect(Conjur::Policy::YAML::Loader.load_file(filename).to_yaml).to eq(File.read("spec/lib/round-trip/yaml/#{example}.expected.yml"))
     end
   end
 
@@ -16,10 +16,10 @@ describe Conjur::DSL2::YAML::Loader do
       location, message = lines[0..1].map{|l| l.match(/^#\s+(.*)/)[1]}
       line, column = location.split(',').map(&:strip)
       error_message = "Error at line #{line}, column #{column} in #{filename} : #{message}"
-      expect { Conjur::DSL2::YAML::Loader.load_file(filename).to_yaml }.to raise_error(Conjur::DSL2::Invalid)
+      expect { Conjur::Policy::YAML::Loader.load_file(filename).to_yaml }.to raise_error(Conjur::Policy::Invalid)
       begin
-        Conjur::DSL2::YAML::Loader.load_file(filename).to_yaml
-      rescue Conjur::DSL2::Invalid
+        Conjur::Policy::YAML::Loader.load_file(filename).to_yaml
+      rescue Conjur::Policy::Invalid
         expect($!.message).to eq(error_message)
       end
     end

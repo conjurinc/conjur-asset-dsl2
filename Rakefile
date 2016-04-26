@@ -9,10 +9,8 @@ Cucumber::Rake::Task.new :features
 
 task :jenkins => ['ci:setup:rspec', :spec] do
   Cucumber::Rake::Task.new do |t|
-    t.cucumber_opts = "--tags ~@wip --format progress --format junit --out features/reports"
+    t.cucumber_opts = "--tags ~@wip --format pretty --format junit --out features/reports"
   end.runner.run
-
-
 end
 
 task default: [:spec, :features]

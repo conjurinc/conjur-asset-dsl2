@@ -1,15 +1,20 @@
-# Conjur `dsl2` plugin
+# Conjur `policy` plugin
 
-This is a Conjur plugin for a next-generation DSL, used for both policies (self contained RBAC models) and entitlements (roles and permissions which span policies and global records).
+This is a Conjur plugin for a next-generation policy markup language, used for both
+policies (self contained RBAC models) and entitlements (roles and permissions which
+span policies and global records).
 
-The goals of the DSL are:
+[Reference docs page](https://developer.conjur.net/reference/policy-markup.html).
+
+The goals of the policy language are:
 
 * Fully declarative
 * Human and machine readable
 * Simplified (relative to the older Ruby DSL)
 * Safe to execute in any environment
 
-The DSL basically supports the following high-level capabilities. Each one is idempotent (it can be run repeatedly without harmful-side effects):
+Policy supports the following high-level capabilities.
+Each one is idempotent (it can be run repeatedly without harmful-side effects):
 
 * **Create / Update** records, such as Role, User, and Webservice
 * **Grant** roles. This basic concept covers everything from group members to adding abstract roles. Grant list can be "exclusive", which revokes the role from anyone not in the list.
@@ -19,37 +24,37 @@ Also possible:
 
 * Update ownership of a record
 * Revoke roles
-* Deny privileges 
+* Deny privileges
 
 # Installation
 
-DSL2 is available as a conjur plugin (via rubygems).  You can install it with the following command:
+Policy is available as a conjur plugin (via rubygems).
+You can install it with the following command:
 
 ```ssh-session
-conjur plugin install dsl2
+conjur plugin install policy
 ```
 
-Upon successful installation, running `conjur help` should show a toplevel `policy2` command.
+Upon successful installation, running `conjur help` should show a toplevel `policy` command.
 
 # Command Line Usage
 
-Conjur DSL2 accepts policies in the new YAML format, described below. 
+Conjur Policy accepts policies in the new YAML format, described below. 
 
-The `policy2` command has two subcommands, `load` and `import`.  The `load` command is used to load a policy file
+The `policy` command has two subcommands, `load` and `import`.  The `load` command is used to load a policy file
 in one shot, or to "preview" the actions that would be taken if the policy were loaded (using the `--dry-run` option).
 
-For details on the usage of this command, run `conjur help policy2 load`.
+For details on the usage of this command, run `conjur help policy load`.
 
-The `conjur policy2 import` command can be used to execute a plan produced by the `conjur policy2 load --dry-run --format yaml`
+The `conjur policy import` command can be used to execute a plan produced by the `conjur policy load --dry-run --format yaml`
 command.  
 
 # Examples
 
 You can find many examples of the new YAML syntax in the 
-[Conjur enterprise example repo](https://github.com/conjurdemos/enterprise-example/tree/dsl2/policy).  Note that only 
-the YAML syntax is currently supported, not the ruby DSL.
+[Conjur enterprise example repo](https://github.com/conjurdemos/enterprise-example/tree/dsl2/policy).  Note that only the YAML syntax is currently supported, not the ruby DSL.
 
-You can also find examples in the [test fixtures](https://github.com/conjurinc/conjur-asset-dsl2/tree/master/spec/lib/fixtures) 
+You can also find examples in the [test fixtures](https://github.com/conjurinc/conjur-asset-policy/tree/master/spec/lib/fixtures) 
 for this project.  These fixtures embed the policy in a yaml document that also describes the initial state of the 
 Conjur server, the expected plan, and the expected execution (or in the case of a fixture that is expected to fail, 
 the expected exception).
@@ -152,17 +157,17 @@ The owner tag will update both:
 
 # Expanded discussion of design goals
 
-This DSL format is designed to work better within automated policy management frameworks. Using these declaractive policy files, the entire authorization model of Conjur can be managed using policies.
+This Policy format is designed to work better within automated policy management frameworks. Using these declaractive policy files, the entire authorization model of Conjur can be managed using policies.
 
 Whenever Conjur needs to be changed, a new policy is  created or an existing policy is modified. This policy is typically managed through standard source control techniques (e.g. Git pull requests), with the security team having authority to approve and merge.
 
 In this way, management of a Conjur system can be treated as code and leverage corresponding best pratices such as branches, pull requests, post-receive hooks, repository permissions and access rights, etc.
 
-In addition, because the DSL format (YAML) is machine-readable, it will be straightforward to develop visual tools for editing and managing policies. Automated generation of policy files is also simple.
+In addition, because the Policy format (YAML) is machine-readable, it will be straightforward to develop visual tools for editing and managing policies. Automated generation of policy files is also simple.
 
 # Benefits
 
-These are the benefits of the policy DSL, as imagined internally by the Conjur team:
+These are the benefits of the policy language, as imagined internally by the Conjur team:
 
 * Large permission changes are described in a coherent way (modification of many corresponding rules can be described in single policy)
 * The history of permission changes is more clear and easier to track. For example, it’s easy to list and view all policies which included references to particular ID, and understand how and why specific permissions were applied/revoked. With the current CLI it’s possible to only figure out the operations done on particular object, but not the bigger context (probably involving many corresponding changes on other objects)  in which they were applied.
@@ -196,7 +201,8 @@ typically requires a properly configured Conjur appliance, although the specs sh
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/conjurinc/conjur-asset-dsl2.
+Bug reports and pull requests are welcome on GitHub at
+https://github.com/conjurinc/conjur-asset-policy.
 
 
 ## License

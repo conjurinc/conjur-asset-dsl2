@@ -1,0 +1,17 @@
+---
+conjur: |
+  - !role
+    id: cook
+    kind: job
+    owner: !user default-owner
+
+policy: |
+  - !role
+    id: cook
+    kind: job
+
+plan: |
+  --- []
+
+execution: |
+  --- []

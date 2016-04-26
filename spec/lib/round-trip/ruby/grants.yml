@@ -20,7 +20,7 @@
     role: !group
       id: developers
   replace: true
-  role: !managed-role
+  role: !automatic-role
     record: !layer
       id: webservice
     role_name: use_host

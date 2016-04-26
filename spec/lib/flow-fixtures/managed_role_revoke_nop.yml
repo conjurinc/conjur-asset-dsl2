@@ -1,0 +1,15 @@
+# Managed role is not revoked if it isn't already granted.
+---
+conjur: |
+  - !group developers
+  - !layer app/frontend
+
+policy: |
+  - !revoke
+    role: !automatic-role
+      record: !layer app/frontend
+      role_name: use_host
+    member: !group developers
+
+plan: |
+  --- []

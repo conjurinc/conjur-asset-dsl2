@@ -1,0 +1,57 @@
+---
+conjur: |
+  - !variable db-password
+  - !group developers
+  - !group operations
+  - !permit
+    privilege:
+      - read
+      - update
+    resource: !variable db-password
+    role: !group developers
+  - !permit
+    privilege: read
+    resource: !variable db-password
+    role: !group operations
+
+
+policy: |
+  - !permit
+    replace: true
+    privilege:
+    - read
+    - execute
+    resource: !variable
+      id: db-password
+    role: !member
+      role: !group
+        id: developers
+
+plan: |
+  ---
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: db-password
+    role: !member
+      role: !group
+        id: developers
+  - !deny
+    privilege: read
+    resource: !variable
+      id: db-password
+    role: !group
+      id: operations
+
+execution: |
+  ---
+  - method: post
+    path: authz/the-account/resources/variable/db-password?permit
+    parameters:
+      privilege: execute
+      role: the-account:group:developers
+  - method: post
+    path: authz/the-account/resources/variable/db-password?deny
+    parameters:
+      privilege: read
+      role: the-account:group:operations

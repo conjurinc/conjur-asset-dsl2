@@ -1,0 +1,60 @@
+conjur: |
+  - !role
+    kind: group
+    id: secrets-users
+  - !role
+    kind: group
+    id: secrets-managers
+  - !group developers
+  - !group operations
+  - !grant
+    member: !member
+      role: !group
+        id: developers
+    role: !group
+      id: secrets-users
+  - !grant
+    member: !member
+      role: !group
+        id: operations
+      admin: true
+    role: !group
+      id: secrets-users
+
+policy: |
+  - !grant
+    replace: true
+    member: !member
+      role: !group
+        id: operations
+    role: !group
+      id: secrets-users
+
+plan: |
+  ---
+  - !grant
+    member: !member
+      admin: false
+      role: !group
+        id: operations
+    role: !group
+      id: secrets-users
+  - !revoke
+    member: !group
+      id: developers
+    role: !group
+      id: secrets-users
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/group/secrets-users?members
+    parameters:
+      member: the-account:group:operations
+      admin_option: false
+  - method: delete
+    path: authz/the-account/roles/group/secrets-users?members
+    parameters:
+      member: the-account:group:developers
+
+

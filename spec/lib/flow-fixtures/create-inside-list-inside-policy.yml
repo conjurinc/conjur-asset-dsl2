@@ -1,0 +1,101 @@
+policy: |
+  - !policy
+    id: myapp
+    body:
+      - !group secrets-users
+      - !group secrets-managers
+      - &variables
+        - !variable password
+        - !variable username
+      - !permit
+        role: !group secrets-users
+        privilege: [ read, execute ]
+        resource: *variables
+      - !permit
+        role: !group secrets-managers
+        privilege: update
+        resource: !variable username
+      - !permit
+        role: !group secrets-managers
+        privilege: update
+        resource: !variable password
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: myapp
+      kind: policy
+  - !create
+    record: !resource
+      id: myapp
+      kind: policy
+      owner: !role
+        id: myapp
+        kind: policy
+  - !create
+    record: !group
+      id: myapp/secrets-users
+      owner: !role
+        id: myapp
+        kind: policy
+  - !create
+    record: !group
+      id: myapp/secrets-managers
+      owner: !role
+        id: myapp
+        kind: policy
+  - !create
+    record: !variable
+      id: myapp/password
+      owner: !role
+        id: myapp
+        kind: policy
+  - !create
+    record: !variable
+      id: myapp/username
+      owner: !role
+        id: myapp
+        kind: policy
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: myapp/password
+    role: !member
+      role: !group
+        id: myapp/secrets-users
+  - !permit
+    privilege: execute
+    resource: !variable
+      id: myapp/username
+    role: !member
+      role: !group
+        id: myapp/secrets-users
+  - !permit
+    privilege: read
+    resource: !variable
+      id: myapp/password
+    role: !member
+      role: !group
+        id: myapp/secrets-users
+  - !permit
+    privilege: read
+    resource: !variable
+      id: myapp/username
+    role: !member
+      role: !group
+        id: myapp/secrets-users
+  - !permit
+    privilege: update
+    resource: !variable
+      id: myapp/username
+    role: !member
+      role: !group
+        id: myapp/secrets-managers
+  - !permit
+    privilege: update
+    resource: !variable
+      id: myapp/password
+    role: !member
+      role: !group
+        id: myapp/secrets-managers

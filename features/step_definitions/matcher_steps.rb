@@ -12,3 +12,9 @@ Then(/^(.*)normalized JSON(.*)$/) do |prefix, postfix|
   normalize_stdout
   step [ prefix, "JSON", postfix ].join
 end
+
+Then(/^the host factory layers should be exactly \[ 'test' \]$/) do
+  hf = $conjur.host_factory([ @namespace, 'test' ].join('/'))
+  expect(hf).to be
+  expect(hf.attributes['layers']).to eq([ [ @namespace, 'test' ].join('/') ])
+end

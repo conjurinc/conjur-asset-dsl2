@@ -1,12 +1,13 @@
 module DSLWorld
-  
-  def specify_cli_environment
-    set_environment_variable "GLI_DEBUG", "true"
-  end
-  
-  def load_policy text
-    specify_cli_environment
-    step "I run `bundle exec conjur policy2 load --namespace #{namespace} --syntax yaml` interactively"
+
+  def load_policy text, options = nil, privilege = nil
+    elevate = false
+    command_options = if options
+      inject_namespace(options)
+    else
+      "--namespace #{namespace}"
+    end
+    step "I run `bundle exec conjur #{privilege ? privilege : ''} policy load #{command_options}` interactively"
     last_command_started.write(inject_namespace(text))
     last_command_started.stdin.close
 
@@ -33,7 +34,7 @@ module DSLWorld
       $stderr.puts "last_json is #{json}" if ENV['DEBUG']
     end
   end
-  
+
   def normalize_stdout
     all_commands.each do |cmd|
       if cmd.instance_variable_get("@context").nil?
@@ -46,19 +47,23 @@ module DSLWorld
       end
     end
   end
-  
+
   def namespace
-    @namespace ||= [ 'cucumber', 'dsl2', $timestamp, (0..3).inject([]){|memo,entry| memo.push rand(255).to_s(16); memo}.join ].join('/')
+    @namespace
   end
   
+  def user_namespace
+    namespace.gsub('/', '-')
+  end
+
   def inject_namespace text
     text.gsub "@namespace@", namespace
   end
-  
+
   def strip_namespace text
     return "" if text.nil?
     text.gsub "#{namespace}/", ""
-  end  
+  end
 end
 
 require 'rspec/mocks'

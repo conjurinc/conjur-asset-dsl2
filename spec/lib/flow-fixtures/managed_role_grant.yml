@@ -1,0 +1,31 @@
+---
+conjur: |
+  - !group developers
+  - !layer app/frontend
+
+policy: |
+  - !grant
+    role: !managed-role
+      record: !layer app/frontend
+      role_name: use_host
+    member: !group developers
+
+plan: |
+  ---
+  - !grant
+    member: !member
+      admin: false
+      role: !group
+        id: developers
+    role: !automatic-role
+      record: !layer
+        id: app/frontend
+      role_name: use_host
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/roles/@/layer/app/frontend/use_host?members
+    parameters:
+      member: the-account:group:developers
+      admin_option: false
