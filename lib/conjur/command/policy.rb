@@ -155,7 +155,9 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         end
 
         records = Conjur::Policy::Resolver.resolve(records, Conjur.configuration.account, ownerid, options[:namespace])
-        plan_api = if api.privilege == "elevate"
+        naked_api = api.dup
+        naked_api.privilege = nil
+        plan_api = if api.privilege == "elevate" && naked_api.global_privilege_permitted?("reveal")
           api.with_privilege("reveal")
         else
           api
