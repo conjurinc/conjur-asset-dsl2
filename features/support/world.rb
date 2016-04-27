@@ -11,7 +11,7 @@ module DSLWorld
     step "I run `#{command_string}` interactively"
     
     last_command_started.write(inject_namespace(text))
-    last_command_started.stdin.close
+    last_command_started.stdin.close if last_command_started.stdin
     last_command_started.wait
     expect(last_command_started).to have_exit_status(0)
   end

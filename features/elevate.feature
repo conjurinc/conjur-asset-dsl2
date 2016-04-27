@@ -23,6 +23,8 @@ Feature: "elevate" can be used to ensure success of write operations
     """
     And I login as "alice"  
 
+  @announce-output
+  @debug-policy
   Scenario: Manipulation of a foreign record fails without elevate
     Then I load the policy:
     """

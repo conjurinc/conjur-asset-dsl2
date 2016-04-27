@@ -16,9 +16,6 @@ When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) 
   end
 
   cmd = "conjur policy load --no-context --dry-run --format #{format} #{command_options}"
-  if ENV['DEBUG']
-    step %Q(I set the environment variable "DEBUG" to "true")
-  end
   step "I run `bundle exec #{cmd}` interactively"
   last_command_started.write(inject_namespace(text))
   last_command_started.stdin.close
