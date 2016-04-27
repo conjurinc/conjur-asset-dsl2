@@ -18,3 +18,7 @@ Then(/^the host factory layers should be exactly \[ 'test' \]$/) do
   expect(hf).to be
   expect(hf.attributes['layers']).to eq([ [ @namespace, 'test' ].join('/') ])
 end
+
+Then(/^exit status of the last command should be (\d+)$/) do |status|
+  expect(last_command_started).to have_exit_status(status.to_i)
+end

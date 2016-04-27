@@ -155,7 +155,12 @@ command. Therefore, a policy can be loaded in three steps, if desired:
         end
 
         records = Conjur::Policy::Resolver.resolve(records, Conjur.configuration.account, ownerid, options[:namespace])
-        plan = Conjur::Policy::Planner.plan(records, api)
+        plan_api = if api.privilege == "elevate"
+          api.with_privilege("reveal")
+        else
+          api
+        end
+        plan = Conjur::Policy::Planner.plan(records, plan_api)
 
         if options[:"dry-run"]
           case options[:"format"]

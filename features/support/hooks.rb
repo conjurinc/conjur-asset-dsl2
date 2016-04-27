@@ -7,5 +7,7 @@ Before do
 end
 
 Before "@debug-policy" do
+  step %Q(I set the environment variable "GLI_DEBUG" to "true")
+  step %Q(I set the environment variable "RESTCLIENT_LOG" to "stderr")
   step %Q(I set the environment variable "DEBUG" to "true")
 end

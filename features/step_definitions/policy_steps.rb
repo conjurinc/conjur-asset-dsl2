@@ -1,9 +1,9 @@
-When(/^I load the policy "([^"]*)(?: with options "(.*?)")?"$/) do |text, options|
-  load_policy text, options
+When(/^I( try to)? load the policy "([^"]*)(?: with options "(.*?)")?"$/) do |try, text, options|
+  load_policy try, text, options
 end
 
-When(/^I load the policy(?: with options "(.*?)")?(?: with "(.*)" privilege)?:$/) do |options, privilege, text|
-  load_policy text, options, privilege
+When(/^I( try to)? load the policy(?: with options "(.*?)")?(?: with "(.*)" privilege)?:$/) do |try, options, privilege, text|
+  load_policy try, text, options, privilege
 end
 
 When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) do |try, format, options, text|

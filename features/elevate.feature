@@ -23,10 +23,8 @@ Feature: "elevate" can be used to ensure success of write operations
     """
     And I login as "alice"  
 
-  @announce-output
-  @debug-policy
   Scenario: Manipulation of a foreign record fails without elevate
-    Then I load the policy:
+    When I try to load the policy:
     """
     - !user bob
     - !permit
@@ -34,6 +32,7 @@ Feature: "elevate" can be used to ensure success of write operations
       privilege: [ execute, update ]
       resource: !host host-01.app
     """
+    Then exit status of the last command should be 1
 
   Scenario: With elevate, a foreign record can be manipulated
     Then I load the policy with "elevate" privilege:
