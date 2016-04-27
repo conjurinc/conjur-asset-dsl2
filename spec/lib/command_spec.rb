@@ -9,7 +9,7 @@ PLAN_FIXTURE_FILE = "#{File.dirname(__FILE__)}/import/import.yml"
 describe Conjur::Command::Policy do
   let(:account) { "cucumber" }
   let(:ownerid) { "#{account}:user:alice" }
-  let(:api) { double(:api, username: "alice") }
+  let(:api) { double(:api, username: "alice", privilege: nil) }
   let(:records){ double(:records) }
   let(:loader){ Conjur::Policy::YAML::Loader }
   let(:resolver){ Conjur::Policy::YAML::Resolver }
