@@ -22,7 +22,8 @@ When(/^I( try to)? plan the policy as (text|yaml)(?: with options "(.*?)")?:$/) 
   step "I run `bundle exec #{cmd}` interactively"
   last_command_started.write(inject_namespace(text))
   last_command_started.stdin.close
-
+  last_command_started.wait
+  
   expect(last_command_started).to have_exit_status(0) unless try
 
   $stderr.puts last_command_started.stderr unless last_command_started.stderr.blank?

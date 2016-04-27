@@ -7,11 +7,13 @@ module DSLWorld
     else
       "--namespace #{namespace}"
     end
-    step "I run `bundle exec conjur #{privilege ? privilege : ''} policy load #{command_options}` interactively"
+    command_string = %Q(bundle exec conjur #{privilege ? privilege : ''} policy load #{command_options})
+    step "I run `#{command_string}` interactively"
+    
     last_command_started.write(inject_namespace(text))
     last_command_started.stdin.close
-
-    step "the exit status should be 0"
+    last_command_started.wait
+    expect(last_command_started).to have_exit_status(0)
   end
 
   # Drops the indentation of the first line shared indentation from the start of each line

@@ -1,0 +1,42 @@
+conjur: |
+  - !group
+    id: "test/url-ending-in-space "
+  - !group
+    id: test/url-ending-in-escaped-thing%20
+
+policy: |
+  ---
+  - !group
+    id: "test/url-ending-in-space "
+    annotations:
+      this-guy: escapes
+  - !group
+    id: test/url-ending-in-escaped-thing%20
+    annotations:
+      this-guy: escapes
+
+plan: |
+  ---
+  - !update
+    record: !group
+      annotations:
+        this-guy: escapes
+      id: 'test/url-ending-in-space '
+  - !update
+    record: !group
+      annotations:
+        this-guy: escapes
+      id: test/url-ending-in-escaped-thing%20
+
+execution: |
+  ---
+  - method: put
+    path: authz/the-account/annotations/group/test/url-ending-in-space%20
+    parameters:
+      name: this-guy
+      value: escapes
+  - method: put
+    path: authz/the-account/annotations/group/test/url-ending-in-escaped-thing%2520
+    parameters:
+      name: this-guy
+      value: escapes

@@ -5,7 +5,8 @@ module Conjur::Policy::Executor
     def execute
       statement.record.custom_attribute_names.each do |attr|
         value = statement.record.send(attr)
-        action({ 
+        next if value.nil?
+        action({
           'method' => 'put',
           'path' => update_path,
           'parameters' => { attr.to_s => value }
@@ -20,8 +21,7 @@ module Conjur::Policy::Executor
     end
     
     def update_path
-      require 'cgi'
-      [ kind_path, CGI.escape(statement.record.id) ].join('/')
+      [ kind_path, fully_escape(statement.record.id) ].join('/')
     end
     
     def annotate_record
