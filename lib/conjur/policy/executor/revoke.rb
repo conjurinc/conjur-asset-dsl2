@@ -1,7 +1,7 @@
 module Conjur::Policy::Executor
   class Revoke < Base
     def execute
-      if statement.role.is_a?(Types::Layer) && statement.member.is_a?(Types::Host)
+      if statement.role.is_a?(Conjur::Policy::Types::Layer) && statement.member.is_a?(Conjur::Policy::Types::Host)
         remove_host_from_layer
       else
         revoke_role_from_member
