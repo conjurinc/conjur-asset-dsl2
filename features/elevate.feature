@@ -8,7 +8,7 @@ Feature: "elevate" can be used to ensure success of write operations
     - !group dev
     - !permit
       role: !group ops
-      privilege: elevate
+      privileges: [ reveal, elevate ]
       resource: !resource
         account: '!'
         kind: '!'

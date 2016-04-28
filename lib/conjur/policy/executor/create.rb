@@ -61,7 +61,7 @@ module Conjur::Policy::Executor
     def execute
       super
       
-      record.public_keys.each do |key|
+      Array(record.public_keys).each do |key|
         action({
           'method' => 'post',
           'path' => public_key_path,
