@@ -56,6 +56,10 @@ module DSLWorld
     namespace.gsub('/', '-')
   end
 
+  def user_namespace
+    namespace.gsub('/', '-')
+  end
+  
   def inject_namespace text
     text.gsub "@namespace@", namespace
   end

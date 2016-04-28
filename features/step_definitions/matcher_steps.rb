@@ -18,3 +18,7 @@ Then(/^the host factory layers should be exactly \[ 'test' \]$/) do
   expect(hf).to be
   expect(hf.attributes['layers']).to eq([ [ @namespace, 'test' ].join('/') ])
 end
+
+Then(/^the public keys for "([^"]*)" should be exactly:$/) do |user, pubkeys|
+  expect($conjur.public_keys([ user, user_namespace ].join("@"))).to eq(pubkeys)
+end

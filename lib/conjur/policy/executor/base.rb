@@ -9,9 +9,10 @@ module Conjur::Policy
       include Conjur::Policy::Logger
       include Conjur::Escape
       
-      attr_reader :statement, :actions
+      attr_reader :api, :statement, :actions
       
-      def initialize statement, actions
+      def initialize api, statement, actions
+        @api = api
         @statement = statement
         @actions = actions
       end
@@ -51,6 +52,16 @@ module Conjur::Policy
             "annotations",
             annotate_record.resource_kind,
             CGI.escape(annotate_record.id) ].join('/')
+      end
+    end
+    
+    module PublicKeys
+      def public_key_path
+        [ "pubkeys", CGI.escape(record.id) ].join('/')
+      end
+      
+      def attribute_names
+        super - [ :public_key ]
       end
     end
   end

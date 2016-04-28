@@ -28,8 +28,15 @@ module Conjur
               Conjur::Policy::Executor::CreateRecord
             end
           else
-            class_name = action.class.name.split("::")[-1]
-            Conjur::Policy::Executor.const_get(class_name)
+            action_name = action.class.name.split("::")[-1]
+            if action.respond_to?(:record)
+              type_name = action.record.class.short_name
+            end
+            begin
+              Conjur::Policy::Executor.const_get([ action_name, type_name ].compact.join)
+            rescue NameError
+              Conjur::Policy::Executor.const_get(action_name)
+            end
           end
         end
       end
@@ -66,7 +73,7 @@ module Conjur
       
       def create path, parameters
         request = Net::HTTP::Post.new [ @base_path, path ].join('/')
-        request.set_form_data to_params(parameters)
+        set_request_body request, parameters
         send_request request
       end
 
@@ -74,7 +81,7 @@ module Conjur
       
       def update path, parameters
         request = Net::HTTP::Put.new [ @base_path, path ].join('/')
-        request.set_form_data to_params(parameters)
+        set_request_body request, parameters
         send_request request
       end
       
@@ -82,7 +89,9 @@ module Conjur
       
       def delete path, parameters
         uri = URI.parse([ @base_path, path ].join('/'))
-        uri.query = [uri.query, parameters.to_query].compact.join('&') 
+        unless parameters.blank?
+          uri.query = [uri.query, parameters.to_query(nil)].compact.join('&') 
+        end
         request = Net::HTTP::Delete.new [ uri.path, '?', uri.query ].join
           
         send_request request
@@ -114,9 +123,17 @@ module Conjur
         # empty
       end
       
+      def set_request_body request, params
+        if params.is_a?(String)
+          request.body = params
+        else
+          request.set_form_data to_params(params)
+        end
+      end
+      
       # Convert parameter keys to rails []-style keys
       def to_params params
-        params.inject({}) do |memo,entry|
+        Array(params).inject({}) do |memo,entry|
           key, value = entry
           if value.is_a?(Array)
             key = "#{key}[]"
