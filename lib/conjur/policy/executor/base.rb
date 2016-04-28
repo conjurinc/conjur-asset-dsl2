@@ -1,3 +1,4 @@
+require 'conjur/escape'
 module Conjur::Policy
   module Executor
     require 'conjur/escape'
@@ -50,7 +51,7 @@ module Conjur::Policy
         [ "authz", annotate_record.account,
             "annotations",
             annotate_record.resource_kind,
-            CGI.escape(annotate_record.id) ].join('/')
+            path_escape(annotate_record.id) ].join('/')
       end
     end
   end

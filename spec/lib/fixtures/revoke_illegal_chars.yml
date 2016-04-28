@@ -1,0 +1,39 @@
+---
+conjur: |
+  - !role
+    kind: group
+    id: Domain Controllers
+  - !user bob
+  - !user alice
+  - !grant
+    member: !member
+      role: !user
+        id: alice
+    member: !member
+      role: !user
+        id: bob
+    role: !group
+      id: Domain Controllers
+
+
+policy: |
+  - !grant
+    role: !group
+      id: Domain Controllers
+    replace: true
+
+plan: |
+  ---
+  - !revoke
+    member: !user
+      id: bob
+    role: !group
+      id: Domain Controllers
+
+execution: |
+  ---
+  - method: delete
+    path: authz/the-account/roles/group/Domain Controllers?members
+    parameters:
+      member: the-account:user:bob
+
