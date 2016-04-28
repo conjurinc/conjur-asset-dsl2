@@ -132,6 +132,12 @@ class MockRecord
   end
 end
 
+class MockUser < MockRecord
+  def public_keys
+    @record.public_keys
+  end
+end
+
 class MockVariable < MockRecord
   def kind
     @record.kind || "secret"

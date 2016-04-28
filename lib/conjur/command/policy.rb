@@ -54,7 +54,7 @@ class Conjur::Command::Policy < Conjur::DSLCommand
     actions = []
     records.each do |record|
       executor_class = Conjur::Policy::Executor.class_for(record)
-      executor = executor_class.new(record, actions)
+      executor = executor_class.new(api, record, actions)
       executor.execute
     end
     Conjur::Policy::HTTPExecutor.new(api).execute actions

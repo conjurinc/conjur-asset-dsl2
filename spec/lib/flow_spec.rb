@@ -25,7 +25,7 @@ describe "planning and execution" do
   let(:execution_actions) do
     actions = []
     plan_actions.each do |statement|
-      executor = Executor.class_for(statement).new(statement, actions)
+      executor = Executor.class_for(statement).new(api, statement, actions)
       executor.execute
     end
     actions

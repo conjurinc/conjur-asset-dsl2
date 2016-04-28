@@ -208,23 +208,37 @@ See also: [role-based access control guide](/key_concepts/rbac.html)
         
         self.description = %(
 Create a [Role](#reference/role) representing a human user. 
-(For virtual machines, scripts, and other infrastructure, [Host](#reference/host) is used instead.)
+
+Users have several specific attributes:
+
+* **uidnumber** An integer which is the user's uid number for SSH access to Hosts. The `uidnumber` must
+  be unique across the Conjur system.
+* **public_keys** Stores public keys for the user, which can be retrieved through the 
+  [PubKeys API](http://docs.conjur.apiary.io/#reference/pubkeys/show/show-keys-for-a-user).
+  Public keys loaded through the Policy markup are strictly additive. To remove public keys, use the
+  API or the CLI.
+
+For virtual machines, scripts, and other infrastructure, create [Host](#reference/host) identities instead.
 )
 
         self.example = %(
 - !user robert
     uidnumber: 1208
+    public_keys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAAD...+10trhK5Pt robert@home
+    - ssh-rsa AAAAB3NzaC1yc2EAAAAD...+10trhK5Pt robert@work
     annotations:
       public: true
       can_predict_movement: false
 )
-        
+
         attribute :uidnumber, kind: :integer, singular: true, dsl_accessor: true
-        
+        attribute :public_key, kind: :string, dsl_accessor: true
+
         def id_attribute; 'login'; end
         
         def custom_attribute_names
-          [ :uidnumber ]
+          [ :uidnumber, :public_key ]
         end
       end
       

@@ -85,7 +85,7 @@ module Conjur
             id = id[1..-1]
           else
             if record.respond_to?(:resource_kind) && record.resource_kind == "user"
-              id = [ id, namespace ].compact.join('@')
+              id = [ id, user_namespace ].compact.join('@')
             else
               id = [ namespace, id ].compact.join('/')
             end
@@ -108,6 +108,10 @@ module Conjur
       end
       
       protected
+      
+      def user_namespace
+        namespace.gsub('/', '-') if namespace
+      end
       
       def substitute! id
         SUBSTITUTIONS.each do |k,v|

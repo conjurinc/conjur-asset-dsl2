@@ -14,6 +14,7 @@ end
 require 'rest-client'
 
 require 'conjur/api/patches/role'
+require 'conjur/api/patches/user'
 
 require 'conjur/policy/logger'
 require 'conjur/policy/invalid'
