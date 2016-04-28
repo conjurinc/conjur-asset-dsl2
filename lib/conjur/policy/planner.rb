@@ -19,7 +19,7 @@ module Conjur
               ensure
                 planner.plan = nil
               end
-            end        
+            end
           end
         end
         

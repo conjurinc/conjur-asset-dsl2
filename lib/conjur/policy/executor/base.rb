@@ -27,12 +27,12 @@ module Conjur::Policy
       
       def resource_path record = nil
         record ||= self.statement
-        [ "authz", record.account, "resources", record.resource_kind, record.id ].join('/')
+        [ "authz", record.account, "resources", record.resource_kind, path_escape(record.id) ].join('/')
       end
 
       def role_path record = nil
         record ||= self.statement
-        [ "authz", record.account, "roles", record.role_kind, record.id ].join('/')
+        [ "authz", record.account, "roles", record.role_kind, path_escape(record.id) ].join('/')
       end
     end
     
@@ -51,7 +51,7 @@ module Conjur::Policy
         [ "authz", annotate_record.account,
             "annotations",
             annotate_record.resource_kind,
-            CGI.escape(annotate_record.id) ].join('/')
+            path_escape(annotate_record.id) ].join('/')
       end
     end
     

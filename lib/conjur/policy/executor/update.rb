@@ -22,8 +22,7 @@ module Conjur::Policy::Executor
     end
     
     def update_path
-      require 'cgi'
-      [ kind_path, CGI.escape(record.id) ].join('/')
+      [ kind_path, fully_escape(statement.record.id) ].join('/')
     end
     
     def annotate_record

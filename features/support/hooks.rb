@@ -5,3 +5,9 @@ Before do
   step %Q(I set the environment variable "CONJURAPI_LOG" to "stderr") if ENV['DEBUG']
   step %Q(I set the environment variable "RESTCLIENT_LOG" to "stderr") if ENV['DEBUG']
 end
+
+Before "@debug-policy" do
+  step %Q(I set the environment variable "GLI_DEBUG" to "true")
+  step %Q(I set the environment variable "RESTCLIENT_LOG" to "stderr")
+  step %Q(I set the environment variable "DEBUG" to "true")
+end

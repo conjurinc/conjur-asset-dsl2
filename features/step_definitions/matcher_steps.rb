@@ -19,6 +19,10 @@ Then(/^the host factory layers should be exactly \[ 'test' \]$/) do
   expect(hf.attributes['layers']).to eq([ [ @namespace, 'test' ].join('/') ])
 end
 
+Then(/^exit status of the last command should be (\d+)$/) do |status|
+  expect(last_command_started).to have_exit_status(status.to_i)
+end
+
 Then(/^the public keys for "([^"]*)" should be exactly:$/) do |user, pubkeys|
   expect($conjur.public_keys([ user, user_namespace ].join("@"))).to eq(pubkeys)
 end
