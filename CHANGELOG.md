@@ -1,6 +1,7 @@
 # 0.11.0
 
 * Enable management of user public keys.
+* Properly escape resource ids with spaces in them.
 
 # 0.10.0
 
