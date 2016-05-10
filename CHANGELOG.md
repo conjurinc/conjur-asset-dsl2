@@ -1,3 +1,5 @@
+* Executor handles both http and https base URLs
+
 # 0.11.0
 
 * Enable management of user public keys.

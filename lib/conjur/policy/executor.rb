@@ -54,8 +54,9 @@ module Conjur
       def execute actions
         require 'net/https'
         uri = URI.parse(Conjur.configuration.appliance_url)
+        use_ssl = uri.scheme == 'https'
         @base_path = uri.path
-        Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
+        Net::HTTP.start uri.host, uri.port, use_ssl: use_ssl do |http|
           @http = http
           actions.each do |step|
             invoke step
