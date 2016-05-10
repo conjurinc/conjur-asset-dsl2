@@ -106,7 +106,7 @@ module Conjur
           end
         end
       
-        # Add a Conjur::API::Rolerevoke that is already held.
+        # Add a Conjur::API::Role grant that is already held.
         def add_existing_grant role, grant
           existing.add [ role.roleid, grant.member.roleid ]
           existing_with_admin_flag.add [ role.roleid, grant.member.roleid, grant.admin_option ]
