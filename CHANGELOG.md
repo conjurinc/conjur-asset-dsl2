@@ -1,4 +1,7 @@
-* Executor handles both http and https base URLs
+# 0.12.0
+
+* In annotation values, the string `$namespace` is replaced with the current namespace and policy id.
+* Executor handles both http and https base URLs.
 
 # 0.11.0
 

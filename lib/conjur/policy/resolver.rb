@@ -6,7 +6,7 @@ module Conjur
       class << self
         # Resolve records to the specified owner id and namespace.
         def resolve records, account, ownerid, namespace = nil
-          resolver_classes = [ AccountResolver, IdResolver, OwnerResolver, FlattenResolver, DuplicateResolver ]
+          resolver_classes = [ AccountResolver, IdSubstitutionResolver, AnnotationSubstitutionResolver, OwnerResolver, FlattenResolver, DuplicateResolver ]
           resolver_classes.each do |cls|
             resolver = cls.new account, ownerid, namespace
             records = resolver.resolve records
@@ -67,15 +67,35 @@ module Conjur
       end
     end
 
-    # Makes all ids absolute, by prepending the namespace (if any) and the enclosing policy (if any).
-    class IdResolver < Resolver
+    class SubstitutionResolver < Resolver
       SUBSTITUTIONS = { "$namespace" => :namespace }
-      
+        
       def resolve records
-        traverse records, Set.new, method(:resolve_id), method(:on_resolve_policy)
+        traverse records, Set.new, method(:resolve_field), method(:on_resolve_policy)
       end
       
-      def resolve_id record, visited
+      protected
+      
+      def substitute! id
+        SUBSTITUTIONS.each do |k,v|
+          next unless value = send(v)
+          id.gsub! k, value
+        end
+      end
+      
+      def on_resolve_policy policy, visited
+        saved_namespace = @namespace
+        @namespace = policy.id
+        traverse policy.body, visited, method(:resolve_field), method(:on_resolve_policy)
+      ensure
+        @namespace = saved_namespace
+      end
+    end
+    
+    # Makes all ids absolute, by prepending the namespace (if any) and the enclosing policy (if any).
+    class IdSubstitutionResolver < SubstitutionResolver
+      
+      def resolve_field record, visited
         if record.respond_to?(:id) && record.respond_to?(:id=)
           id = record.id
           if id.blank?
@@ -96,15 +116,7 @@ module Conjur
           record.id = id
         end
         
-        traverse record.referenced_records, visited, method(:resolve_id), method(:on_resolve_policy)
-      end
-      
-      def on_resolve_policy policy, visited
-        saved_namespace = @namespace
-        @namespace = policy.id
-        traverse policy.body, visited, method(:resolve_id), method(:on_resolve_policy)
-      ensure
-        @namespace = saved_namespace
+        traverse record.referenced_records, visited, method(:resolve_field), method(:on_resolve_policy)
       end
       
       protected
@@ -112,12 +124,17 @@ module Conjur
       def user_namespace
         namespace.gsub('/', '-') if namespace
       end
-      
-      def substitute! id
-        SUBSTITUTIONS.each do |k,v|
-          next unless value = send(v)
-          id.gsub! k, value
+    end
+    
+    class AnnotationSubstitutionResolver < SubstitutionResolver
+      def resolve_field record, visited
+        if record.respond_to?(:annotations) && (annotations = record.annotations)
+          annotations.each do |k,v|
+            substitute! v
+          end
         end
+
+        traverse record.referenced_records, visited, method(:resolve_field), method(:on_resolve_policy)
       end
     end
     
