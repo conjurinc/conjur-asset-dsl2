@@ -60,7 +60,7 @@ See also: [Permit](#reference/permit) for [Resources](#reference/resource)
                    then member.map(&:admin).all?
                    else member.admin
                    end
-      "Grant #{role_str} to #{member_str}#{replace ? ' exclusively ' : ''}#{admin ? ' with admin option' : ''}"
+      "Grant #{role_str} to #{member_str}#{replace ? ' with replacement ' : ''}#{admin ? ' with admin option' : ''}"
     end
   end
 end
