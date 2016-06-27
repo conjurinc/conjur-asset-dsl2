@@ -8,7 +8,7 @@ module Conjur
     module Planner
       class << self
         def plan records, api, plan = nil
-          plan ||= Plan.new(api.resources(:kind => 'user') + api.resources(:kind => 'group'), api.role_graph(api.current_role))
+          plan ||= Plan.new(api.resources, api.role_graph(api.current_role))
           plan.tap do |plan|
             Array(records).map{ |record| planner_for(record, api) }.each do |planner|
               planner.plan = plan
