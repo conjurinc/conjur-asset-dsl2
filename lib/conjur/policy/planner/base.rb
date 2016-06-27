@@ -30,16 +30,16 @@ module Conjur
         end
 
         def resource
-          api.resource(record.resourceid)
+          @resource ||= api.resource(record.resourceid)
         end
         
         def role
-          api.role(record.roleid)
+          @role ||= api.role(record.roleid)
         end
 
         def resource_exists? resource
           resource_id = resource.respond_to?(:resourceid) ? resource.resourceid : resource.to_s
-          (plan.resources_created.include?(resource_id) ||  api.resource(resource_id).exists?)
+          plan.resources_created.include?(resource_id) ||  plan.resource_exists?(resource_id) || api.resource(resource_id).exists?
         end
 
         def role_exists? role
@@ -54,7 +54,7 @@ module Conjur
             role_kind = role_tokens.shift
             role_id = [ account, role_kind, role_tokens.join('/') ].join(":")
           end
-          plan.roles_created.include?(role_id) || api.role(role_id).exists?
+          plan.roles_created.include?(role_id) || plan.role_exists?(role_id) || api.role(role_id).exists?
         end
 
         def error message
@@ -94,7 +94,7 @@ module Conjur
           end
           
           if record.resource?
-            existing = resource.exists? ? resource.annotations : {}
+            existing = resource.annotations
             current = record.annotations.kind_of?(::Array) ? record.annotations[0] : record.annotations
             (record.annotations||{}).keys.each do |attr|
               existing_value = existing[attr]
@@ -142,7 +142,7 @@ module Conjur
           create.record = record
           
           if record.resource?
-            existing = resource.exists? ? resource.annotations : {}
+            existing = {}
             # And this is why we don't name a class Array.
             current  = record.annotations.kind_of?(::Array) ? record.annotations[0] : record.annotations
             (current||{}).keys.each do |attr|
