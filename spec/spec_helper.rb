@@ -182,7 +182,7 @@ class MockAPI
   end
 
   def resources(options = {})
-    existing_resources.select { |rsrc| options[:kind].present? || rsrc.kind == options[:kind] }
+    existing_resources.select { |rsrc| !options[:kind] || rsrc.kind == options[:kind] }
   end
 
   def role_graph role
