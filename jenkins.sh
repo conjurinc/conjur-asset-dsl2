@@ -10,7 +10,7 @@ if [ -z "$CONJUR_CONTAINER" ]; then
 	    docker pull $DOCKER_IMAGE
 	fi
 	
-	cid=$(docker run --privileged -d -v ${PWD}:/src/conjur-asset-policy $DOCKER_IMAGE)
+	cid=$(docker run --privileged -d --add-host conjur:127.0.0.1 -v ${PWD}:/src/conjur-asset-policy $DOCKER_IMAGE)
 	function finish {
     	if [ "$NOKILL" != "1" ]; then
 			docker rm -f ${cid}
