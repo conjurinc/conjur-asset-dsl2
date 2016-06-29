@@ -147,7 +147,7 @@ module Conjur
       end
       
       def resolve_owner record, visited
-        if record.respond_to?(:owner) && record.respond_to?(:owner) && record.owner.nil?
+        if record.respond_to?(:owner) && record.owner.nil?
           record.owner = Types::Role.new(@ownerid)
         end
       end
