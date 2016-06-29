@@ -44,15 +44,17 @@ module Conjur::Policy::Executor
     def execute
       super
 
-      if record.public_keys
-        (Array(record.public_keys) - user.public_keys).each do |key|
+      record_keys = record.public_keys
+      user_keys = user.public_keys
+      if record_keys
+        (Array(record_keys) - user_keys).each do |key|
           action({
             'method' => 'post',
             'path' => public_key_path,
             'parameters' => key
           })
         end
-        (user.public_keys - Array(record.public_keys)).each do |key|
+        (user_keys - Array(record_keys)).each do |key|
           action({
             'method' => 'delete',
             'path' => [ public_key_path, CGI.escape(key_name(key)) ].join('/')

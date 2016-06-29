@@ -39,7 +39,7 @@ module Conjur
 
         def resource_exists? resource
           resource_id = resource.respond_to?(:resourceid) ? resource.resourceid : resource.to_s
-          plan.resources_created.include?(resource_id) ||  plan.resource_exists?(resource_id) || api.resource(resource_id).exists?
+          plan.resources_created.include?(resource_id) ||  plan.resource_exists?(resource_id)
         end
 
         def role_exists? role
@@ -54,7 +54,7 @@ module Conjur
             role_kind = role_tokens.shift
             role_id = [ account, role_kind, role_tokens.join('/') ].join(":")
           end
-          plan.roles_created.include?(role_id) || plan.role_exists?(role_id) || api.role(role_id).exists?
+          plan.roles_created.include?(role_id) || plan.role_exists?(role_id)
         end
 
         def error message
@@ -120,7 +120,7 @@ module Conjur
           end
 
           if record.role?
-            unless api.role(record.owner.roleid).can_admin_role?(role)
+            unless plan.can_admin_role?(record.owner.roleid, record.roleid)
               log { "Role will be granted to #{record.owner.roleid} with admin option" }
   
               grant = Conjur::Policy::Types::Grant.new

@@ -26,6 +26,11 @@ module Conjur
         @existing_resources.include?(id)
       end
 
+      def can_admin_role?(admin, role)
+        raise "no admin_option support in role graph" if @current_role_graph.first.admin_option.nil?
+        @current_role_graph.any? {|e| e.parent == role && e.child == admin && e.admin_option }
+      end
+
     end
   end
 end
