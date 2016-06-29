@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "safe_yaml"
   spec.add_dependency "conjur-policy-parser"
 
+  spec.add_development_dependency "conjur-api", '~> 4.26'
   spec.add_development_dependency "conjur-cli"
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"

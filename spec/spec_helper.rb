@@ -186,7 +186,7 @@ class MockAPI
   end
 
   def role_graph role
-    @role_graph ||= Conjur::Graph.new(@records.select(&:role?).collect {|r| [r.roleid, r.owner.roleid]})
+    @role_graph ||= Conjur::Graph.new(@records.select(&:role?).collect {|r| [r.roleid, r.owner.roleid, true]})
   end
 
   def resource id
