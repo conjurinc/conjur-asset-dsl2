@@ -1,3 +1,7 @@
+# 0.13.0
+
+* Adds `!include` directive, which can be used to include sub-policies within a master Conjurfile.
+
 # 0.12.0
 
 * In annotation values, the string `$namespace` is replaced with the current namespace and policy id.
