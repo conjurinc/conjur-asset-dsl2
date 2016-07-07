@@ -1,4 +1,4 @@
 # 4, 0
-# Expecting string, got Group
+# Expected a string for field 'id', got Group
 - !user
   id: !group developers

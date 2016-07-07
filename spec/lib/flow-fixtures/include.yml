@@ -1,0 +1,19 @@
+---
+conjur: |
+  []
+
+policy: |
+  -
+    - !include
+      file: partial/group.yml
+  
+  - !include partial/user.yml
+
+plan: |
+  ---
+  - !create
+    record: !group
+      id: developers
+  - !create
+    record: !user
+      id: alice

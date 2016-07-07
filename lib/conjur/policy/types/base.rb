@@ -51,7 +51,7 @@ module Conjur
         # +test_function+ a class or function which will determine if the value is already the correct type.
         # +converter+ if the +test_function+ fails, the converter is called to coerce the type. 
         # It should return +nil+ if its unable to do so.
-        def expect_type value, type_name, test_function, converter = nil
+        def expect_type attr_name, value, type_name, test_function, converter = nil
           if test_function.is_a?(Class)
             cls = test_function
             test_function = lambda{ value.is_a?(cls) } 
@@ -62,7 +62,7 @@ module Conjur
             v
           else
             name = value.class.respond_to?(:short_name) ? value.class.short_name : value.class.name
-            raise "Expecting #{type_name}, got #{name}"
+            raise "Expected a #{type_name} for field '#{attr_name}', got #{name}"
           end
         end
 
@@ -77,80 +77,86 @@ module Conjur
         end
         
         # If it's a Record
-        def expect_record value
-          expect_type value, "Record", lambda{ value.is_a?(Record) }
+        def expect_record name, value
+          expect_type name, value, "Record", lambda{ value.is_a?(Record) }
         end
         
         # If it's a Layer
-        def expect_layer value
-          expect_type value, "Layer", lambda{ value.is_a?(Layer) }
+        def expect_layer name, value
+          expect_type name, value, "Layer", lambda{ value.is_a?(Layer) }
         end
         
         # If it looks like a resource.
-        def expect_resource value
-          expect_type value, "Resource", lambda{ test_resource value }
+        def expect_resource name, value
+          expect_type name, value, "Resource", lambda{ test_resource value }
         end
         
         # If it looks like a role.
-        def expect_role value
-          expect_type value, "Role", lambda{ test_role value }
+        def expect_role name, value
+          expect_type name, value, "Role", lambda{ test_role value }
         end
         
         # +value+ may be a Member; Roles can also be converted to Members.
-        def expect_member value
-          expect_type value, 
+        def expect_member name, value
+          expect_type name,
+            value, 
             "Member", 
             Member,
             lambda{ Member.new(value) if test_role(value) }
         end
         
         # +value+ must be a Permission.
-        def expect_permission value
-          expect_type value, 
+        def expect_permission name, value
+          expect_type name,
+            value,
             "Permission", 
             Permission
         end
                   
         # +value+ must be a String.
-        def expect_string value
-          expect_type value, 
+        def expect_string name, value
+          expect_type name,
+            value, 
             "string",
             String
         end
 
         # +value+ must be a Integer.
-        def expect_integer value
-          expect_type value, 
+        def expect_integer name, value
+          expect_type name,
+            value,
             "integer",
             Integer
         end
                 
         # +value+ can be a Hash, or an object which implements +to_h+.
-        def expect_hash value
-          expect_type value, 
+        def expect_hash name, value
+          expect_type name,
+            value,
             "hash",
             lambda{ value.is_a?(Hash)},
             lambda{ value.to_h.stringify_keys if value.respond_to?(:to_h) }
         end
         
         # +v+ must be +true+ or +false+.
-        def expect_boolean v
+        def expect_boolean name, v
           v = true if v == "true"
           v = false if v == "false"
-          expect_type v, 
+          expect_type name,
+            v,
             "boolean",
             lambda{ [ true, false ].member?(v) }
         end
         
         # +values+ can be an instance of +type+ (as determined by the type-checking methods), or
         # it must be an array of them.
-        def expect_array kind, values
+        def expect_array name, kind, values
           # Hash gets converted to an array of key/value pairs by Array
           is_hash = values.kind_of?(Hash)
           values = [values] if is_hash
 
           result = Array(values).map do |v|
-            send "expect_#{kind}", v
+            send "expect_#{kind}", name, v
           end
 
           (values.is_a?(Array) and not is_hash) ? result : result[0]
@@ -181,7 +187,7 @@ module Conjur
                 else
                   v
                 end
-                self.instance_variable_set("@#{attr}", self.class.expect_array(kind, value))
+                self.instance_variable_set("@#{attr}", self.class.expect_array(attr, kind, value))
               else
                 self.instance_variable_get("@#{attr}")
               end
@@ -192,7 +198,7 @@ module Conjur
             end
           end
           define_method "#{attr}=" do |v|
-            self.instance_variable_set("@#{attr}", self.class.expect_array(kind, v))
+            self.instance_variable_set("@#{attr}", self.class.expect_array(attr, kind, v))
           end
         end
         
@@ -229,6 +235,7 @@ module Conjur
             type ||= Conjur::Policy::Types.const_get(attr.to_s.capitalize) 
           rescue NameError
           end
+          type = nil if type == String
           kind = options[:kind] 
           kind ||= type.short_name.downcase.to_sym if type
           

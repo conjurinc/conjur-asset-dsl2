@@ -49,18 +49,24 @@ See also: [Permit](#reference/permit) for [Resources](#reference/resource)
 
     def to_s
       role_str   = if role.kind_of?(Array)
-                   then role.join(', ')
-                   else role
-                   end
+        role.join(', ')
+      else
+        role
+      end
       member_str = if member.kind_of?(Array)
-                   then member.map(&:role).join(', ')
-                   else member.role
-                   end
-      admin      = if member.kind_of?(Array)
-                   then member.map(&:admin).all?
-                   else member.admin
-                   end
-      "Grant #{role_str} to #{member_str}#{replace ? ' with replacement ' : ''}#{admin ? ' with admin option' : ''}"
+        member.map(&:role).join(', ')
+      elsif member 
+        member.role
+      end
+      admin = Array(member).map do |member|
+        member && member.admin
+      end
+      admin_str = if Array(member).count == admin.select{|admin| admin}.count
+        " with admin option"
+      elsif admin.any?
+        " with admin options: #{admin.join(', ')}"
+      end
+      %Q(Grant #{role_str} to #{member_str}#{replace ? ' with replacement ' : ''}#{admin_str})
     end
   end
 end

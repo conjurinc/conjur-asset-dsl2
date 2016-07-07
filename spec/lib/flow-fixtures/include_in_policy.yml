@@ -1,0 +1,29 @@
+---
+conjur: |
+  []
+
+policy: |
+  - !policy
+    id: the-policy
+    body:
+    - !include partial/group.yml
+
+plan: |
+  ---
+  - !create
+    record: !role
+      id: the-policy
+      kind: policy
+  - !create
+    record: !resource
+      id: the-policy
+      kind: policy
+      owner: !role
+        id: the-policy
+        kind: policy
+  - !create
+    record: !group
+      id: the-policy/developers
+      owner: !role
+        id: the-policy
+        kind: policy
