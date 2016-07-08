@@ -1,6 +1,0 @@
-- !grant
-  role: !automatic-role
-    record: !layer dev/mysql
-    role_name: use_host
-  members:
-    - !group developers
