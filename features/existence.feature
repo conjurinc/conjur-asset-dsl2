@@ -43,7 +43,6 @@ Feature: Planning can do existence and adminship checks
     """
     Then the normalized stdout should contain "--- []"
 
-  @announce-output
   Scenario: Planning sees an owner as an admin
     Given I load the policy:
     """
