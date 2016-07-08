@@ -3,7 +3,7 @@ require 'conjur/cli'
 require 'conjur/command/rspec/describe_command'
 require 'conjur/command/rspec/output_matchers'
 
-POLICY_FIXTURE_FILE = "#{File.dirname(__FILE__)}/round-trip/yaml/org.yml"
+POLICY_FIXTURE_FILE = "#{File.dirname(__FILE__)}/org.yml"
 PLAN_FIXTURE_FILE = "#{File.dirname(__FILE__)}/import/import.yml"
 
 describe Conjur::Command::Policy do

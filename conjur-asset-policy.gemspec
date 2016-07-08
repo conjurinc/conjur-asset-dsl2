@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   
   spec.add_dependency "safe_yaml"
+  spec.add_dependency "conjur-policy-parser"
 
   spec.add_development_dependency "conjur-cli"
   spec.add_development_dependency "bundler", "~> 1.10"

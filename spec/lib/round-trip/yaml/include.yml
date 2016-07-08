@@ -1,4 +1,0 @@
-- !include
-  file: partial/group.yml
-
-- !include partial/user.yml

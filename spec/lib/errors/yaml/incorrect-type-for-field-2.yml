@@ -1,5 +1,0 @@
-# 4, 14
-# Attribute 'privilege' can't be a mapping
-- !permit
-  privilege:
-    frequency: whenever possible
