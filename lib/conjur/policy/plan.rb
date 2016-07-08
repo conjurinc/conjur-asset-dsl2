@@ -8,10 +8,8 @@ module Conjur
         @roles_created = Set.new
         @resources_created = Set.new
         @existing_resources = Set.new(existing_resources.collect(&:resourceid))
-        # $stderr.puts "@existing_resources: #{@existing_resources.inspect}"
         @current_role_graph = current_role_graph
         @existing_roles = current_role_graph.inject(Set.new) {|roles, edge| roles.add(edge.parent).add(edge.child)}
-        # $stderr.puts "existing roles: #{@existing_roles.inspect}"
       end
       
       def action a
