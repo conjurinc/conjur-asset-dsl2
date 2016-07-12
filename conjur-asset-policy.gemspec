@@ -21,11 +21,12 @@ Gem::Specification.new do |spec|
   spec.add_dependency "safe_yaml"
   spec.add_dependency "conjur-policy-parser"
 
+  spec.add_development_dependency "conjur-api", '~> 4.26'
   spec.add_development_dependency "conjur-cli"
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec-expectations"
-  spec.add_development_dependency "pry"
+  spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "json_spec"
   spec.add_development_dependency "cucumber"
   spec.add_development_dependency "ci_reporter_rspec"

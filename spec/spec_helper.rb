@@ -1,3 +1,4 @@
+
 require 'simplecov'
 SimpleCov.start do
   add_filter '/spec/'
@@ -65,6 +66,10 @@ end
 class MockRole
   include MockAsset
 
+  def roleid
+    @record.try(:roleid)
+  end
+
   def role?
     true
   end
@@ -93,11 +98,19 @@ end
 class MockResource
   include MockAsset
 
+  def resourceid
+    @record.try(:resourceid)
+  end
+
+  def kind
+    @record.class.short_name.underscore
+  end
+
   def exists?
     !!@record
   end
 
-  def resource?;
+  def resource?
     true;
   end
 
@@ -119,6 +132,10 @@ end
 
 class MockRecord
   include MockAsset
+
+  def resourceid
+    @record.try(:resourceid)
+  end
 
   def exists?
     !!@record
@@ -149,14 +166,27 @@ class MockVariable < MockRecord
 end
 
 class MockAPI
-  attr_reader :account, :records
+  attr_reader :account, :records, :existing_resources
 
   def initialize account, records
     @account = account
     @records = records
+    @existing_resources = @records.collect {|r| MockResource.new(self, r) if r.resource?}.compact
     @roles_by_id = { 'the-account:user:default-owner' => MockRole.new(self, Types::User.new('default-owner').tap{|u| u.account = 'the-account'}) }
     @resources_by_id = {}
     @records_by_id = {}
+  end
+
+  def current_role
+    role 'the-account:user:default-owner'
+  end
+
+  def resources(options = {})
+    existing_resources.select { |rsrc| !options[:kind] || rsrc.kind == options[:kind] }
+  end
+
+  def role_graph role
+    @role_graph ||= Conjur::Graph.new(@records.select(&:role?).collect {|r| [r.roleid, r.owner.roleid, true]})
   end
 
   def resource id

@@ -2,16 +2,33 @@ module Conjur
   module Policy
     class Plan
       attr_reader :actions, :roles_created, :resources_created
-      
-      def initialize
+
+      def initialize(existing_resources, current_role_graph)
         @actions = []
         @roles_created = Set.new
         @resources_created = Set.new
+        @existing_resources = Set.new(existing_resources.collect(&:resourceid))
+        @current_role_graph = current_role_graph
+        @existing_roles = current_role_graph.inject(Set.new) {|roles, edge| roles.add(edge.parent).add(edge.child)}
       end
       
       def action a
         @actions.push a
       end
+
+      def role_exists?(id)
+        @existing_roles.include?(id)
+      end
+
+      def resource_exists?(id)
+        @existing_resources.include?(id)
+      end
+
+      def can_admin_role?(admin, role)
+        raise "no admin_option support in role graph" if @current_role_graph.first.admin_option.nil?
+        @current_role_graph.any? {|e| e.parent == role && e.child == admin && e.admin_option }
+      end
+
     end
   end
 end
