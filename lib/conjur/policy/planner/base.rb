@@ -120,7 +120,12 @@ module Conjur
           end
 
           if record.role?
-            unless plan.can_admin_role?(record.owner.roleid, record.roleid)
+            # Fall back to the api if the plan can't determine
+            # adminship.
+            can_admin = plan.can_admin_role?(record.owner.roleid, role)
+            can_admin = api.role(record.owner.roleid).can_admin_role?(role) if can_admin.nil?
+
+            unless can_admin
               log { "Role will be granted to #{record.owner.roleid} with admin option" }
   
               grant = Conjur::Policy::Types::Grant.new
