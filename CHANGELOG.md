@@ -1,6 +1,8 @@
 # 0.13.0
 
 * Adds `!include` directive, which can be used to include sub-policies within a master Conjurfile.
+* Optimize planning by using the role graph and a pre-fetched set of
+  resources to do existence checks
 
 # 0.12.0
 

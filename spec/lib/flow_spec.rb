@@ -11,7 +11,6 @@ describe "planning and execution" do
   let(:namespace) { fixture['namespace'] }
   let(:records) { Conjur::Policy::Resolver.resolve policy, account, ownerid, namespace }
   let(:exception) { fixture['exception'] }
-  let(:api) { MockAPI.new account, conjur_state }
   let(:plan_actions) do
     begin
       plan = Planner.plan records, api
@@ -93,10 +92,13 @@ describe "planning and execution" do
     end
 
     files.each do |file_example_name|
-      describe file_example_name do
-        let(:filename) { File.expand_path(file_example_name, fixtures_dir) }
-        it_should_behave_like "verify plan"
-        it_should_behave_like "verify execution"
+      %w{4.7.2 4.8.0}.each do |version|
+        describe "#{file_example_name} (#{version})" do
+          let(:api) { MockAPI.new account, conjur_state, version }
+          let(:filename) { File.expand_path(file_example_name, fixtures_dir) }
+          it_should_behave_like "verify plan"
+          it_should_behave_like "verify execution"
+        end
       end
     end
   end

@@ -24,9 +24,13 @@ module Conjur
         @existing_resources.include?(id)
       end
 
-      def can_admin_role?(admin, role)
-        raise "no admin_option support in role graph" if @current_role_graph.first.admin_option.nil?
-        @current_role_graph.any? {|e| e.parent == role && e.child == admin && e.admin_option }
+      # return true or false if the role with admin_id has adminship
+      # on role, nil if it can't be determined from the role graph
+      # (e.g. because the role graph was created by an old server).
+      def can_admin_role?(admin_id, role)
+        return nil if @current_role_graph.first.admin_option.nil?
+
+        @current_role_graph.any? {|e| e.parent == role.roleid && e.child == admin_id && e.admin_option }
       end
 
     end

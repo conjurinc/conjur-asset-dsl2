@@ -17,6 +17,8 @@ end
 
 Conjur::Policy::Planner::BaseFacts.sort = true
 
+require 'semantic'
+
 shared_context "planner", planning: true do
   let(:api) { double(:api) }
   before do
@@ -166,15 +168,18 @@ class MockVariable < MockRecord
 end
 
 class MockAPI
-  attr_reader :account, :records, :existing_resources
+  attr_reader :account, :records, :existing_resources, :show_admin_option
+  alias :show_admin_option? :show_admin_option
 
-  def initialize account, records
+  FOUR_EIGHT = Semantic::Version.new('4.8.0')
+  def initialize account, records, conjur_version
     @account = account
     @records = records
     @existing_resources = @records.collect {|r| MockResource.new(self, r) if r.resource?}.compact
     @roles_by_id = { 'the-account:user:default-owner' => MockRole.new(self, Types::User.new('default-owner').tap{|u| u.account = 'the-account'}) }
     @resources_by_id = {}
     @records_by_id = {}
+    @show_admin_option = Semantic::Version.new(conjur_version) >= FOUR_EIGHT
   end
 
   def current_role
@@ -186,7 +191,8 @@ class MockAPI
   end
 
   def role_graph role
-    @role_graph ||= Conjur::Graph.new(@records.select(&:role?).collect {|r| [r.roleid, r.owner.roleid, true]})
+    admin_option = show_admin_option? ? true : nil
+    @role_graph ||= Conjur::Graph.new(@records.select(&:role?).collect {|r| [r.roleid, r.owner.roleid, admin_option]})
   end
 
   def resource id
