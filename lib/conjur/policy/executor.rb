@@ -106,7 +106,9 @@ module Conjur
         response = @http.request request
         # $stderr.puts response.code
         if response.code.to_i >= 300
-          $stderr.puts "#{request.method.upcase} #{request.path} #{request.body} failed with error #{response.code}:"
+          msg = "#{request.method.upcase} #{request.path} #{request.body} failed with error #{response.code}:"
+          raise(msg) if ENV['POLICY_RAISE_ON_FAILURE']
+          $stderr.puts msg
           # $stderr.puts "Request failed with error #{response.code}:"
           $stderr.puts response.body
         else
