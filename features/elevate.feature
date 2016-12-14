@@ -33,6 +33,7 @@ Feature: "elevate" can be used to ensure success of write operations
       resource: !host host-01.app
     """
     Then exit status of the last command should be 1
+    And the stderr from the last command should not contain "success"
 
   Scenario: With elevate, a foreign record can be manipulated
     Then I load the policy with "elevate" privilege:
@@ -43,3 +44,4 @@ Feature: "elevate" can be used to ensure success of write operations
       privilege: [ execute, update ]
       resource: !host host-01.app
     """
+    And the stderr from the last command should contain "success"
