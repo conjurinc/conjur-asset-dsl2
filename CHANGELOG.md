@@ -1,3 +1,7 @@
+# 0.13.1
+
+* Add confirmation message on successful policy load.
+
 # 0.13.0
 
 * Adds `!include` directive, which can be used to include sub-policies within a master Conjurfile.
