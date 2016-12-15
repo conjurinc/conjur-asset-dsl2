@@ -188,6 +188,8 @@ command. Therefore, a policy can be loaded in three steps, if desired:
             puts context.to_json unless options[:'no-context']
           end
         end
+
+        $stderr.puts "Policy loaded successfully."
       end
     end
 

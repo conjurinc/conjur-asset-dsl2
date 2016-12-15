@@ -13,6 +13,11 @@ Then(/^(.*)normalized JSON(.*)$/) do |prefix, postfix|
   step [ prefix, "JSON", postfix ].join
 end
 
+Then(/^the stderr from the last command should( not)? contain "([^"]*)"$/) do |neg, expected|
+  expect(last_command_started).send (neg ? :not_to : :to),
+      (have_output_on_stderr an_output_string_including expected)
+end
+
 Then(/^the host factory layers should be exactly \[ 'test' \]$/) do
   hf = $conjur.host_factory([ @namespace, 'test' ].join('/'))
   expect(hf).to be
